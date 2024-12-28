@@ -7,6 +7,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        node-version: [16, 18, 20]
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -14,7 +18,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4.1.0
         with:
-          node-version: '18'
+          node-version: ${{ matrix.node-version }}
 
       - name: Install dependencies
         run: npm install
@@ -25,5 +29,5 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: build-artifacts
+          name: angular-build-${{ matrix.node-version }}
           path: dist/angular
