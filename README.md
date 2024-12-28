@@ -1,1 +1,1 @@
-# angular
+# Demo angular app
