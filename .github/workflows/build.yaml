@@ -27,7 +27,9 @@ jobs:
         run: npm run build
 
       - name: Build Docker image
-        run: docker build -t angular-app:${{ github.sha }} .
+        run: |
+          docker build -t angular-app:${{ github.sha }} .
+          docker tag angular-app:${{ github.sha }} ${{ secrets.ACR_LOGIN_SERVER }}/angular-app:${{ github.sha }}
 
       - name: Log in to Azure Container Registry using OIDC
         uses: azure/login@v2.2.0
@@ -38,9 +40,7 @@ jobs:
           allow-no-subscriptions: true
 
       - name: Push Docker image to Azure Container Registry
-        run: |
-          az acr login --name ${{ secrets.ACR_NAME }}
-          docker push ${{ secrets.ACR_LOGIN_SERVER }}/angular-app:${{ github.sha }}
+        run: docker push ${{ secrets.ACR_LOGIN_SERVER }}/angular-app:${{ github.sha }}
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
