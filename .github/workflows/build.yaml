@@ -1,4 +1,4 @@
-name: Build and Upload Artifact
+name: Build, Dockerize, and Deploy
 
 on:
   push:
@@ -7,10 +7,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [18, 20]
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -18,7 +14,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4.1.0
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 20
 
       - name: Install dependencies
         run: npm install
@@ -26,8 +22,24 @@ jobs:
       - name: Build project
         run: npm run build
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+      - name: Build Docker image
+        run: docker build -t angular-app:${{ github.sha }} .
+
+      - name: Log in to Azure Container Registry using OIDC
+        uses: azure/login@v2.2.0
         with:
-          name: angular-build-${{ matrix.node-version }}
-          path: dist/angular
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          allow-no-subscriptions: true
+
+      - name: Push Docker image to Azure Container Registry
+        run: |
+          az acr login --name ${{ secrets.ACR_NAME }}
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/angular-app:${{ github.sha }}
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
+          images: ${{ secrets.ACR_LOGIN_SERVER }}/angular-app:${{ github.sha }}
