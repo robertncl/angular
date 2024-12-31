@@ -1,6 +1,6 @@
 # Angular
 
-![Build and Upload Artifact](https://github.com/robertncl/angular/actions/workflows/build.yaml/badge.svg) ![Master branch](https://github.com/robertncl/angular/actions/workflows/build.yaml/badge.svg?branch=master)
+![Build and Upload Artifact](https://github.com/robertncl/angular/actions/workflows/build.yaml/badge.svg) 
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.0.6.
 
