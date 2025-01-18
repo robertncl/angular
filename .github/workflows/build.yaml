@@ -23,8 +23,11 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Install Angular CLI
+        run: npm install -g @angular/cli
+
       - name: Build project
-        run: ng build
+        run: ng build --prod
 
       - name: Build Docker image
         run: |
