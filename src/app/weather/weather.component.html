@@ -1,0 +1,75 @@
+<div class="weather-container">
+  <div class="weather-header">
+    <h1>Weather App</h1>
+    <div class="search-container">
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        (input)="onSearchInput()"
+        placeholder="Search for a location..."
+        class="search-input"
+      />
+      @if (showSearchResults) {
+        <div class="search-results">
+          @for (location of searchResults; track location.id) {
+            <div
+              class="search-result-item"
+              (click)="selectLocation(location)"
+            >
+              <strong>{{ location.name }}</strong>
+              @if (location.admin1) {
+                <span>, {{ location.admin1 }}</span>
+              }
+              <span>, {{ location.country }}</span>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="weather-content">
+    <div class="map-container">
+      <div id="map" class="map"></div>
+    </div>
+
+    <div class="weather-info">
+      @if (loading) {
+        <div class="loading">Loading weather data...</div>
+      } @else if (error) {
+        <div class="error">{{ error }}</div>
+      } @else if (weatherData) {
+        <div class="current-weather">
+          <h2>{{ currentLocation.name }}</h2>
+          <div
+            class="temperature"
+            [style.color]="getTemperatureColor(weatherData.current_weather.temperature)"
+          >
+            {{ weatherData.current_weather.temperature }}°C
+          </div>
+          <div class="weather-description">
+            {{ getWeatherDescription(weatherData.current_weather.weathercode) }}
+          </div>
+          <div class="weather-details">
+            <div class="detail-item">
+              <span class="label">Wind Speed:</span>
+              <span class="value">{{ weatherData.current_weather.windspeed }} km/h</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Wind Direction:</span>
+              <span class="value">{{ weatherData.current_weather.winddirection }}°</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Elevation:</span>
+              <span class="value">{{ weatherData.elevation }} m</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Timezone:</span>
+              <span class="value">{{ weatherData.timezone }}</span>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>
