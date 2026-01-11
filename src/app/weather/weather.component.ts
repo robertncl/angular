@@ -75,7 +75,7 @@ export class WeatherComponent implements OnInit, OnDestroy {
           if (query.trim().length >= 2) {
             return this.weatherService.searchLocation(query);
           }
-          return of({ results: [] } as GeocodingResult);
+          return of({ results: [], generationtime_ms: 0 } as GeocodingResult);
         }),
         takeUntil(this.destroy$)
       )
