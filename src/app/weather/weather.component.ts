@@ -131,17 +131,19 @@ export class WeatherComponent implements OnInit, OnDestroy {
   loadWeather(lat: number, lng: number) {
     this.loading = true;
     this.error = '';
-    this.weatherService.getWeather(lat, lng).subscribe({
-      next: (data) => {
-        this.weatherData = data;
-        this.loading = false;
-      },
-      error: (err) => {
-        this.error = 'Failed to load weather data. Please try again.';
-        this.loading = false;
-        console.error('Weather error:', err);
-      }
-    });
+    this.weatherService.getWeather(lat, lng)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.weatherData = data;
+          this.loading = false;
+        },
+        error: (err) => {
+          this.error = 'Failed to load weather data. Please try again.';
+          this.loading = false;
+          console.error('Weather error:', err);
+        }
+      });
   }
 
   getWeatherDescription(code: number): string {
