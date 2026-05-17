@@ -1,0 +1,351 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  background: #0b0f14;
+  color: #e7eaee;
+}
+
+.app {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.brand .logo {
+  font-size: 18px;
+  color: #16c784;
+  letter-spacing: -2px;
+}
+.brand h1 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.search {
+  flex: 1;
+  min-width: 260px;
+  position: relative;
+}
+.search input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #1f2630;
+  background: #121821;
+  color: #e7eaee;
+  font-size: 14px;
+  outline: none;
+}
+.search input:focus {
+  border-color: #2f80ff;
+}
+.search .results {
+  position: absolute;
+  top: 110%;
+  left: 0;
+  right: 0;
+  background: #121821;
+  border: 1px solid #1f2630;
+  border-radius: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 4px;
+  max-height: 320px;
+  overflow-y: auto;
+  z-index: 10;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+.search .results li {
+  padding: 8px 10px;
+  border-radius: 8px;
+  display: grid;
+  grid-template-columns: 80px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  cursor: pointer;
+  font-size: 13px;
+}
+.search .results li:hover {
+  background: #1a2230;
+}
+.search .results .sym {
+  font-weight: 700;
+  color: #2f80ff;
+}
+.search .results .name {
+  color: #cdd3db;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.search .results .exch {
+  font-size: 11px;
+  color: #6f7785;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 16px;
+}
+
+@media (max-width: 880px) {
+  .layout { grid-template-columns: 1fr; }
+}
+
+.detail {
+  background: #121821;
+  border: 1px solid #1f2630;
+  border-radius: 14px;
+  padding: 20px;
+  min-height: 480px;
+}
+
+.error {
+  background: #2a1416;
+  color: #ff8b8b;
+  border: 1px solid #4a1d20;
+  padding: 12px 14px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+}
+
+.quote-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.symbol-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.quote-head h2 {
+  margin: 0;
+  font-size: 26px;
+  letter-spacing: 0.5px;
+}
+.quote-head .name {
+  color: #9aa3b1;
+  font-size: 13px;
+  margin-top: 4px;
+}
+.quote-head .name .exch { color: #6f7785; }
+
+.watch-btn {
+  background: transparent;
+  color: #cdd3db;
+  border: 1px solid #2a3340;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.watch-btn:hover { border-color: #3b4858; }
+.watch-btn.watching {
+  color: #f5d05a;
+  border-color: #5a4a1d;
+  background: #1f1a0d;
+}
+
+.price-block {
+  text-align: right;
+}
+.price-block .price {
+  font-size: 28px;
+  font-weight: 700;
+}
+.price-block .change {
+  font-size: 14px;
+  margin-top: 2px;
+}
+.price-block.up { color: #16c784; }
+.price-block.down { color: #ea3943; }
+.price-block .state {
+  font-size: 11px;
+  color: #6f7785;
+  margin-top: 4px;
+}
+
+.range-row {
+  display: flex;
+  gap: 6px;
+  margin: 18px 0 8px;
+  flex-wrap: wrap;
+}
+.range-btn {
+  background: #0e141c;
+  border: 1px solid #1f2630;
+  color: #cdd3db;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.range-btn:hover { border-color: #2f80ff; }
+.range-btn.active {
+  background: #14304b;
+  border-color: #2f80ff;
+  color: #fff;
+}
+
+.chart-wrap {
+  position: relative;
+  width: 100%;
+  margin-top: 6px;
+}
+.chart {
+  width: 100%;
+  height: 280px;
+  display: block;
+}
+.chart-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #6f7785;
+  margin-top: 4px;
+}
+.loading {
+  padding: 30px;
+  text-align: center;
+  color: #6f7785;
+  font-size: 13px;
+}
+.loading.big {
+  padding: 60px;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 18px;
+}
+@media (max-width: 540px) {
+  .stats { grid-template-columns: repeat(2, 1fr); }
+}
+.stat {
+  background: #0e141c;
+  border: 1px solid #1f2630;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.stat .k {
+  font-size: 11px;
+  color: #6f7785;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.stat .v {
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.watchlist {
+  background: #121821;
+  border: 1px solid #1f2630;
+  border-radius: 14px;
+  padding: 14px;
+  align-self: start;
+}
+.watch-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.watch-head h3 {
+  margin: 0;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #9aa3b1;
+}
+.refresh {
+  background: transparent;
+  border: 1px solid #2a3340;
+  border-radius: 6px;
+  color: #cdd3db;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+}
+.refresh:hover { border-color: #3b4858; }
+
+.watchlist ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.watchlist li {
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+.watchlist li:hover { background: #0e141c; }
+.watchlist li.active {
+  background: #14304b;
+  border-color: #2f80ff;
+}
+.watchlist .row1 {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 13px;
+}
+.watchlist .row2 {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  margin-top: 2px;
+  color: #9aa3b1;
+}
+.watchlist .row2 .name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 60%;
+}
+.chg.up { color: #16c784; }
+.chg.down { color: #ea3943; }
+
+.watchlist .empty {
+  color: #6f7785;
+  font-size: 12px;
+  cursor: default;
+  text-align: center;
+  padding: 14px 6px;
+}
+.watchlist .empty:hover { background: transparent; }
+
+footer {
+  text-align: center;
+  color: #6f7785;
+  padding: 8px 0 16px;
+}

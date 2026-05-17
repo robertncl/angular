@@ -1,0 +1,152 @@
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">▲▼</span>
+      <h1>Stockwatch</h1>
+    </div>
+
+    <div class="search" (click)="$event.stopPropagation()">
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        (input)="onSearchInput()"
+        (focus)="onSearchFocus()"
+        (blur)="onSearchBlur()"
+        placeholder="Search ticker or company (e.g. AAPL, Tesla)"
+        autocomplete="off"
+      />
+      <ul class="results" *ngIf="showResults">
+        <li *ngFor="let m of searchResults" (mousedown)="selectMatch(m)">
+          <span class="sym">{{ m.symbol }}</span>
+          <span class="name">{{ m.longname || m.shortname }}</span>
+          <span class="exch">{{ m.exchange }}</span>
+        </li>
+      </ul>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="detail">
+      <ng-container *ngIf="error()">
+        <div class="error">{{ error() }}</div>
+      </ng-container>
+
+      <ng-container *ngIf="quote() as q">
+        <div class="quote-head">
+          <div>
+            <div class="symbol-row">
+              <h2>{{ q.symbol }}</h2>
+              <button
+                class="watch-btn"
+                [class.watching]="isWatched(q.symbol)"
+                (click)="toggleWatchlist(q.symbol)"
+              >
+                {{ isWatched(q.symbol) ? '★ Watching' : '☆ Add to watchlist' }}
+              </button>
+            </div>
+            <div class="name">{{ q.name }} <span class="exch">· {{ q.exchange }}</span></div>
+          </div>
+          <div class="price-block" [class.up]="q.change >= 0" [class.down]="q.change < 0">
+            <div class="price">{{ formatPrice(q.price, q.currency) }}</div>
+            <div class="change">
+              {{ q.change >= 0 ? '+' : '' }}{{ q.change.toFixed(2) }} ({{ formatPct(q.changePercent) }})
+            </div>
+            <div class="state">{{ q.marketState }} · {{ formatTime(q.regularMarketTime) }}</div>
+          </div>
+        </div>
+
+        <div class="range-row">
+          <button
+            *ngFor="let r of ranges"
+            class="range-btn"
+            [class.active]="range() === r"
+            (click)="setRange(r)"
+          >{{ r }}</button>
+        </div>
+
+        <div class="chart-wrap">
+          <ng-container *ngIf="loadingHistory(); else chartTpl">
+            <div class="loading">Loading chart…</div>
+          </ng-container>
+          <ng-template #chartTpl>
+            <ng-container *ngIf="chart() as c; else emptyChart">
+              <svg
+                class="chart"
+                [attr.viewBox]="'0 0 ' + c.width + ' ' + c.height"
+                preserveAspectRatio="none"
+              >
+                <defs>
+                  <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" [attr.stop-color]="c.rising ? '#16c784' : '#ea3943'" stop-opacity="0.35"/>
+                    <stop offset="100%" [attr.stop-color]="c.rising ? '#16c784' : '#ea3943'" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                <path [attr.d]="c.areaPath" fill="url(#areaFill)" />
+                <path
+                  [attr.d]="c.path"
+                  fill="none"
+                  [attr.stroke]="c.rising ? '#16c784' : '#ea3943'"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              <div class="chart-meta">
+                <span>Low {{ formatPrice(c.min, q.currency) }}</span>
+                <span>High {{ formatPrice(c.max, q.currency) }}</span>
+              </div>
+            </ng-container>
+            <ng-template #emptyChart>
+              <div class="loading">No chart data available.</div>
+            </ng-template>
+          </ng-template>
+        </div>
+
+        <div class="stats">
+          <div class="stat"><div class="k">Open</div><div class="v">{{ formatPrice(q.open, q.currency) }}</div></div>
+          <div class="stat"><div class="k">Prev Close</div><div class="v">{{ formatPrice(q.previousClose, q.currency) }}</div></div>
+          <div class="stat"><div class="k">Day High</div><div class="v">{{ formatPrice(q.dayHigh, q.currency) }}</div></div>
+          <div class="stat"><div class="k">Day Low</div><div class="v">{{ formatPrice(q.dayLow, q.currency) }}</div></div>
+          <div class="stat"><div class="k">52W High</div><div class="v">{{ formatPrice(q.fiftyTwoWeekHigh, q.currency) }}</div></div>
+          <div class="stat"><div class="k">52W Low</div><div class="v">{{ formatPrice(q.fiftyTwoWeekLow, q.currency) }}</div></div>
+          <div class="stat"><div class="k">Volume</div><div class="v">{{ formatNumber(q.volume) }}</div></div>
+          <div class="stat"><div class="k">Currency</div><div class="v">{{ q.currency }}</div></div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="loadingQuote() && !quote()">
+        <div class="loading big">Loading quote…</div>
+      </ng-container>
+    </section>
+
+    <aside class="watchlist">
+      <div class="watch-head">
+        <h3>Watchlist</h3>
+        <button class="refresh" (click)="refreshWatchlist()" title="Refresh">⟳</button>
+      </div>
+      <ul>
+        <li
+          *ngFor="let w of watchlist()"
+          (click)="selectSymbol(w.symbol)"
+          [class.active]="quote()?.symbol === w.symbol"
+        >
+          <div class="row1">
+            <span class="sym">{{ w.symbol }}</span>
+            <span class="price">{{ formatPrice(w.price, w.currency) }}</span>
+          </div>
+          <div class="row2">
+            <span class="name">{{ w.name }}</span>
+            <span class="chg" [class.up]="w.changePercent >= 0" [class.down]="w.changePercent < 0">
+              {{ formatPct(w.changePercent) }}
+            </span>
+          </div>
+        </li>
+        <li *ngIf="!watchlist().length" class="empty">No symbols. Search and ☆ to add.</li>
+      </ul>
+    </aside>
+  </main>
+
+  <footer>
+    <small>Data via Yahoo Finance · for informational purposes only.</small>
+  </footer>
+</div>

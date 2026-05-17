@@ -1,12 +1,12 @@
 import { Component } from '@angular/core';
-import { WeatherComponent } from './weather/weather.component';
+import { StockComponent } from './stock/stock.component';
 
 @Component({
   selector: 'app-root',
-  imports: [WeatherComponent],
+  imports: [StockComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
 export class AppComponent {
-  title = 'Weather App';
+  title = 'Stockwatch';
 }
