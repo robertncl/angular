@@ -3,7 +3,8 @@
     "allow": [
       "Bash(npx ng *)",
       "Bash(npx cap *)",
-      "Bash(git check-ignore *)"
+      "Bash(git check-ignore *)",
+      "Bash(echo \"exit=$?\")"
     ]
   }
 }
