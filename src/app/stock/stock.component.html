@@ -1,20 +1,32 @@
 <div class="app">
   <header class="topbar">
     <div class="brand">
-      <span class="logo">▲▼</span>
-      <h1>Stockwatch</h1>
+      <div class="logo">
+        <span class="dot up"></span>
+        <span class="dot down"></span>
+      </div>
+      <div class="brand-text">
+        <h1>Stockwatch</h1>
+        <span class="tag">Live market intel</span>
+      </div>
     </div>
 
     <div class="search" (click)="$event.stopPropagation()">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="7"/>
+        <path d="m21 21-4.3-4.3"/>
+      </svg>
       <input
         type="text"
         [(ngModel)]="searchQuery"
         (input)="onSearchInput()"
         (focus)="onSearchFocus()"
         (blur)="onSearchBlur()"
-        placeholder="Search ticker or company (e.g. AAPL, Tesla)"
+        placeholder="Search ticker or company — AAPL, Tesla, ^GSPC"
         autocomplete="off"
+        spellcheck="false"
       />
+      <kbd class="hint">⌘ K</kbd>
       <ul class="results" *ngIf="showResults">
         <li *ngFor="let m of searchResults" (mousedown)="selectMatch(m)">
           <span class="sym">{{ m.symbol }}</span>
@@ -26,32 +38,50 @@
   </header>
 
   <main class="layout">
-    <section class="detail">
+    <section class="detail card">
       <ng-container *ngIf="error()">
         <div class="error">{{ error() }}</div>
       </ng-container>
 
       <ng-container *ngIf="quote() as q">
         <div class="quote-head">
-          <div>
+          <div class="quote-id">
             <div class="symbol-row">
-              <h2>{{ q.symbol }}</h2>
+              <h2 class="symbol">{{ q.symbol }}</h2>
+              <span class="badge" [class.live]="q.marketState === 'REGULAR'">
+                <span class="pulse"></span>{{ q.marketState || 'CLOSED' }}
+              </span>
               <button
                 class="watch-btn"
                 [class.watching]="isWatched(q.symbol)"
                 (click)="toggleWatchlist(q.symbol)"
+                [attr.aria-label]="isWatched(q.symbol) ? 'Remove from watchlist' : 'Add to watchlist'"
               >
-                {{ isWatched(q.symbol) ? '★ Watching' : '☆ Add to watchlist' }}
+                <svg viewBox="0 0 24 24" width="14" height="14" [attr.fill]="isWatched(q.symbol) ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+                {{ isWatched(q.symbol) ? 'Watching' : 'Add' }}
               </button>
             </div>
-            <div class="name">{{ q.name }} <span class="exch">· {{ q.exchange }}</span></div>
+            <div class="company">
+              <span class="name">{{ q.name }}</span>
+              <span class="dot-sep">·</span>
+              <span class="exch">{{ q.exchange }}</span>
+            </div>
           </div>
           <div class="price-block" [class.up]="q.change >= 0" [class.down]="q.change < 0">
             <div class="price">{{ formatPrice(q.price, q.currency) }}</div>
             <div class="change">
-              {{ q.change >= 0 ? '+' : '' }}{{ q.change.toFixed(2) }} ({{ formatPct(q.changePercent) }})
+              <span class="chip">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline *ngIf="q.change >= 0" points="6 15 12 9 18 15"/>
+                  <polyline *ngIf="q.change < 0" points="6 9 12 15 18 9"/>
+                </svg>
+                {{ q.change >= 0 ? '+' : '' }}{{ q.change.toFixed(2) }}
+              </span>
+              <span class="chip strong">{{ formatPct(q.changePercent) }}</span>
             </div>
-            <div class="state">{{ q.marketState }} · {{ formatTime(q.regularMarketTime) }}</div>
+            <div class="state">As of {{ formatTime(q.regularMarketTime) }}</div>
           </div>
         </div>
 
@@ -66,7 +96,7 @@
 
         <div class="chart-wrap">
           <ng-container *ngIf="loadingHistory(); else chartTpl">
-            <div class="loading">Loading chart…</div>
+            <div class="skeleton chart-skeleton"></div>
           </ng-container>
           <ng-template #chartTpl>
             <ng-container *ngIf="chart() as c; else emptyChart">
@@ -77,23 +107,32 @@
               >
                 <defs>
                   <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" [attr.stop-color]="c.rising ? '#16c784' : '#ea3943'" stop-opacity="0.35"/>
-                    <stop offset="100%" [attr.stop-color]="c.rising ? '#16c784' : '#ea3943'" stop-opacity="0"/>
+                    <stop offset="0%" [attr.stop-color]="c.rising ? 'rgb(25, 210, 122)' : 'rgb(255, 85, 102)'" stop-opacity="0.32"/>
+                    <stop offset="100%" [attr.stop-color]="c.rising ? 'rgb(25, 210, 122)' : 'rgb(255, 85, 102)'" stop-opacity="0"/>
+                  </linearGradient>
+                  <linearGradient id="lineFill" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" [attr.stop-color]="c.rising ? 'rgb(25, 210, 122)' : 'rgb(255, 85, 102)'"/>
+                    <stop offset="100%" [attr.stop-color]="c.rising ? 'rgb(110, 235, 170)' : 'rgb(255, 130, 145)'"/>
                   </linearGradient>
                 </defs>
-                <path [attr.d]="c.areaPath" fill="url(#areaFill)" />
+                <g class="grid">
+                  <line x1="0" [attr.x2]="c.width" y1="50" y2="50"/>
+                  <line x1="0" [attr.x2]="c.width" y1="140" y2="140"/>
+                  <line x1="0" [attr.x2]="c.width" y1="230" y2="230"/>
+                </g>
+                <path [attr.d]="c.areaPath" fill="url(#areaFill)"/>
                 <path
                   [attr.d]="c.path"
                   fill="none"
-                  [attr.stroke]="c.rising ? '#16c784' : '#ea3943'"
-                  stroke-width="2"
+                  stroke="url(#lineFill)"
+                  stroke-width="2.25"
                   stroke-linecap="round"
                   stroke-linejoin="round"
                 />
               </svg>
               <div class="chart-meta">
-                <span>Low {{ formatPrice(c.min, q.currency) }}</span>
-                <span>High {{ formatPrice(c.max, q.currency) }}</span>
+                <span><em>Low</em> {{ formatPrice(c.min, q.currency) }}</span>
+                <span><em>High</em> {{ formatPrice(c.max, q.currency) }}</span>
               </div>
             </ng-container>
             <ng-template #emptyChart>
@@ -105,24 +144,36 @@
         <div class="stats">
           <div class="stat"><div class="k">Open</div><div class="v">{{ formatPrice(q.open, q.currency) }}</div></div>
           <div class="stat"><div class="k">Prev Close</div><div class="v">{{ formatPrice(q.previousClose, q.currency) }}</div></div>
-          <div class="stat"><div class="k">Day High</div><div class="v">{{ formatPrice(q.dayHigh, q.currency) }}</div></div>
-          <div class="stat"><div class="k">Day Low</div><div class="v">{{ formatPrice(q.dayLow, q.currency) }}</div></div>
-          <div class="stat"><div class="k">52W High</div><div class="v">{{ formatPrice(q.fiftyTwoWeekHigh, q.currency) }}</div></div>
-          <div class="stat"><div class="k">52W Low</div><div class="v">{{ formatPrice(q.fiftyTwoWeekLow, q.currency) }}</div></div>
+          <div class="stat"><div class="k">Day Range</div><div class="v">{{ formatPrice(q.dayLow, q.currency) }} – {{ formatPrice(q.dayHigh, q.currency) }}</div></div>
+          <div class="stat"><div class="k">52W Range</div><div class="v">{{ formatPrice(q.fiftyTwoWeekLow, q.currency) }} – {{ formatPrice(q.fiftyTwoWeekHigh, q.currency) }}</div></div>
           <div class="stat"><div class="k">Volume</div><div class="v">{{ formatNumber(q.volume) }}</div></div>
           <div class="stat"><div class="k">Currency</div><div class="v">{{ q.currency }}</div></div>
         </div>
       </ng-container>
 
       <ng-container *ngIf="loadingQuote() && !quote()">
-        <div class="loading big">Loading quote…</div>
+        <div class="skeleton-stack">
+          <div class="skeleton sk-title"></div>
+          <div class="skeleton sk-line"></div>
+          <div class="skeleton chart-skeleton"></div>
+        </div>
       </ng-container>
     </section>
 
-    <aside class="watchlist">
+    <aside class="watchlist card">
       <div class="watch-head">
-        <h3>Watchlist</h3>
-        <button class="refresh" (click)="refreshWatchlist()" title="Refresh">⟳</button>
+        <div>
+          <h3>Watchlist</h3>
+          <span class="sub">{{ watchlist().length }} symbols</span>
+        </div>
+        <button class="refresh" (click)="refreshWatchlist()" title="Refresh prices" aria-label="Refresh">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 0 1 15.6-6.2L21 8"/>
+            <polyline points="21 3 21 8 16 8"/>
+            <path d="M21 12a9 9 0 0 1-15.6 6.2L3 16"/>
+            <polyline points="3 21 3 16 8 16"/>
+          </svg>
+        </button>
       </div>
       <ul>
         <li
@@ -141,12 +192,12 @@
             </span>
           </div>
         </li>
-        <li *ngIf="!watchlist().length" class="empty">No symbols. Search and ☆ to add.</li>
+        <li *ngIf="!watchlist().length" class="empty">No symbols yet.<br>Search above and tap ★ to follow.</li>
       </ul>
     </aside>
   </main>
 
   <footer>
-    <small>Data via Yahoo Finance · for informational purposes only.</small>
+    <small>Data from Yahoo Finance. Delayed; for informational purposes only.</small>
   </footer>
 </div>
