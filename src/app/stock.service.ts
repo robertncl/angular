@@ -54,11 +54,12 @@ const RANGE_INTERVAL: Record<Range, string> = {
 
 @Injectable({ providedIn: 'root' })
 export class StockService {
-  // Public Yahoo Finance endpoints (no API key required).
-  // We route through r.jina.ai when direct CORS fails on some environments;
-  // by default we hit Yahoo directly — modern browsers receive `access-control-allow-origin: *`.
-  private chartUrl = 'https://query1.finance.yahoo.com/v8/finance/chart';
-  private searchUrl = 'https://query2.finance.yahoo.com/v1/finance/search';
+  // Free Yahoo Finance endpoints (no API key required).
+  // Routed through the Angular dev-server proxy (see proxy.conf.json) so the browser
+  // doesn't hit Yahoo's CORS restriction. For production, point these at an
+  // equivalent reverse-proxy path on your own server.
+  private chartUrl = '/api/yf-chart';
+  private searchUrl = '/api/yf-search';
 
   constructor(private http: HttpClient) {}
 

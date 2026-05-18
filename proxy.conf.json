@@ -1,0 +1,20 @@
+{
+  "/api/yf-chart": {
+    "target": "https://query1.finance.yahoo.com",
+    "secure": true,
+    "changeOrigin": true,
+    "pathRewrite": { "^/api/yf-chart": "/v8/finance/chart" },
+    "headers": {
+      "User-Agent": "Mozilla/5.0 (Stockwatch/1.0)"
+    }
+  },
+  "/api/yf-search": {
+    "target": "https://query2.finance.yahoo.com",
+    "secure": true,
+    "changeOrigin": true,
+    "pathRewrite": { "^/api/yf-search": "/v1/finance/search" },
+    "headers": {
+      "User-Agent": "Mozilla/5.0 (Stockwatch/1.0)"
+    }
+  }
+}
