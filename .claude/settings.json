@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(npx ng *)",
-      "Bash(npx cap *)"
+      "Bash(npx cap *)",
+      "Bash(git check-ignore *)"
     ]
   }
 }
