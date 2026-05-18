@@ -459,15 +459,46 @@
 
 /* ---------- Watchlist ---------- */
 .watchlist {
-  padding: 16px 14px 12px;
+  padding: 12px 14px 12px;
   position: sticky;
   top: 16px;
 }
+
+.cat-tabs {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 2px;
+  padding: 3px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  margin-bottom: 12px;
+}
+.cat-tab {
+  background: transparent;
+  border: none;
+  color: var(--text-3);
+  padding: 7px 4px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: all 0.15s ease;
+}
+.cat-tab:hover { color: var(--text-1); background: rgba(255, 255, 255, 0.04); }
+.cat-tab.active {
+  background: linear-gradient(135deg, rgba(110, 139, 255, 0.22), rgba(155, 110, 255, 0.18));
+  color: #fff;
+  box-shadow: 0 0 0 1px rgba(110, 139, 255, 0.35);
+}
+
 .watch-head {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 6px 12px;
+  padding: 0 6px 10px;
   border-bottom: 1px solid var(--line);
   margin-bottom: 8px;
 }
@@ -505,6 +536,12 @@
   border-color: var(--line-strong);
   color: var(--text-1);
   transform: rotate(60deg);
+}
+.refresh.spinning svg {
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 .watchlist ul {

@@ -27,23 +27,27 @@
         spellcheck="false"
       />
       <kbd class="hint">⌘ K</kbd>
-      <ul class="results" *ngIf="showResults">
-        <li *ngFor="let m of searchResults" (mousedown)="selectMatch(m)">
-          <span class="sym">{{ m.symbol }}</span>
-          <span class="name">{{ m.longname || m.shortname }}</span>
-          <span class="exch">{{ m.exchange }}</span>
-        </li>
-      </ul>
+      @if (showResults) {
+        <ul class="results">
+          @for (m of searchResults; track m.symbol) {
+            <li (mousedown)="selectMatch(m)">
+              <span class="sym">{{ m.symbol }}</span>
+              <span class="name">{{ m.longname || m.shortname }}</span>
+              <span class="exch">{{ m.exchange }}</span>
+            </li>
+          }
+        </ul>
+      }
     </div>
   </header>
 
   <main class="layout">
     <section class="detail card">
-      <ng-container *ngIf="error()">
+      @if (error()) {
         <div class="error">{{ error() }}</div>
-      </ng-container>
+      }
 
-      <ng-container *ngIf="quote() as q">
+      @if (quote(); as q) {
         <div class="quote-head">
           <div class="quote-id">
             <div class="symbol-row">
@@ -74,8 +78,11 @@
             <div class="change">
               <span class="chip">
                 <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline *ngIf="q.change >= 0" points="6 15 12 9 18 15"/>
-                  <polyline *ngIf="q.change < 0" points="6 9 12 15 18 9"/>
+                  @if (q.change >= 0) {
+                    <polyline points="6 15 12 9 18 15"/>
+                  } @else {
+                    <polyline points="6 9 12 15 18 9"/>
+                  }
                 </svg>
                 {{ q.change >= 0 ? '+' : '' }}{{ q.change.toFixed(2) }}
               </span>
@@ -86,59 +93,56 @@
         </div>
 
         <div class="range-row">
-          <button
-            *ngFor="let r of ranges"
-            class="range-btn"
-            [class.active]="range() === r"
-            (click)="setRange(r)"
-          >{{ r }}</button>
+          @for (r of ranges; track r) {
+            <button
+              class="range-btn"
+              [class.active]="range() === r"
+              (click)="setRange(r)"
+            >{{ r }}</button>
+          }
         </div>
 
         <div class="chart-wrap">
-          <ng-container *ngIf="loadingHistory(); else chartTpl">
+          @if (loadingHistory()) {
             <div class="skeleton chart-skeleton"></div>
-          </ng-container>
-          <ng-template #chartTpl>
-            <ng-container *ngIf="chart() as c; else emptyChart">
-              <svg
-                class="chart"
-                [attr.viewBox]="'0 0 ' + c.width + ' ' + c.height"
-                preserveAspectRatio="none"
-              >
-                <defs>
-                  <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" [attr.stop-color]="c.rising ? 'rgb(25, 210, 122)' : 'rgb(255, 85, 102)'" stop-opacity="0.32"/>
-                    <stop offset="100%" [attr.stop-color]="c.rising ? 'rgb(25, 210, 122)' : 'rgb(255, 85, 102)'" stop-opacity="0"/>
-                  </linearGradient>
-                  <linearGradient id="lineFill" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" [attr.stop-color]="c.rising ? 'rgb(25, 210, 122)' : 'rgb(255, 85, 102)'"/>
-                    <stop offset="100%" [attr.stop-color]="c.rising ? 'rgb(110, 235, 170)' : 'rgb(255, 130, 145)'"/>
-                  </linearGradient>
-                </defs>
-                <g class="grid">
-                  <line x1="0" [attr.x2]="c.width" y1="50" y2="50"/>
-                  <line x1="0" [attr.x2]="c.width" y1="140" y2="140"/>
-                  <line x1="0" [attr.x2]="c.width" y1="230" y2="230"/>
-                </g>
-                <path [attr.d]="c.areaPath" fill="url(#areaFill)"/>
-                <path
-                  [attr.d]="c.path"
-                  fill="none"
-                  stroke="url(#lineFill)"
-                  stroke-width="2.25"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-              <div class="chart-meta">
-                <span><em>Low</em> {{ formatPrice(c.min, q.currency) }}</span>
-                <span><em>High</em> {{ formatPrice(c.max, q.currency) }}</span>
-              </div>
-            </ng-container>
-            <ng-template #emptyChart>
-              <div class="loading">No chart data available.</div>
-            </ng-template>
-          </ng-template>
+          } @else if (chart(); as c) {
+            <svg
+              class="chart"
+              [attr.viewBox]="'0 0 ' + c.width + ' ' + c.height"
+              preserveAspectRatio="none"
+            >
+              <defs>
+                <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" [attr.stop-color]="c.rising ? 'rgb(25, 210, 122)' : 'rgb(255, 85, 102)'" stop-opacity="0.32"/>
+                  <stop offset="100%" [attr.stop-color]="c.rising ? 'rgb(25, 210, 122)' : 'rgb(255, 85, 102)'" stop-opacity="0"/>
+                </linearGradient>
+                <linearGradient id="lineFill" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" [attr.stop-color]="c.rising ? 'rgb(25, 210, 122)' : 'rgb(255, 85, 102)'"/>
+                  <stop offset="100%" [attr.stop-color]="c.rising ? 'rgb(110, 235, 170)' : 'rgb(255, 130, 145)'"/>
+                </linearGradient>
+              </defs>
+              <g class="grid">
+                <line x1="0" [attr.x2]="c.width" y1="50" y2="50"/>
+                <line x1="0" [attr.x2]="c.width" y1="140" y2="140"/>
+                <line x1="0" [attr.x2]="c.width" y1="230" y2="230"/>
+              </g>
+              <path [attr.d]="c.areaPath" fill="url(#areaFill)"/>
+              <path
+                [attr.d]="c.path"
+                fill="none"
+                stroke="url(#lineFill)"
+                stroke-width="2.25"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            <div class="chart-meta">
+              <span><em>Low</em> {{ formatPrice(c.min, q.currency) }}</span>
+              <span><em>High</em> {{ formatPrice(c.max, q.currency) }}</span>
+            </div>
+          } @else {
+            <div class="loading">No chart data available.</div>
+          }
         </div>
 
         <div class="stats">
@@ -149,24 +153,36 @@
           <div class="stat"><div class="k">Volume</div><div class="v">{{ formatNumber(q.volume) }}</div></div>
           <div class="stat"><div class="k">Currency</div><div class="v">{{ q.currency }}</div></div>
         </div>
-      </ng-container>
+      }
 
-      <ng-container *ngIf="loadingQuote() && !quote()">
+      @if (loadingQuote() && !quote()) {
         <div class="skeleton-stack">
           <div class="skeleton sk-title"></div>
           <div class="skeleton sk-line"></div>
           <div class="skeleton chart-skeleton"></div>
         </div>
-      </ng-container>
+      }
     </section>
 
     <aside class="watchlist card">
+      <nav class="cat-tabs" role="tablist">
+        @for (c of categories; track c.id) {
+          <button
+            role="tab"
+            class="cat-tab"
+            [class.active]="activeCategory() === c.id"
+            [attr.aria-selected]="activeCategory() === c.id"
+            (click)="setCategory(c.id)"
+          >{{ c.label }}</button>
+        }
+      </nav>
+
       <div class="watch-head">
         <div>
-          <h3>Watchlist</h3>
-          <span class="sub">{{ watchlist().length }} symbols</span>
+          <h3>{{ activeCategoryMeta().label }}</h3>
+          <span class="sub">{{ activeCategoryMeta().sub }} · {{ rows().length }}</span>
         </div>
-        <button class="refresh" (click)="refreshWatchlist()" title="Refresh prices" aria-label="Refresh">
+        <button class="refresh" [class.spinning]="loadingCategory()" (click)="refreshActive()" title="Refresh prices" aria-label="Refresh">
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M3 12a9 9 0 0 1 15.6-6.2L21 8"/>
             <polyline points="21 3 21 8 16 8"/>
@@ -176,23 +192,29 @@
         </button>
       </div>
       <ul>
-        <li
-          *ngFor="let w of watchlist()"
-          (click)="selectSymbol(w.symbol)"
-          [class.active]="quote()?.symbol === w.symbol"
-        >
-          <div class="row1">
-            <span class="sym">{{ w.symbol }}</span>
-            <span class="price">{{ formatPrice(w.price, w.currency) }}</span>
-          </div>
-          <div class="row2">
-            <span class="name">{{ w.name }}</span>
-            <span class="chg" [class.up]="w.changePercent >= 0" [class.down]="w.changePercent < 0">
-              {{ formatPct(w.changePercent) }}
-            </span>
-          </div>
-        </li>
-        <li *ngIf="!watchlist().length" class="empty">No symbols yet.<br>Search above and tap ★ to follow.</li>
+        @for (w of rows(); track w.symbol) {
+          <li
+            (click)="selectSymbol(w.symbol)"
+            [class.active]="quote()?.symbol === w.symbol"
+          >
+            <div class="row1">
+              <span class="sym">{{ w.symbol }}</span>
+              <span class="price">{{ formatPrice(w.price, w.currency) }}</span>
+            </div>
+            <div class="row2">
+              <span class="name">{{ w.name }}</span>
+              <span class="chg" [class.up]="w.changePercent >= 0" [class.down]="w.changePercent < 0">
+                {{ formatPct(w.changePercent) }}
+              </span>
+            </div>
+          </li>
+        } @empty {
+          @if (activeCategory() === 'watch') {
+            <li class="empty">
+              No symbols yet.<br>Search above and tap ★ to follow.
+            </li>
+          }
+        }
       </ul>
     </aside>
   </main>

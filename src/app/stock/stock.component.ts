@@ -1,9 +1,10 @@
 import { Component, OnDestroy, OnInit, computed, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
+  Observable,
   Subject,
   Subscription,
+  catchError,
   debounceTime,
   distinctUntilChanged,
   forkJoin,
@@ -20,7 +21,7 @@ import {
   SymbolMatch
 } from '../stock.service';
 
-interface WatchRow {
+interface MarketRow {
   symbol: string;
   name: string;
   price: number;
@@ -28,14 +29,31 @@ interface WatchRow {
   currency: string;
 }
 
+type CategoryId = 'watch' | 'stocks' | 'etfs' | 'crypto' | 'commodities';
+
+interface Category {
+  id: CategoryId;
+  label: string;
+  sub: string;
+  symbols: string[]; // ignored for 'watch' (sourced from localStorage)
+}
+
 const WATCHLIST_KEY = 'stockapp.watchlist.v1';
 const DEFAULT_WATCHLIST = ['AAPL', 'MSFT', 'NVDA', 'GOOGL', 'TSLA'];
 const DEFAULT_SYMBOL = 'AAPL';
 
+const CATEGORIES: Category[] = [
+  { id: 'watch',       label: 'Watch',   sub: 'Your list',    symbols: [] },
+  { id: 'stocks',      label: 'Stocks',  sub: 'Top US',       symbols: ['AAPL','MSFT','NVDA','GOOGL','AMZN','META','TSLA','JPM','BRK-B','V'] },
+  { id: 'etfs',        label: 'ETFs',    sub: 'Broad funds',  symbols: ['SPY','QQQ','VTI','VOO','IWM','DIA','ARKK','XLK','XLE','GLD'] },
+  { id: 'crypto',      label: 'Crypto',  sub: 'Spot USD',     symbols: ['BTC-USD','ETH-USD','SOL-USD','BNB-USD','XRP-USD','DOGE-USD','ADA-USD','AVAX-USD'] },
+  { id: 'commodities', label: 'Commod.', sub: 'Futures',      symbols: ['GC=F','SI=F','CL=F','BZ=F','NG=F','HG=F','ZW=F','ZC=F'] },
+];
+
 @Component({
   selector: 'app-stock',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   templateUrl: './stock.component.html',
   styleUrl: './stock.component.css'
 })
@@ -53,27 +71,40 @@ export class StockComponent implements OnInit, OnDestroy {
   range = signal<Range>('1mo');
   readonly ranges: Range[] = ['1d', '5d', '1mo', '6mo', '1y', '5y'];
 
-  watchlist = signal<WatchRow[]>([]);
+  readonly categories = CATEGORIES;
+  activeCategory = signal<CategoryId>('watch');
+  loadingCategory = signal(false);
+
+  private rowsByCategory = signal<Record<CategoryId, MarketRow[]>>({
+    watch: [],
+    stocks: [],
+    etfs: [],
+    crypto: [],
+    commodities: []
+  });
+
+  rows = computed(() => this.rowsByCategory()[this.activeCategory()] ?? []);
+  activeCategoryMeta = computed(() => this.categories.find(c => c.id === this.activeCategory())!);
 
   chart = computed(() => buildChart(this.history()?.points ?? []));
 
   private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
-  private watchSub?: Subscription;
+  private catSub?: Subscription;
 
   constructor(private stocks: StockService) {}
 
   ngOnInit() {
     this.setupSearch();
-    this.loadWatchlistFromStorage();
-    this.refreshWatchlist();
+    this.bootstrapWatchlist();
+    this.loadCategory('watch');
     this.selectSymbol(DEFAULT_SYMBOL);
   }
 
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
-    this.watchSub?.unsubscribe();
+    this.catSub?.unsubscribe();
   }
 
   // ---------- Search ----------
@@ -98,18 +129,9 @@ export class StockComponent implements OnInit, OnDestroy {
       });
   }
 
-  onSearchInput() {
-    this.searchSubject.next(this.searchQuery);
-  }
-
-  onSearchBlur() {
-    setTimeout(() => (this.showResults = false), 150);
-  }
-
-  onSearchFocus() {
-    if (this.searchResults.length) this.showResults = true;
-  }
-
+  onSearchInput() { this.searchSubject.next(this.searchQuery); }
+  onSearchBlur() { setTimeout(() => (this.showResults = false), 150); }
+  onSearchFocus() { if (this.searchResults.length) this.showResults = true; }
   selectMatch(match: SymbolMatch) {
     this.searchQuery = '';
     this.searchResults = [];
@@ -165,90 +187,120 @@ export class StockComponent implements OnInit, OnDestroy {
       });
   }
 
-  // ---------- Watchlist ----------
+  // ---------- Categories ----------
 
-  private loadWatchlistFromStorage() {
-    let symbols = DEFAULT_WATCHLIST;
+  setCategory(id: CategoryId) {
+    if (this.activeCategory() === id) return;
+    this.activeCategory.set(id);
+    this.loadCategory(id);
+  }
+
+  refreshActive() {
+    this.loadCategory(this.activeCategory(), true);
+  }
+
+  private symbolsForCategory(id: CategoryId): string[] {
+    if (id === 'watch') return this.readWatchlistSymbols();
+    return this.categories.find(c => c.id === id)?.symbols ?? [];
+  }
+
+  private loadCategory(id: CategoryId, force = false) {
+    const symbols = this.symbolsForCategory(id);
+    if (!symbols.length) {
+      this.updateRows(id, []);
+      return;
+    }
+    if (!force && this.rowsByCategory()[id].length === symbols.length) {
+      return; // already loaded for this set
+    }
+    // Seed placeholders so the list renders immediately.
+    this.updateRows(id, symbols.map(s => ({ symbol: s, name: s, price: 0, changePercent: 0, currency: 'USD' })));
+
+    this.loadingCategory.set(true);
+    this.catSub?.unsubscribe();
+
+    const quotes$: Observable<MarketRow | null>[] = symbols.map(sym =>
+      this.stocks.getQuote(sym).pipe(
+        // tolerate per-symbol failures so one bad ticker doesn't blank the list
+        catchError(() => of(null)),
+        switchMap(q => of(q ? {
+          symbol: q.symbol,
+          name: q.name,
+          price: q.price,
+          changePercent: q.changePercent,
+          currency: q.currency
+        } as MarketRow : null))
+      )
+    );
+
+    this.catSub = forkJoin(quotes$)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: results => {
+          const merged: MarketRow[] = results.map((r, i) =>
+            r ?? { symbol: symbols[i], name: symbols[i], price: 0, changePercent: 0, currency: 'USD' }
+          );
+          this.updateRows(id, merged);
+          this.loadingCategory.set(false);
+        },
+        error: () => this.loadingCategory.set(false)
+      });
+  }
+
+  private updateRows(id: CategoryId, rows: MarketRow[]) {
+    this.rowsByCategory.update(state => ({ ...state, [id]: rows }));
+  }
+
+  // ---------- Watchlist persistence ----------
+
+  private bootstrapWatchlist() {
+    const symbols = this.readWatchlistSymbols();
+    this.updateRows('watch', symbols.map(s => ({ symbol: s, name: s, price: 0, changePercent: 0, currency: 'USD' })));
+  }
+
+  private readWatchlistSymbols(): string[] {
     try {
       const raw = localStorage.getItem(WATCHLIST_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed) && parsed.every(s => typeof s === 'string')) {
-          symbols = parsed;
+          return parsed;
         }
       }
     } catch {
       // ignore
     }
-    this.watchlist.set(symbols.map(symbol => ({
-      symbol,
-      name: symbol,
-      price: 0,
-      changePercent: 0,
-      currency: 'USD'
-    })));
+    return [...DEFAULT_WATCHLIST];
   }
 
-  private saveWatchlist() {
+  private writeWatchlistSymbols(symbols: string[]) {
     try {
-      localStorage.setItem(WATCHLIST_KEY, JSON.stringify(this.watchlist().map(r => r.symbol)));
+      localStorage.setItem(WATCHLIST_KEY, JSON.stringify(symbols));
     } catch {
       // ignore
     }
   }
 
-  refreshWatchlist() {
-    const rows = this.watchlist();
-    if (!rows.length) return;
-    this.watchSub?.unsubscribe();
-    this.watchSub = forkJoin(rows.map(r => this.stocks.getQuote(r.symbol)))
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: quotes => {
-          this.watchlist.set(quotes.map(q => ({
-            symbol: q.symbol,
-            name: q.name,
-            price: q.price,
-            changePercent: q.changePercent,
-            currency: q.currency
-          })));
-        },
-        error: () => {
-          // leave rows as-is
-        }
-      });
-  }
-
   toggleWatchlist(symbol: string) {
-    const rows = this.watchlist();
-    if (rows.some(r => r.symbol === symbol)) {
-      this.watchlist.set(rows.filter(r => r.symbol !== symbol));
-    } else {
-      const q = this.quote();
-      this.watchlist.set([
-        ...rows,
-        {
-          symbol,
-          name: q?.name ?? symbol,
-          price: q?.price ?? 0,
-          changePercent: q?.changePercent ?? 0,
-          currency: q?.currency ?? 'USD'
-        }
-      ]);
-    }
-    this.saveWatchlist();
-    this.refreshWatchlist();
+    const symbols = this.readWatchlistSymbols();
+    const idx = symbols.indexOf(symbol);
+    const next = idx === -1 ? [...symbols, symbol] : symbols.filter(s => s !== symbol);
+    this.writeWatchlistSymbols(next);
+    // refresh the watch tab cache
+    this.updateRows('watch', next.map(s => ({ symbol: s, name: s, price: 0, changePercent: 0, currency: 'USD' })));
+    this.loadCategory('watch', true);
   }
 
   isWatched(symbol: string | undefined): boolean {
     if (!symbol) return false;
-    return this.watchlist().some(r => r.symbol === symbol);
+    return this.readWatchlistSymbols().includes(symbol);
   }
 
   // ---------- Formatting ----------
 
   formatPrice(value: number | undefined, currency = 'USD'): string {
-    if (value == null || isNaN(value)) return '—';
+    if (value == null || isNaN(value) || value === 0) return value === 0 ? '—' : '—';
+    if (value === 0) return '—';
     try {
       return new Intl.NumberFormat(undefined, {
         style: 'currency',
