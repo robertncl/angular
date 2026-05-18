@@ -39,8 +39,11 @@ interface Category {
 }
 
 const WATCHLIST_KEY = 'stockapp.watchlist.v1';
+const THEME_KEY = 'stockwatch.theme';
 const DEFAULT_WATCHLIST = ['AAPL', 'MSFT', 'NVDA', 'GOOGL', 'TSLA'];
 const DEFAULT_SYMBOL = 'AAPL';
+
+type Theme = 'light' | 'dark';
 
 const CATEGORIES: Category[] = [
   { id: 'watch',       label: 'Watch',   sub: 'Your list',    symbols: [] },
@@ -75,6 +78,8 @@ export class StockComponent implements OnInit, OnDestroy {
   activeCategory = signal<CategoryId>('watch');
   loadingCategory = signal(false);
 
+  theme = signal<Theme>('dark');
+
   private rowsByCategory = signal<Record<CategoryId, MarketRow[]>>({
     watch: [],
     stocks: [],
@@ -95,10 +100,25 @@ export class StockComponent implements OnInit, OnDestroy {
   constructor(private stocks: StockService) {}
 
   ngOnInit() {
+    this.bootstrapTheme();
     this.setupSearch();
     this.bootstrapWatchlist();
     this.loadCategory('watch');
     this.selectSymbol(DEFAULT_SYMBOL);
+  }
+
+  // ---------- Theme ----------
+
+  private bootstrapTheme() {
+    const attr = document.documentElement.getAttribute('data-theme');
+    this.theme.set(attr === 'light' ? 'light' : 'dark');
+  }
+
+  toggleTheme() {
+    const next: Theme = this.theme() === 'dark' ? 'light' : 'dark';
+    this.theme.set(next);
+    document.documentElement.setAttribute('data-theme', next);
+    try { localStorage.setItem(THEME_KEY, next); } catch { /* ignore */ }
   }
 
   ngOnDestroy() {
