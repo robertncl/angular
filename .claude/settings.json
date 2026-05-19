@@ -6,7 +6,10 @@
       "Bash(git check-ignore *)",
       "Bash(echo \"exit=$?\")",
       "Bash(npm outdated *)",
-      "Bash(npm update *)"
+      "Bash(npm update *)",
+      "Bash(xargs cat)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }
