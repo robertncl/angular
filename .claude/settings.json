@@ -4,7 +4,9 @@
       "Bash(npx ng *)",
       "Bash(npx cap *)",
       "Bash(git check-ignore *)",
-      "Bash(echo \"exit=$?\")"
+      "Bash(echo \"exit=$?\")",
+      "Bash(npm outdated *)",
+      "Bash(npm update *)"
     ]
   }
 }
