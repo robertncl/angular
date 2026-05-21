@@ -9,7 +9,18 @@
       "Bash(npm update *)",
       "Bash(xargs cat)",
       "Bash(git add *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(curl -s https://api.github.com/repos/__TRACKED_VAR__/releases/latest)",
+      "Bash(curl -s \"https://api.github.com/repos/actions/checkout/tags\")",
+      "Bash(curl -s \"https://api.github.com/repos/actions/setup-node/tags\")",
+      "Bash(curl -s \"https://api.github.com/repos/actions/upload-artifact/tags\")",
+      "Bash(curl -s \"https://api.github.com/repos/github/codeql-action/tags\")",
+      "Bash(curl -s \"https://api.github.com/repos/actions/checkout/releases/tags/v4.3.1\")",
+      "Bash(curl -s \"https://api.github.com/repos/actions/setup-node/releases/tags/v4.4.0\")",
+      "Bash(curl -s \"https://api.github.com/repos/actions/setup-java/releases/tags/v4\")",
+      "Bash(curl -s \"https://api.github.com/repos/actions/upload-artifact/releases/tags/v4.6.2\")",
+      "Bash(curl -s \"https://api.github.com/repos/android-actions/setup-android/releases/tags/v3\")",
+      "Bash(npx -y modern-web-guidance@latest list)"
     ]
   }
 }
