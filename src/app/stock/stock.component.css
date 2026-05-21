@@ -16,7 +16,6 @@
 .card {
   background: var(--surf-card);
   backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-1);
@@ -150,7 +149,6 @@
   right: 0;
   background: var(--surf-popover);
   backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-md);
   list-style: none;
@@ -280,7 +278,11 @@
 .badge.live .pulse {
   background: var(--up);
   box-shadow: 0 0 0 0 rgba(25, 210, 122, 0.6);
-  animation: pulse 1.8s ease-out infinite;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .badge.live .pulse {
+    animation: pulse 1.8s ease-out infinite;
+  }
 }
 @keyframes pulse {
   0% { box-shadow: 0 0 0 0 rgba(25, 210, 122, 0.55); }
@@ -324,9 +326,8 @@
   letter-spacing: -0.02em;
   line-height: 1.1;
   background: var(--price-grad);
-  -webkit-background-clip: text;
   background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: transparent;
 }
 .price-block .change {
   margin-top: 8px;
@@ -428,10 +429,15 @@
 
 /* ---------- Skeletons ---------- */
 .skeleton {
-  background: linear-gradient(90deg, var(--skel-1) 0%, var(--skel-2) 50%, var(--skel-1) 100%);
-  background-size: 200% 100%;
+  background: var(--skel-2);
   border-radius: var(--radius-md);
-  animation: shimmer 1.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .skeleton {
+    background: linear-gradient(90deg, var(--skel-1) 0%, var(--skel-2) 50%, var(--skel-1) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+  }
 }
 @keyframes shimmer {
   0% { background-position: 200% 0; }
@@ -558,8 +564,15 @@
   color: var(--text-1);
   transform: rotate(60deg);
 }
-.refresh.spinning svg {
-  animation: spin 1s linear infinite;
+@media (prefers-reduced-motion: no-preference) {
+  .refresh.spinning svg {
+    animation: spin 1s linear infinite;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .refresh.spinning {
+    opacity: 0.5;
+  }
 }
 @keyframes spin {
   to { transform: rotate(360deg); }
@@ -574,19 +587,28 @@
   gap: 2px;
 }
 .watchlist li {
-  padding: 10px 12px;
-  border-radius: var(--radius-md);
-  cursor: pointer;
+  position: relative;
+}
+.watchlist-item {
+  display: block;
+  width: 100%;
+  background: none;
   border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  padding: 10px 12px;
+  cursor: pointer;
   transition: all 0.12s ease;
   position: relative;
 }
-.watchlist li:hover { background: var(--surf-input-hover); }
-.watchlist li.active {
+.watchlist-item:hover { background: var(--surf-input-hover); }
+.watchlist-item.active {
   background: linear-gradient(135deg, rgba(110, 139, 255, 0.12), rgba(155, 110, 255, 0.08));
   border-color: rgba(110, 139, 255, 0.3);
 }
-.watchlist li.active::before {
+.watchlist-item.active::before {
   content: '';
   position: absolute;
   left: -1px;
@@ -632,7 +654,7 @@
 .chg.up { color: var(--up); }
 .chg.down { color: var(--down); }
 
-.watchlist .empty {
+.watchlist li.empty {
   color: var(--text-4);
   font-size: 12px;
   cursor: default;
@@ -640,7 +662,6 @@
   padding: 22px 6px;
   line-height: 1.6;
 }
-.watchlist .empty:hover { background: transparent; }
 
 /* ---------- Footer ---------- */
 footer {

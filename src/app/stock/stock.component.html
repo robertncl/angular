@@ -1,7 +1,9 @@
+<a href="#main-content" class="visually-hidden skip-link">Skip to main content</a>
+
 <div class="app">
   <header class="topbar">
     <div class="brand">
-      <div class="logo">
+      <div class="logo" aria-hidden="true">
         <span class="dot up"></span>
         <span class="dot down"></span>
       </div>
@@ -30,12 +32,19 @@
     </button>
 
     <div class="search" (click)="$event.stopPropagation()">
-      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <circle cx="11" cy="11" r="7"/>
         <path d="m21 21-4.3-4.3"/>
       </svg>
+      <label for="stock-search" class="visually-hidden">Search for stocks, ETFs, or cryptocurrencies</label>
       <input
+        id="stock-search"
         type="text"
+        role="combobox"
+        aria-autocomplete="list"
+        [attr.aria-expanded]="showResults"
+        aria-controls="search-results"
+        aria-haspopup="listbox"
         [(ngModel)]="searchQuery"
         (input)="onSearchInput()"
         (focus)="onSearchFocus()"
@@ -46,9 +55,9 @@
       />
       <kbd class="hint">⌘ K</kbd>
       @if (showResults) {
-        <ul class="results">
+        <ul id="search-results" class="results" role="listbox" aria-label="Search results">
           @for (m of searchResults; track m.symbol) {
-            <li (mousedown)="selectMatch(m)">
+            <li role="option" aria-selected="false" (mousedown)="selectMatch(m)">
               <span class="sym">{{ m.symbol }}</span>
               <span class="name">{{ m.longname || m.shortname }}</span>
               <span class="exch">{{ m.exchange }}</span>
@@ -59,10 +68,10 @@
     </div>
   </header>
 
-  <main class="layout">
+  <main id="main-content" class="layout">
     <section class="detail card">
       @if (error()) {
-        <div class="error">{{ error() }}</div>
+        <div class="error" role="alert">{{ error() }}</div>
       }
 
       @if (quote(); as q) {
@@ -71,15 +80,16 @@
             <div class="symbol-row">
               <h2 class="symbol">{{ q.symbol }}</h2>
               <span class="badge" [class.live]="q.marketState === 'REGULAR'">
-                <span class="pulse"></span>{{ q.marketState || 'CLOSED' }}
+                <span class="pulse" aria-hidden="true"></span>{{ q.marketState || 'CLOSED' }}
               </span>
               <button
                 class="watch-btn"
                 [class.watching]="isWatched(q.symbol)"
                 (click)="toggleWatchlist(q.symbol)"
-                [attr.aria-label]="isWatched(q.symbol) ? 'Remove from watchlist' : 'Add to watchlist'"
+                [attr.aria-pressed]="isWatched(q.symbol)"
+                [attr.aria-label]="isWatched(q.symbol) ? 'Remove ' + q.symbol + ' from watchlist' : 'Add ' + q.symbol + ' to watchlist'"
               >
-                <svg viewBox="0 0 24 24" width="14" height="14" [attr.fill]="isWatched(q.symbol) ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+                <svg viewBox="0 0 24 24" width="14" height="14" [attr.fill]="isWatched(q.symbol) ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true">
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
                 </svg>
                 {{ isWatched(q.symbol) ? 'Watching' : 'Add' }}
@@ -87,7 +97,7 @@
             </div>
             <div class="company">
               <span class="name">{{ q.name }}</span>
-              <span class="dot-sep">·</span>
+              <span class="dot-sep" aria-hidden="true">·</span>
               <span class="exch">{{ q.exchange }}</span>
             </div>
           </div>
@@ -95,7 +105,7 @@
             <div class="price">{{ formatPrice(q.price, q.currency) }}</div>
             <div class="change">
               <span class="chip">
-                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                   @if (q.change >= 0) {
                     <polyline points="6 15 12 9 18 15"/>
                   } @else {
@@ -110,11 +120,12 @@
           </div>
         </div>
 
-        <div class="range-row">
+        <div class="range-row" role="group" aria-label="Chart time range">
           @for (r of ranges; track r) {
             <button
               class="range-btn"
               [class.active]="range() === r"
+              [attr.aria-pressed]="range() === r"
               (click)="setRange(r)"
             >{{ r }}</button>
           }
@@ -122,10 +133,12 @@
 
         <div class="chart-wrap">
           @if (loadingHistory()) {
-            <div class="skeleton chart-skeleton"></div>
+            <div class="skeleton chart-skeleton" aria-hidden="true"></div>
           } @else if (chart(); as c) {
             <svg
               class="chart"
+              role="img"
+              [attr.aria-label]="'Price chart for ' + q.symbol + ' over ' + range() + '. Low: ' + formatPrice(c.min, q.currency) + ', High: ' + formatPrice(c.max, q.currency)"
               [attr.viewBox]="'0 0 ' + c.width + ' ' + c.height"
               preserveAspectRatio="none"
             >
@@ -139,12 +152,12 @@
                   <stop offset="100%" [attr.stop-color]="c.rising ? 'rgb(110, 235, 170)' : 'rgb(255, 130, 145)'"/>
                 </linearGradient>
               </defs>
-              <g class="grid">
+              <g class="grid" aria-hidden="true">
                 <line x1="0" [attr.x2]="c.width" y1="50" y2="50"/>
                 <line x1="0" [attr.x2]="c.width" y1="140" y2="140"/>
                 <line x1="0" [attr.x2]="c.width" y1="230" y2="230"/>
               </g>
-              <path [attr.d]="c.areaPath" fill="url(#areaFill)"/>
+              <path [attr.d]="c.areaPath" fill="url(#areaFill)" aria-hidden="true"/>
               <path
                 [attr.d]="c.path"
                 fill="none"
@@ -152,9 +165,10 @@
                 stroke-width="2.25"
                 stroke-linecap="round"
                 stroke-linejoin="round"
+                aria-hidden="true"
               />
             </svg>
-            <div class="chart-meta">
+            <div class="chart-meta" aria-hidden="true">
               <span><em>Low</em> {{ formatPrice(c.min, q.currency) }}</span>
               <span><em>High</em> {{ formatPrice(c.max, q.currency) }}</span>
             </div>
@@ -163,18 +177,18 @@
           }
         </div>
 
-        <div class="stats">
-          <div class="stat"><div class="k">Open</div><div class="v">{{ formatPrice(q.open, q.currency) }}</div></div>
-          <div class="stat"><div class="k">Prev Close</div><div class="v">{{ formatPrice(q.previousClose, q.currency) }}</div></div>
-          <div class="stat"><div class="k">Day Range</div><div class="v">{{ formatPrice(q.dayLow, q.currency) }} – {{ formatPrice(q.dayHigh, q.currency) }}</div></div>
-          <div class="stat"><div class="k">52W Range</div><div class="v">{{ formatPrice(q.fiftyTwoWeekLow, q.currency) }} – {{ formatPrice(q.fiftyTwoWeekHigh, q.currency) }}</div></div>
-          <div class="stat"><div class="k">Volume</div><div class="v">{{ formatNumber(q.volume) }}</div></div>
-          <div class="stat"><div class="k">Currency</div><div class="v">{{ q.currency }}</div></div>
+        <div class="stats" role="list" aria-label="Market statistics">
+          <div class="stat" role="listitem"><div class="k">Open</div><div class="v">{{ formatPrice(q.open, q.currency) }}</div></div>
+          <div class="stat" role="listitem"><div class="k">Prev Close</div><div class="v">{{ formatPrice(q.previousClose, q.currency) }}</div></div>
+          <div class="stat" role="listitem"><div class="k">Day Range</div><div class="v">{{ formatPrice(q.dayLow, q.currency) }} – {{ formatPrice(q.dayHigh, q.currency) }}</div></div>
+          <div class="stat" role="listitem"><div class="k">52W Range</div><div class="v">{{ formatPrice(q.fiftyTwoWeekLow, q.currency) }} – {{ formatPrice(q.fiftyTwoWeekHigh, q.currency) }}</div></div>
+          <div class="stat" role="listitem"><div class="k">Volume</div><div class="v">{{ formatNumber(q.volume) }}</div></div>
+          <div class="stat" role="listitem"><div class="k">Currency</div><div class="v">{{ q.currency }}</div></div>
         </div>
       }
 
       @if (loadingQuote() && !quote()) {
-        <div class="skeleton-stack">
+        <div class="skeleton-stack" aria-hidden="true">
           <div class="skeleton sk-title"></div>
           <div class="skeleton sk-line"></div>
           <div class="skeleton chart-skeleton"></div>
@@ -183,57 +197,69 @@
     </section>
 
     <aside class="watchlist card">
-      <nav class="cat-tabs" role="tablist">
+      <nav class="cat-tabs" role="tablist" aria-label="Market categories">
         @for (c of categories; track c.id) {
           <button
             role="tab"
             class="cat-tab"
             [class.active]="activeCategory() === c.id"
             [attr.aria-selected]="activeCategory() === c.id"
+            [attr.tabindex]="activeCategory() === c.id ? 0 : -1"
+            aria-controls="watchlist-panel"
+            [attr.data-tab]="c.id"
+            [attr.id]="'tab-' + c.id"
             (click)="setCategory(c.id)"
+            (keydown)="onCatTabKeydown($event, c.id)"
           >{{ c.label }}</button>
         }
       </nav>
 
-      <div class="watch-head">
-        <div>
-          <h3>{{ activeCategoryMeta().label }}</h3>
-          <span class="sub">{{ activeCategoryMeta().sub }} · {{ rows().length }}</span>
+      <div id="watchlist-panel" role="tabpanel" [attr.aria-labelledby]="'tab-' + activeCategory()">
+        <div class="watch-head">
+          <div>
+            <h3>{{ activeCategoryMeta().label }}</h3>
+            <span class="sub">{{ activeCategoryMeta().sub }} · {{ rows().length }}</span>
+          </div>
+          <button class="refresh" [class.spinning]="loadingCategory()" (click)="refreshActive()" title="Refresh prices" aria-label="Refresh prices">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 12a9 9 0 0 1 15.6-6.2L21 8"/>
+              <polyline points="21 3 21 8 16 8"/>
+              <path d="M21 12a9 9 0 0 1-15.6 6.2L3 16"/>
+              <polyline points="3 21 3 16 8 16"/>
+            </svg>
+          </button>
         </div>
-        <button class="refresh" [class.spinning]="loadingCategory()" (click)="refreshActive()" title="Refresh prices" aria-label="Refresh">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 12a9 9 0 0 1 15.6-6.2L21 8"/>
-            <polyline points="21 3 21 8 16 8"/>
-            <path d="M21 12a9 9 0 0 1-15.6 6.2L3 16"/>
-            <polyline points="3 21 3 16 8 16"/>
-          </svg>
-        </button>
-      </div>
-      <ul>
-        @for (w of rows(); track w.symbol) {
-          <li
-            (click)="selectSymbol(w.symbol)"
-            [class.active]="quote()?.symbol === w.symbol"
-          >
-            <div class="row1">
-              <span class="sym">{{ w.symbol }}</span>
-              <span class="price">{{ formatPrice(w.price, w.currency) }}</span>
-            </div>
-            <div class="row2">
-              <span class="name">{{ w.name }}</span>
-              <span class="chg" [class.up]="w.changePercent >= 0" [class.down]="w.changePercent < 0">
-                {{ formatPct(w.changePercent) }}
-              </span>
-            </div>
-          </li>
-        } @empty {
-          @if (activeCategory() === 'watch') {
-            <li class="empty">
-              No symbols yet.<br>Search above and tap ★ to follow.
+        <ul role="list">
+          @for (w of rows(); track w.symbol) {
+            <li>
+              <button
+                class="watchlist-item"
+                [class.active]="quote()?.symbol === w.symbol"
+                [attr.aria-pressed]="quote()?.symbol === w.symbol"
+                [attr.aria-label]="w.name + ', ' + w.symbol + ', ' + formatPrice(w.price, w.currency) + ', ' + formatPct(w.changePercent)"
+                (click)="selectSymbol(w.symbol)"
+              >
+                <div class="row1" aria-hidden="true">
+                  <span class="sym">{{ w.symbol }}</span>
+                  <span class="price">{{ formatPrice(w.price, w.currency) }}</span>
+                </div>
+                <div class="row2" aria-hidden="true">
+                  <span class="name">{{ w.name }}</span>
+                  <span class="chg" [class.up]="w.changePercent >= 0" [class.down]="w.changePercent < 0">
+                    {{ formatPct(w.changePercent) }}
+                  </span>
+                </div>
+              </button>
             </li>
+          } @empty {
+            @if (activeCategory() === 'watch') {
+              <li class="empty">
+                No symbols yet.<br>Search above and tap ★ to follow.
+              </li>
+            }
           }
-        }
-      </ul>
+        </ul>
+      </div>
     </aside>
   </main>
 

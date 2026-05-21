@@ -118,6 +118,8 @@ export class StockComponent implements OnInit, OnDestroy {
     const next: Theme = this.theme() === 'dark' ? 'light' : 'dark';
     this.theme.set(next);
     document.documentElement.setAttribute('data-theme', next);
+    const meta = document.querySelector('meta[name="color-scheme"]') as HTMLMetaElement | null;
+    if (meta) meta.content = next;
     try { localStorage.setItem(THEME_KEY, next); } catch { /* ignore */ }
   }
 
@@ -208,6 +210,23 @@ export class StockComponent implements OnInit, OnDestroy {
   }
 
   // ---------- Categories ----------
+
+  onCatTabKeydown(event: KeyboardEvent, currentId: CategoryId) {
+    const ids = this.categories.map(c => c.id);
+    const currentIdx = ids.indexOf(currentId);
+    let nextIdx = currentIdx;
+
+    if (event.key === 'ArrowRight') nextIdx = (currentIdx + 1) % ids.length;
+    else if (event.key === 'ArrowLeft') nextIdx = (currentIdx - 1 + ids.length) % ids.length;
+    else if (event.key === 'Home') nextIdx = 0;
+    else if (event.key === 'End') nextIdx = ids.length - 1;
+    else return;
+
+    event.preventDefault();
+    const nextId = ids[nextIdx];
+    this.setCategory(nextId);
+    (document.querySelector(`[data-tab="${nextId}"]`) as HTMLElement | null)?.focus();
+  }
 
   setCategory(id: CategoryId) {
     if (this.activeCategory() === id) return;
