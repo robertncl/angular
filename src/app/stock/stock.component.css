@@ -493,6 +493,41 @@
   top: 16px;
 }
 
+.scroll-area {
+  overflow-y: auto;
+  max-height: 480px;
+  position: relative;
+  container-type: scroll-state;
+}
+
+.scroll-hint {
+  position: sticky;
+  left: 0;
+  right: 0;
+  height: 28px;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1;
+  transition: opacity 0.2s ease;
+}
+.scroll-hint-top {
+  top: 0;
+  background: linear-gradient(to bottom, var(--surf-card), transparent);
+  margin-bottom: -28px;
+}
+.scroll-hint-bottom {
+  bottom: 0;
+  background: linear-gradient(to top, var(--surf-card), transparent);
+  margin-top: -28px;
+}
+
+@container scroll-state(scrollable: top) {
+  .scroll-hint-top { opacity: 1; }
+}
+@container scroll-state(scrollable: bottom) {
+  .scroll-hint-bottom { opacity: 1; }
+}
+
 .cat-tabs {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -515,6 +550,10 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
   transition: all 0.15s ease;
+}
+@media (pointer: coarse) {
+  .cat-tab { min-block-size: 36px; min-inline-size: 40px; }
+  .range-btn { min-block-size: 36px; }
 }
 .cat-tab:hover { color: var(--text-1); background: var(--surf-input-hover); }
 .cat-tab.active {
