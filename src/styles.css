@@ -162,6 +162,10 @@ body {
 button { font-family: inherit; }
 input { font-family: inherit; }
 
+h1, h2, h3, h4, h5, h6 {
+  text-wrap: balance;
+}
+
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;

@@ -29,7 +29,14 @@
       "Bash(npx -y modern-web-guidance@latest search \"custom color scheme dark mode\" --skill-version 2026_05_16-c5e7870)",
       "Bash(npx -y modern-web-guidance@latest retrieve \"customize-scrollbar-color-and-thickness,dark-mode,accessibility\")",
       "Bash(npx -y modern-web-guidance@latest retrieve \"anchor-positioning-tab-underline,adapt-scrollbar-to-contrast-preferences\")",
-      "Bash(npx -y modern-web-guidance@latest search \"prefers reduced motion animation\" --skill-version 2026_05_16-c5e7870)"
+      "Bash(npx -y modern-web-guidance@latest search \"prefers reduced motion animation\" --skill-version 2026_05_16-c5e7870)",
+      "Bash(npx -y modern-web-guidance@latest search \"container queries responsive component layout\" --skill-version 2026_05_16-c5e7870)",
+      "Bash(npx -y modern-web-guidance@latest search \"scroll shadow overflow affordance\" --skill-version 2026_05_16-c5e7870)",
+      "Bash(npx -y modern-web-guidance@latest search \"CSS modern architecture logical properties\" --skill-version 2026_05_16-c5e7870)",
+      "Bash(npx -y modern-web-guidance@latest retrieve \"scrollability-affordance-hints,size-aware-styling,css\")",
+      "Bash(npx -y modern-web-guidance@latest search \"touch target minimum size mobile\" --skill-version 2026_05_16-c5e7870)",
+      "Bash(npx -y modern-web-guidance@latest search \"CSS text wrap balance typography headings\" --skill-version 2026_05_16-c5e7870)",
+      "Bash(npx -y modern-web-guidance@latest retrieve \"improve-text-layout-and-legibility\")"
     ]
   }
 }
