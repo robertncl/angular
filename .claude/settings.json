@@ -27,7 +27,9 @@
       "Bash(npx -y modern-web-guidance@latest search \"CSS scrollbar styling modern\" --skill-version 2026_05_16-c5e7870)",
       "Bash(npx -y modern-web-guidance@latest search \"tab panel accessible keyboard navigation\" --skill-version 2026_05_16-c5e7870)",
       "Bash(npx -y modern-web-guidance@latest search \"custom color scheme dark mode\" --skill-version 2026_05_16-c5e7870)",
-      "Bash(npx -y modern-web-guidance@latest retrieve \"customize-scrollbar-color-and-thickness,dark-mode,accessibility\")"
+      "Bash(npx -y modern-web-guidance@latest retrieve \"customize-scrollbar-color-and-thickness,dark-mode,accessibility\")",
+      "Bash(npx -y modern-web-guidance@latest retrieve \"anchor-positioning-tab-underline,adapt-scrollbar-to-contrast-preferences\")",
+      "Bash(npx -y modern-web-guidance@latest search \"prefers reduced motion animation\" --skill-version 2026_05_16-c5e7870)"
     ]
   }
 }
