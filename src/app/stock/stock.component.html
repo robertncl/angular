@@ -229,7 +229,9 @@
             </svg>
           </button>
         </div>
-        <ul role="list">
+        <div class="scroll-area">
+          <div class="scroll-hint scroll-hint-top" aria-hidden="true"></div>
+          <ul role="list">
           @for (w of rows(); track w.symbol) {
             <li>
               <button
