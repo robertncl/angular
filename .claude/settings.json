@@ -20,7 +20,14 @@
       "Bash(curl -s \"https://api.github.com/repos/actions/setup-java/releases/tags/v4\")",
       "Bash(curl -s \"https://api.github.com/repos/actions/upload-artifact/releases/tags/v4.6.2\")",
       "Bash(curl -s \"https://api.github.com/repos/android-actions/setup-android/releases/tags/v3\")",
-      "Bash(npx -y modern-web-guidance@latest list)"
+      "Bash(npx -y modern-web-guidance@latest list)",
+      "Bash(npx -y modern-web-guidance@latest search \"modal dialog popover overlay\" --skill-version 2026_05_16-c5e7870)",
+      "Bash(npx -y modern-web-guidance@latest search \"scroll animation performance\" --skill-version 2026_05_16-c5e7870)",
+      "Bash(npx -y modern-web-guidance@latest search \"form input accessibility validation\" --skill-version 2026_05_16-c5e7870)",
+      "Bash(npx -y modern-web-guidance@latest search \"CSS scrollbar styling modern\" --skill-version 2026_05_16-c5e7870)",
+      "Bash(npx -y modern-web-guidance@latest search \"tab panel accessible keyboard navigation\" --skill-version 2026_05_16-c5e7870)",
+      "Bash(npx -y modern-web-guidance@latest search \"custom color scheme dark mode\" --skill-version 2026_05_16-c5e7870)",
+      "Bash(npx -y modern-web-guidance@latest retrieve \"customize-scrollbar-color-and-thickness,dark-mode,accessibility\")"
     ]
   }
 }
