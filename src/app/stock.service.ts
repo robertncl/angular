@@ -30,6 +30,14 @@ export interface Quote {
   regularMarketTime: number;
 }
 
+export interface NewsItem {
+  uuid: string;
+  title: string;
+  publisher: string;
+  link: string;
+  providerPublishTime: number;
+}
+
 export interface HistoryPoint {
   time: number;
   close: number;
@@ -75,6 +83,19 @@ export class StockService {
           exchange: q.exchDisp ?? q.exchange ?? '',
           quoteType: q.quoteType
         })))
+    );
+  }
+
+  getNews(symbol: string): Observable<NewsItem[]> {
+    const params = { q: symbol, quotesCount: '0', newsCount: '8' };
+    return this.http.get<any>(this.searchUrl, { params }).pipe(
+      map(res => (res?.news ?? []).map((n: any): NewsItem => ({
+        uuid: n.uuid ?? '',
+        title: n.title ?? '',
+        publisher: n.publisher ?? '',
+        link: n.link ?? '',
+        providerPublishTime: n.providerPublishTime ?? 0
+      })))
     );
   }
 

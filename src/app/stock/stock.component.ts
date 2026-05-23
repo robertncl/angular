@@ -15,6 +15,7 @@ import {
 import {
   History,
   HistoryPoint,
+  NewsItem,
   Quote,
   Range,
   StockService,
@@ -67,8 +68,10 @@ export class StockComponent implements OnInit, OnDestroy {
 
   quote = signal<Quote | null>(null);
   history = signal<History | null>(null);
+  news = signal<NewsItem[]>([]);
   loadingQuote = signal(false);
   loadingHistory = signal(false);
+  loadingNews = signal(false);
   error = signal('');
 
   range = signal<Range>('1mo');
@@ -167,7 +170,9 @@ export class StockComponent implements OnInit, OnDestroy {
     this.error.set('');
     this.loadingQuote.set(true);
     this.loadingHistory.set(true);
+    this.loadingNews.set(true);
     this.history.set(null);
+    this.news.set([]);
 
     this.stocks.getQuote(symbol)
       .pipe(takeUntil(this.destroy$))
@@ -184,6 +189,22 @@ export class StockComponent implements OnInit, OnDestroy {
       });
 
     this.loadHistory(symbol, this.range());
+    this.loadNews(symbol);
+  }
+
+  private loadNews(symbol: string) {
+    this.stocks.getNews(symbol)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: items => {
+          this.news.set(items);
+          this.loadingNews.set(false);
+        },
+        error: () => {
+          this.news.set([]);
+          this.loadingNews.set(false);
+        }
+      });
   }
 
   setRange(r: Range) {
@@ -369,6 +390,19 @@ export class StockComponent implements OnInit, OnDestroy {
   formatTime(epochSec: number | undefined): string {
     if (!epochSec) return '';
     return new Date(epochSec * 1000).toLocaleString();
+  }
+
+  formatNewsDate(epochSec: number): string {
+    if (!epochSec) return '';
+    const now = Date.now();
+    const diff = now - epochSec * 1000;
+    const mins = Math.floor(diff / 60000);
+    if (mins < 60) return `${mins}m ago`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days}d ago`;
+    return new Date(epochSec * 1000).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
   }
 }
 

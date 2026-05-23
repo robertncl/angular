@@ -185,6 +185,43 @@
           <div class="stat" role="listitem"><div class="k">Volume</div><div class="v">{{ formatNumber(q.volume) }}</div></div>
           <div class="stat" role="listitem"><div class="k">Currency</div><div class="v">{{ q.currency }}</div></div>
         </div>
+
+        <section class="news-section" aria-label="Latest news">
+          <h3 class="news-heading">Latest News</h3>
+          @if (loadingNews()) {
+            <ul class="news-list" aria-hidden="true">
+              @for (i of [1, 2, 3]; track i) {
+                <li class="news-item news-item--skeleton">
+                  <div class="skeleton news-sk-title"></div>
+                  <div class="skeleton news-sk-meta"></div>
+                </li>
+              }
+            </ul>
+          } @else if (news().length) {
+            <ul class="news-list">
+              @for (item of news(); track item.uuid) {
+                <li class="news-item">
+                  <a
+                    class="news-link"
+                    [href]="item.link"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    [attr.aria-label]="item.title + ' — ' + item.publisher"
+                  >
+                    <span class="news-title">{{ item.title }}</span>
+                    <span class="news-meta">
+                      <span class="news-publisher">{{ item.publisher }}</span>
+                      <span class="news-dot" aria-hidden="true">·</span>
+                      <time>{{ formatNewsDate(item.providerPublishTime) }}</time>
+                    </span>
+                  </a>
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="news-empty">No recent news available.</p>
+          }
+        </section>
       }
 
       @if (loadingQuote() && !quote()) {
