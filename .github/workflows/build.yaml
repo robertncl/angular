@@ -26,6 +26,9 @@ jobs:
       - name: Install Angular CLI
         run: npm install -g @angular/cli
 
+      - name: Run tests
+        run: ng test --no-watch --no-progress
+
       - name: Build project
         run: ng build --configuration production
 
