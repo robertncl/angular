@@ -11,7 +11,7 @@
     }
   },
   "postCreateCommand": "npm install",
-  "remoteUser": "vscode",
+  "remoteUser": "node",
   "customizations": {
     "vscode": {
       "extensions": [
