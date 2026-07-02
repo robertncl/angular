@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/devcontainers/typescript-node:24
+FROM mcr.microsoft.com/devcontainers/javascript-node:dev-22-bullseye
 
 RUN npm install -g @angular/cli
 
