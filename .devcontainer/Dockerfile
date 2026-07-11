@@ -1,5 +1,5 @@
 # dev-22-bullseye
-FROM mcr.microsoft.com/devcontainers/javascript-node@sha256:290765b625a6e000589283bde4c4f1cabf5de334187e29768451836d02de1309
+FROM mcr.microsoft.com/devcontainers/javascript-node@sha256:d3802a74f28b0b01cdf4688939565e048b57ff5366470323cd7fbc3760aaa429
 
 RUN npm install -g @angular/cli
 
