@@ -27,7 +27,8 @@
               }
             ],
             "styles": [
-              "src/styles.css"
+              "src/styles.css",
+              "src/styles/acme-tokens.css"
             ],
             "scripts": []
           },
@@ -89,7 +90,8 @@
               }
             ],
             "styles": [
-              "src/styles.css"
+              "src/styles.css",
+              "src/styles/acme-tokens.css"
             ],
             "scripts": []
           }
