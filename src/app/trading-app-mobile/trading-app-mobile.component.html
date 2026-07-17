@@ -1,0 +1,316 @@
+<div class="stage">
+<div class="device" [class.device--dark]="theme() === 'dark'">
+
+<div class="dynamic-island"></div>
+<div class="status-bar">
+  <span class="status-bar__time">9:41</span>
+  <div class="status-bar__icons">
+    <svg width="19" height="12" viewBox="0 0 19 12"><rect x="0" y="7.5" width="3.2" height="4.5" rx="0.7"/><rect x="4.8" y="5" width="3.2" height="7" rx="0.7"/><rect x="9.6" y="2.5" width="3.2" height="9.5" rx="0.7"/><rect x="14.4" y="0" width="3.2" height="12" rx="0.7"/></svg>
+    <svg width="17" height="12" viewBox="0 0 17 12"><path d="M8.5 3.2C10.8 3.2 12.9 4.1 14.4 5.6L15.5 4.5C13.7 2.7 11.2 1.5 8.5 1.5C5.8 1.5 3.3 2.7 1.5 4.5L2.6 5.6C4.1 4.1 6.2 3.2 8.5 3.2Z"/><path d="M8.5 6.8C9.9 6.8 11.1 7.3 12 8.2L13.1 7.1C11.8 5.9 10.2 5.1 8.5 5.1C6.8 5.1 5.2 5.9 3.9 7.1L5 8.2C5.9 7.3 7.1 6.8 8.5 6.8Z"/><circle cx="8.5" cy="10.5" r="1.5"/></svg>
+    <svg width="27" height="13" viewBox="0 0 27 13"><rect x="0.5" y="0.5" width="23" height="12" rx="3.5" fill="none" stroke-opacity="0.35"/><rect x="2" y="2" width="20" height="9" rx="2"/></svg>
+  </div>
+</div>
+
+<div class="screen">
+
+@if (screen() === 'home') {
+<div class="content">
+  <div class="header">
+    <div class="header__row">
+      <h1 class="large-title">Watchlist</h1>
+      <button class="icon-btn" (click)="toggleTheme()" aria-label="Toggle theme">
+        @if (theme() === 'dark') {
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+        } @else {
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        }
+      </button>
+    </div>
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="var(--acme-color-text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input class="search-box__input" [ngModel]="searchQuery()" (ngModelChange)="onSearchChange($event)" placeholder="Search ticker or company"/>
+    </div>
+  </div>
+
+  <div class="body">
+    @if (searchQuery().trim().length > 0 && searchResults().length > 0) {
+      @for (m of searchResults(); track m.symbol) {
+        <button class="row-btn" (click)="selectSymbol(m.symbol)"><span class="mono strong">{{ m.symbol }}</span><span class="row-btn__name">{{ m.name }}</span></button>
+      }
+    } @else if (searchQuery().trim().length > 0) {
+      <p class="muted-note">No matches for &ldquo;{{ searchQuery() }}&rdquo;.</p>
+    } @else {
+      <div class="chip-row">
+        @for (c of categories; track c.id) {
+          <button class="chip" [class.chip--active]="category() === c.id" (click)="setCategory(c.id)">{{ c.label }}</button>
+        }
+      </div>
+      @for (w of rows(); track w.symbol) {
+        <button class="watch-row" (click)="selectSymbol(w.symbol)">
+          <div><div class="mono strong">{{ w.symbol }}</div><div class="watch-row__name">{{ w.name }}</div></div>
+          <div class="watch-row__right">
+            <div class="tabular price">{{ w.priceLabel }}</div>
+            @if (w.isUp) { <div class="text-up">{{ w.changeLabel }}</div> } @else { <div class="text-down">{{ w.changeLabel }}</div> }
+          </div>
+        </button>
+      }
+      @if (rows().length === 0) {
+        <p class="muted-note">No symbols yet. Search above and add to your watchlist.</p>
+      }
+    }
+  </div>
+</div>
+}
+
+@if (screen() === 'detail') {
+<div class="content">
+  <div class="header header--detail">
+    <button class="icon-btn" (click)="goHome()" aria-label="Back"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="header--detail__title">{{ stock().symbol }}</div>
+    @if (stock().isWatched) {
+      <button class="icon-btn icon-btn--warning" (click)="toggleWatch(stock().symbol)"><svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" stroke="currentColor" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>
+    } @else {
+      <button class="icon-btn" (click)="toggleWatch(stock().symbol)"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>
+    }
+  </div>
+
+  <div class="body body--detail">
+    <div class="muted-note detail-sub">{{ stock().name }} · {{ stock().exch }}</div>
+    <div class="detail-price">{{ stock().priceLabel }}</div>
+    @if (stock().isUp) {
+      <div class="change change--up"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 15 12 9 18 15"/></svg>{{ stock().changeLabel }} ({{ stock().changePctLabel }})</div>
+    } @else {
+      <div class="change change--down"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>{{ stock().changeLabel }} ({{ stock().changePctLabel }})</div>
+    }
+
+    <div class="range-group" role="group">
+      @for (r of rangesIds; track r) {
+        <button class="range-btn" [class.range-btn--active]="range() === r" (click)="setRange(r)">{{ r }}</button>
+      }
+    </div>
+
+    <div class="chart-wrap">
+      <svg viewBox="0 0 360 160" preserveAspectRatio="none" class="chart-svg">
+        <defs>
+          <linearGradient id="mAreaUp" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" style="stop-color:var(--acme-color-success);stop-opacity:0.28"/><stop offset="100%" style="stop-color:var(--acme-color-success);stop-opacity:0"/></linearGradient>
+          <linearGradient id="mAreaDown" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" style="stop-color:var(--acme-color-danger);stop-opacity:0.28"/><stop offset="100%" style="stop-color:var(--acme-color-danger);stop-opacity:0"/></linearGradient>
+        </defs>
+        @if (chart().rising) {
+          <path [attr.d]="chart().areaPath" fill="url(#mAreaUp)"/>
+          <path [attr.d]="chart().path" fill="none" class="chart-line chart-line--up"/>
+        } @else {
+          <path [attr.d]="chart().areaPath" fill="url(#mAreaDown)"/>
+          <path [attr.d]="chart().path" fill="none" class="chart-line chart-line--down"/>
+        }
+      </svg>
+    </div>
+
+    <div class="stats-grid">
+      @for (s of stats(); track s.label) {
+        <div><div class="stats-grid__label">{{ s.label }}</div><div class="stats-grid__value">{{ s.value }}</div></div>
+      }
+    </div>
+
+    <h3 class="section-title">Latest news</h3>
+    @for (item of news(); track item.title) {
+      <div class="news-item">
+        <div class="news-item__title">{{ item.title }}</div>
+        <div class="news-item__meta">{{ item.publisher }} · {{ item.time }}</div>
+      </div>
+    }
+  </div>
+
+  <div class="action-bar">
+    <button class="btn btn--success" (click)="openTicket(stock().symbol, 'buy')">Buy</button>
+    <button class="btn btn--outline" (click)="openTicket(stock().symbol, 'sell')">Sell</button>
+  </div>
+</div>
+}
+
+@if (screen() === 'portfolio') {
+<div class="content">
+  <div class="header"><h1 class="large-title">Portfolio</h1></div>
+  <div class="body">
+    <div class="label-caps">Total value</div>
+    <div class="portfolio-total">{{ portfolio().totalLabel }}</div>
+    @if (portfolio().gainUp) {
+      <div class="text-up portfolio-gain-line">{{ portfolio().gainLabel }} ({{ portfolio().gainPctLabel }}) all time</div>
+    } @else {
+      <div class="text-down portfolio-gain-line">{{ portfolio().gainLabel }} ({{ portfolio().gainPctLabel }}) all time</div>
+    }
+
+    <div class="alloc-bar">
+      @for (a of portfolio().allocation; track a.symbol) {
+        <div [style.width.%]="a.pct" [style.background]="a.color"></div>
+      }
+    </div>
+
+    <h3 class="section-title">Holdings</h3>
+    @for (h of holdings(); track h.symbol) {
+      <button class="row-btn row-btn--holding" (click)="selectSymbol(h.symbol)">
+        <div><div class="mono strong">{{ h.symbol }}</div><div class="watch-row__name">{{ h.shares }} shares · avg {{ h.avgCostLabel }}</div></div>
+        <div class="watch-row__right">
+          <div class="tabular price">{{ h.valueLabel }}</div>
+          @if (h.isUp) { <div class="text-up">{{ h.gainLabel }}</div> } @else { <div class="text-down">{{ h.gainLabel }}</div> }
+        </div>
+      </button>
+    }
+  </div>
+</div>
+}
+
+@if (screen() === 'orders') {
+<div class="content">
+  <div class="header"><h1 class="large-title">Orders</h1></div>
+  <div class="body">
+    @for (o of orderRows(); track o.id) {
+      <div class="order-row">
+        <div class="order-row__top">
+          <div class="mono strong">{{ o.symbol }}</div>
+          @if (o.isFilled) { <span class="badge badge--success">Filled</span> }
+          @if (o.isPending) { <span class="badge badge--info">Pending</span> }
+          @if (o.isCanceled) { <span class="badge badge--muted">Canceled</span> }
+        </div>
+        <div class="order-row__bottom">
+          <span class="capitalize">{{ o.side }} · {{ o.type }} · {{ o.qty }} sh @ {{ o.priceLabel }}</span>
+          <span>{{ o.date }}</span>
+        </div>
+      </div>
+    }
+  </div>
+</div>
+}
+
+@if (screen() === 'account') {
+<div class="content">
+  <div class="header"><h1 class="large-title">Account</h1></div>
+  <div class="body">
+    <div class="account-profile">
+      <div class="avatar">JR</div>
+      <div><div class="account-name">Jamie Rivera</div><div class="muted-note">Account #4417-002</div></div>
+    </div>
+
+    <h3 class="group-title">Appearance</h3>
+    <div class="setting-row">
+      <div class="setting-row__label">Dark theme</div>
+      <button class="switch" [class.switch--on]="theme() === 'dark'" (click)="toggleTheme()"><span></span></button>
+    </div>
+
+    <h3 class="group-title">Notifications</h3>
+    @for (t of notifRows(); track t.key) {
+      <div class="setting-row">
+        <div class="setting-row__label">{{ t.label }}</div>
+        <button class="switch" [class.switch--on]="t.on" (click)="toggleNotif(t.key)"><span></span></button>
+      </div>
+    }
+
+    <h3 class="group-title">Security</h3>
+    <div class="setting-row">
+      <div class="setting-row__label">Two-factor authentication</div>
+      <button class="switch" [class.switch--on]="twoFactor()" (click)="toggleTwoFactor()"><span></span></button>
+    </div>
+    <button class="link-row">Change password</button>
+    <button class="link-row link-row--muted">Sign out</button>
+  </div>
+</div>
+}
+
+@if (showTabBar()) {
+<div class="tab-bar">
+  <button class="tab-item" [class.tab-item--active]="tabHomeActive()" (click)="goHome()">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+    <span>Home</span>
+  </button>
+  <button class="tab-item" [class.tab-item--active]="screen() === 'portfolio'" (click)="goPortfolio()">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7"/></svg>
+    <span>Portfolio</span>
+  </button>
+  <button class="tab-item" [class.tab-item--active]="screen() === 'orders'" (click)="goOrders()">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h2M9 6h11M4 12h2M9 12h11M4 18h2M9 18h11"/></svg>
+    <span>Orders</span>
+  </button>
+  <button class="tab-item" [class.tab-item--active]="screen() === 'account'" (click)="goAccount()">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+    <span>Account</span>
+  </button>
+</div>
+}
+
+@if (ticketView(); as tv) {
+<div class="sheet-backdrop">
+<div class="sheet">
+<div class="sheet-handle"></div>
+
+@if (tv.step === 'ticket') {
+  <div class="sheet-header">
+    <h3 class="sheet-title">{{ tv.verb }} {{ tv.symbol }}</h3>
+    <button class="icon-btn" (click)="closeTicket()" aria-label="Close">&times;</button>
+  </div>
+  <div class="side-toggle">
+    <button class="side-btn" [class.side-btn--buy-active]="tv.side === 'buy'" (click)="updateTicket({ side: 'buy' })">Buy</button>
+    <button class="side-btn" [class.side-btn--sell-active]="tv.side === 'sell'" (click)="updateTicket({ side: 'sell' })">Sell</button>
+  </div>
+  <div class="ticket-fields">
+    <div>
+      <label class="field-label">Order type</label>
+      <select class="field-input" [ngModel]="tv.type" (ngModelChange)="updateTicket({ type: $event })">
+        <option value="market">Market</option>
+        <option value="limit">Limit</option>
+        <option value="stop">Stop</option>
+      </select>
+    </div>
+    <div>
+      <label class="field-label">Quantity (shares)</label>
+      <input type="number" min="1" class="field-input" [ngModel]="tv.qty" (ngModelChange)="updateTicket({ qty: $event })"/>
+    </div>
+    @if (tv.needsPrice) {
+      <div>
+        <label class="field-label">{{ tv.priceFieldLabel }}</label>
+        <input type="number" step="0.01" class="field-input" [ngModel]="tv.price" (ngModelChange)="updateTicket({ price: $event })"/>
+      </div>
+    }
+    <div class="est-row">
+      <span class="muted-note">Estimated total</span>
+      <span class="tabular">{{ tv.estLabel }}</span>
+    </div>
+  </div>
+  <button class="btn btn--primary btn--full" (click)="reviewTicket()">Review order</button>
+}
+
+@if (tv.step === 'confirm') {
+  <h3 class="sheet-title" style="margin-bottom:14px">Confirm order</h3>
+  <div class="confirm-rows">
+    <div class="confirm-row"><span class="muted-note">Symbol</span><span class="mono strong">{{ tv.symbol }}</span></div>
+    <div class="confirm-row"><span class="muted-note">Side</span><span class="capitalize">{{ tv.side }}</span></div>
+    <div class="confirm-row"><span class="muted-note">Type</span><span>{{ tv.typeLabel }}</span></div>
+    <div class="confirm-row"><span class="muted-note">Quantity</span><span class="tabular">{{ tv.qty }} shares</span></div>
+    <div class="confirm-row"><span class="muted-note">Price</span><span class="tabular">{{ tv.priceLabel }}</span></div>
+    <div class="confirm-row confirm-row--total"><span>Estimated total</span><span class="tabular">{{ tv.estLabel }}</span></div>
+  </div>
+  <div class="warning-box"><p>Orders fill at the prevailing market price. Once filled, this can't be undone.</p></div>
+  <div class="sheet-actions">
+    <button class="btn btn--secondary" (click)="backTicket()">Back</button>
+    <button class="btn btn--primary" (click)="placeOrder()">Place order</button>
+  </div>
+}
+
+@if (tv.step === 'success') {
+  <div class="success-block">
+    <div class="success-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="var(--acme-color-success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+    <h3 class="sheet-title">Order placed</h3>
+    <p class="muted-note">{{ tv.successSummary }}</p>
+    <p class="order-id">{{ tv.orderId }}</p>
+    <div class="sheet-actions sheet-actions--full">
+      <button class="btn btn--secondary" (click)="closeTicket()">Done</button>
+      <button class="btn btn--primary" (click)="goToOrders()">View orders</button>
+    </div>
+  </div>
+}
+
+</div>
+</div>
+}
+
+</div>
+</div>
+</div>

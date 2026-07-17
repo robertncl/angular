@@ -4,32 +4,24 @@ import {
   ALLOC_COLORS, CATEGORIES, CATEGORY_SYMBOLS, CategoryId, NEWS_PUBLISHERS, Order, ORDER_HISTORY,
   HOLDINGS, RANGE_COUNTS, RANGE_IDS, RangeId, Side, STOCKS, TicketState, buildChart, fmtMoney, fmtNum,
   fmtPct, seededSeries
-} from './trading-data';
+} from '../trading-app/trading-data';
 
 type Theme = 'dark' | 'light';
-type Screen = 'dashboard' | 'portfolio' | 'orders' | 'account';
-
-const NAV: { id: Screen; label: string }[] = [
-  { id: 'dashboard', label: 'Dashboard' },
-  { id: 'portfolio', label: 'Portfolio' },
-  { id: 'orders', label: 'Orders' },
-  { id: 'account', label: 'Account' }
-];
+type Screen = 'home' | 'detail' | 'portfolio' | 'orders' | 'account';
 
 @Component({
-  selector: 'app-trading-app',
+  selector: 'app-trading-app-mobile',
   standalone: true,
   imports: [FormsModule],
-  templateUrl: './trading-app.component.html',
-  styleUrl: './trading-app.component.css'
+  templateUrl: './trading-app-mobile.component.html',
+  styleUrl: './trading-app-mobile.component.css'
 })
-export class TradingAppComponent {
-  readonly nav = NAV;
+export class TradingAppMobileComponent {
   readonly categories = CATEGORIES;
   readonly rangesIds = RANGE_IDS;
 
   theme = signal<Theme>((document.documentElement.getAttribute('data-theme') as Theme) || 'dark');
-  screen = signal<Screen>('dashboard');
+  screen = signal<Screen>('home');
   category = signal<CategoryId>('watch');
   activeSymbol = signal('AAPL');
   range = signal<RangeId>('1M');
@@ -45,9 +37,12 @@ export class TradingAppComponent {
     document.documentElement.setAttribute('data-theme', next);
     this.theme.set(next);
   }
-  setScreen(s: Screen) { this.screen.set(s); }
+  goHome() { this.screen.set('home'); }
+  goPortfolio() { this.screen.set('portfolio'); }
+  goOrders() { this.screen.set('orders'); }
+  goAccount() { this.screen.set('account'); }
   setCategory(c: CategoryId) { this.category.set(c); }
-  selectSymbol(sym: string) { this.activeSymbol.set(sym); this.searchQuery.set(''); }
+  selectSymbol(sym: string) { this.activeSymbol.set(sym); this.searchQuery.set(''); this.screen.set('detail'); }
   setRange(r: RangeId) { this.range.set(r); }
   toggleWatch(sym: string) {
     this.watchlist.update(list => list.includes(sym) ? list.filter(x => x !== sym) : [...list, sym]);
@@ -104,7 +99,7 @@ export class TradingAppComponent {
 
   readonly chart = computed(() => {
     const series = seededSeries(this.activeSymbol() + this.range(), this.stockData().price, RANGE_COUNTS[this.range()]);
-    return buildChart(series);
+    return buildChart(series, 360, 160);
   });
 
   readonly stats = computed(() => {
@@ -140,8 +135,7 @@ export class TradingAppComponent {
       const up = c >= 0;
       return {
         symbol: sym, name: d.name, priceLabel: fmtMoney(d.price),
-        changeLabel: fmtPct(d.chgPct), isUp: up, isDown: !up,
-        isActive: sym === this.activeSymbol()
+        changeLabel: fmtPct(d.chgPct), isUp: up, isDown: !up
       };
     });
   });
@@ -163,7 +157,7 @@ export class TradingAppComponent {
       const gain = value - cost;
       const up = gain >= 0;
       return {
-        symbol: h.symbol, shares: h.shares, avgCostLabel: fmtMoney(h.avgCost), priceLabel: fmtMoney(d.price),
+        symbol: h.symbol, shares: h.shares, avgCostLabel: fmtMoney(h.avgCost),
         valueLabel: fmtMoney(value), gainLabel: (up ? '+' : '') + fmtMoney(gain),
         isUp: up, isDown: !up
       };
@@ -171,26 +165,22 @@ export class TradingAppComponent {
   });
 
   readonly portfolio = computed(() => {
-    let totalValue = 0, totalCost = 0, dayChange = 0;
+    let totalValue = 0, totalCost = 0;
     HOLDINGS.forEach(h => {
       const d = STOCKS[h.symbol];
-      const value = h.shares * d.price;
-      totalValue += value;
+      totalValue += h.shares * d.price;
       totalCost += h.shares * h.avgCost;
-      dayChange += value * d.chgPct / 100;
     });
     const totalGain = totalValue - totalCost;
     const gainUp = totalGain >= 0;
-    const dayUp = dayChange >= 0;
     const allocation = HOLDINGS.map((h, i) => {
       const d = STOCKS[h.symbol];
       const value = h.shares * d.price;
       const pct = totalValue ? (value / totalValue) * 100 : 0;
-      return { symbol: h.symbol, pct, pctLabel: pct.toFixed(1) + '%', color: ALLOC_COLORS[i % ALLOC_COLORS.length] };
+      return { symbol: h.symbol, pct, color: ALLOC_COLORS[i % ALLOC_COLORS.length] };
     });
     return {
       totalLabel: fmtMoney(totalValue),
-      dayLabel: (dayUp ? '+' : '') + fmtMoney(dayChange), dayUp, dayDown: !dayUp,
       gainLabel: (gainUp ? '+' : '') + fmtMoney(totalGain), gainUp, gainDown: !gainUp,
       gainPctLabel: fmtPct(totalCost ? (totalGain / totalCost) * 100 : 0),
       allocation
@@ -199,16 +189,16 @@ export class TradingAppComponent {
 
   readonly orderRows = computed(() => this.orders().map(o => ({
     id: o.id, date: o.date, symbol: o.symbol, side: o.side, type: o.type, qty: o.qty,
-    priceLabel: fmtMoney(o.price), totalLabel: fmtMoney(o.qty * o.price),
+    priceLabel: fmtMoney(o.price),
     isFilled: o.status === 'filled', isPending: o.status === 'pending', isCanceled: o.status === 'canceled'
   })));
 
   readonly notifRows = computed(() => {
     const n = this.notif();
     return [
-      { key: 'price' as const, label: 'Price alerts', sub: 'Notify on watchlist price moves', on: n.price },
-      { key: 'fills' as const, label: 'Order fills', sub: 'Notify when an order fills', on: n.fills },
-      { key: 'news' as const, label: 'News digest', sub: 'Daily summary for your watchlist', on: n.news }
+      { key: 'price' as const, label: 'Price alerts', on: n.price },
+      { key: 'fills' as const, label: 'Order fills', on: n.fills },
+      { key: 'news' as const, label: 'News digest', on: n.news }
     ];
   });
 
@@ -238,4 +228,7 @@ export class TradingAppComponent {
         : ''
     };
   });
+
+  readonly showTabBar = computed(() => this.screen() !== 'detail');
+  readonly tabHomeActive = computed(() => this.screen() === 'home' || this.screen() === 'detail');
 }
