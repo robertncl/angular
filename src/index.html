@@ -5,6 +5,13 @@
   <title>Stockwatch</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!--
+    Baseline CSP for deployments that don't set response headers. nginx.conf
+    sends the same policy plus frame-ancestors, which a meta tag cannot carry.
+    The sha256 pins the inline theme-bootstrap script below; if that script is
+    edited, recompute the hash here AND in nginx.conf or it will stop running.
+  -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-2yirsBSX3viP57TyxK5Vwds+ovtfiwh5352ybizU3J0='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#0a0d12" media="(prefers-color-scheme: dark)">
   <meta name="theme-color" content="#f4f6fb" media="(prefers-color-scheme: light)">

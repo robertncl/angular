@@ -1,0 +1,48 @@
+# Keep build context minimal — anything listed here never enters an image layer.
+
+# VCS history (contains every past revision, including anything since removed)
+.git
+.gitignore
+.github
+
+# Dependencies and build output — reinstalled/rebuilt inside the image
+node_modules
+dist
+tmp
+out-tsc
+.angular
+coverage
+
+# Local secrets and credentials
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.jks
+*.keystore
+android/local.properties
+android/keystore.properties
+
+# Native platform build artifacts
+android/app/build
+android/build
+android/.gradle
+android/captures
+android/app/src/main/assets/public
+
+# Editor / OS noise
+.vscode
+.idea
+.history
+.DS_Store
+Thumbs.db
+*.log
+
+# Container and tooling files not needed by the build
+dockerfile
+Dockerfile
+.dockerignore
+.devcontainer
+.claude
+README.md

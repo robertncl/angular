@@ -19,18 +19,24 @@ jobs:
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '24.x'
+          cache: npm
 
-      - name: npm install, build, and test
+      # `npm ci` installs strictly from package-lock.json, so the deployed
+      # build can't drift off the pinned versions.
+      - name: npm ci and build
         run: |
-          npm install
+          npm ci
           npm run build --if-present
 
-
+      # Upload only the compiled bundle. Uploading the whole workspace would
+      # package .git, node_modules and any local files into an artifact that
+      # anyone with repo read access can download — and then deploy them.
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: node-app
-          path: .
+          path: dist/angular/browser
+          if-no-files-found: error
 
   deploy:
     runs-on: ubuntu-latest
