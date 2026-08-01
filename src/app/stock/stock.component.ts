@@ -303,6 +303,9 @@ export class StockComponent implements OnInit, OnDestroy {
           this.updateRows(id, merged);
           this.loadingCategory.set(false);
         },
+        // Defensive: every quotes$ entry already funnels errors through
+        // catchError above, so forkJoin itself should never reject. Kept in
+        // case that guarantee changes.
         error: () => this.loadingCategory.set(false)
       });
   }
@@ -359,8 +362,7 @@ export class StockComponent implements OnInit, OnDestroy {
   // ---------- Formatting ----------
 
   formatPrice(value: number | undefined, currency = 'USD'): string {
-    if (value == null || isNaN(value) || value === 0) return value === 0 ? '—' : '—';
-    if (value === 0) return '—';
+    if (value == null || isNaN(value) || value === 0) return '—';
     try {
       return new Intl.NumberFormat(undefined, {
         style: 'currency',
