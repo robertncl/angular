@@ -9,6 +9,9 @@
     "test": "ng test"
   },
   "private": true,
+  "overrides": {
+    "hono": "4.13.1"
+  },
   "dependencies": {
     "@angular/common": "22.1.0",
     "@angular/compiler": "22.1.0",
