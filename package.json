@@ -17,7 +17,7 @@
     "uuid": "11.1.1",
     "@napi-rs/wasm-runtime": "1.2.3",
     "electron-to-chromium": "1.5.412",
-    "@xmldom/xmldom": "0.9.11",
+    "@xmldom/xmldom": "0.9.12",
     "baseline-browser-mapping": "2.11.16",
     "jose": "6.2.9"
   },
