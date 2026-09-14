@@ -9,11 +9,35 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      # Angular packages declare an exact peer dependency on @angular/core, so
+      # a partial bump leaves `npm ci` unresolvable with ERESOLVE. They must
+      # move in a single PR. See PR #76.
+      angular:
+        patterns:
+          - "@angular/*"
+      dev-dependencies:
+        dependency-type: "development"
+        # Without this, @angular/compiler-cli and @angular/cli are pulled out of
+        # the angular group above and bumped separately, recreating the skew.
+        exclude-patterns:
+          - "@angular/*"
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      # codeql-action/init writes a config file stamped with its own version and
+      # codeql-action/analyze refuses to read a config from a different version
+      # ("Loaded a configuration file for version X, but running version Y").
+      # init, analyze and upload-sarif must always bump together.
+      codeql-action:
+        patterns:
+          - "github/codeql-action*"
+      github-actions:
+        patterns:
+          - "*"
 
   - package-ecosystem: "docker"
     directory: "/"
