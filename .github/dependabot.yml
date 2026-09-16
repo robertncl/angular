@@ -22,6 +22,14 @@ updates:
         # the angular group above and bumped separately, recreating the skew.
         exclude-patterns:
           - "@angular/*"
+    ignore:
+      # @angular-devkit/build-angular pins a peerDependency of
+      # typescript ">=6.0 <6.1" (still true in 22.1.8, the latest release), so
+      # a TypeScript major bump makes the build unresolvable. TS 7 broke the
+      # build in PR #55 and was proposed again in PR #83, both closed unmerged.
+      # Drop this entry once the devkit widens its peer range.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "github-actions"
     directory: "/"
