@@ -18,7 +18,7 @@ RUN npm run build
 # nginx:alpine — serves the compiled bundle. The previous image ran
 # `ng serve` (the Angular dev server) on 0.0.0.0, which is unhardened, serves
 # source maps, and exposes an unauthenticated HMR websocket.
-FROM nginx@sha256:05b8cb60c354a44ab824ea6e7dc69b46d50762cdbe728a347a5b656e6fb3d7c4
+FROM nginx@sha256:d0d674272be3be36f9a13d79194fa0db5aa630ab3ede9bec459d12f67370aaef
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY security-headers.conf /etc/nginx/snippets/security-headers.conf
