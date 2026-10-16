@@ -33,8 +33,3 @@ jobs:
 
       - name: Build project
         run: npx ng build --configuration production
-
-      - name: Build Docker image
-        run: |
-          docker build -t angular-app:${{ github.sha }} .
-          docker tag angular-app:${{ github.sha }} ${{ secrets.ACR_LOGIN_SERVER }}/angular-app:${{ github.sha }}
