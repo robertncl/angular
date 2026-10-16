@@ -1,61 +1,72 @@
-# Angular
+# Haze Watch
 
 [![Build, Dockerize, and Deploy](https://github.com/robertncl/angular/actions/workflows/build.yaml/badge.svg)](https://github.com/robertncl/angular/actions/workflows/build.yaml)
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.0.6.
+Tracks haze across Southeast Asia: modelled US AQI, PM2.5 and haze thickness for 39 cities, with a map, a 6-day
+hourly chart (2 days back, 4 ahead), a daily outlook and health advice. The same Angular build ships as a website
+(nginx in Docker) and as an Android app (Capacitor).
 
-## Development server
+Cities are weighted toward the region's recurring burning areas: Riau, Jambi and South Sumatra and Kalimantan
+(roughly July–October), and northern Thailand, Laos and Myanmar (roughly February–April).
 
-To start a local development server, run:
+## Data
 
-```bash
-ng serve
+| What | Source | Notes |
+| --- | --- | --- |
+| Air quality | [Open-Meteo Air Quality API](https://open-meteo.com/en/docs/air-quality-api) (CAMS global model, ~45 km grid) | Free, no key, CORS-enabled, so the browser calls it directly. Free tier is for non-commercial use; attribution (CC BY 4.0) is in the page footer. |
+| Wind | [Open-Meteo Forecast API](https://open-meteo.com/en/docs) | Optional: if it fails, the page still loads without wind. |
+| Map tiles | [OpenStreetMap](https://www.openstreetmap.org/copyright) | Follow the [tile usage policy](https://operations.osmfoundation.org/policies/tiles/). For heavy traffic, switch `TILE_URL` in `haze-map.component.ts` to a hosted provider and update the CSP. |
+
+These are **model estimates**, not station readings. The US AQI uses 24-hour averages for particulates, so it lags the
+hourly PM2.5 figure. National indices (Singapore PSI, Malaysia API, Indonesia ISPU, Thailand AQI) are calculated
+differently. The page links to the official sources.
+
+Readings refresh every 30 minutes while the page is visible. A selected city is kept in the URL (`/?city=pekanbaru`) and
+remembered in `localStorage`.
+
+## Code map
+
+```
+src/app/haze/
+  cities.ts                  city list (ids double as ?city= values)
+  aqi.ts                     US AQI bands, advice, formatting, daily summaries
+  air-quality.service.ts     Open-Meteo calls; validates every number from the API
+  haze-dashboard.component   the page: overview, map, detail, city list
+  haze-map.component         Leaflet map, lazy-loaded with @defer
+  aqi-chart.component        SVG hourly chart, sized in real pixels
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+The app is zoneless (`provideZonelessChangeDetection`): signals drive change detection, and `zone.js` isn't installed.
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Development
 
 ```bash
-ng generate component component-name
+npm ci
+npm start          # http://localhost:4200
+npm run build      # dist/angular/browser
+npm test           # Karma + headless Chrome (set CHROME_BIN if Chrome isn't on PATH)
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+### Docker (production web)
 
 ```bash
-ng generate --help
+docker build -t haze-watch .
+docker run -p 8080:8080 haze-watch
 ```
 
-## Building
+nginx serves the bundle as an unprivileged user, with security headers from `security-headers.conf`.
 
-To build the project run:
+### Android
 
 ```bash
-ng build
+npm run build
+npx cap sync android
+cd android && ./gradlew assembleDebug    # needs JDK 21 and the Android SDK
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+## Content Security Policy
 
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+The policy lives in two places that must stay in sync: the `<meta>` tag in `src/index.html` (used by the Capacitor
+WebView and any static host) and `security-headers.conf` (nginx, which adds `frame-ancestors`). The page has no inline
+scripts. For the same reason critical-CSS inlining is turned off in `angular.json`: it injects an inline script to load
+the stylesheet, and `script-src 'self'` blocks it. If you add a third-party origin, add it to both policies.

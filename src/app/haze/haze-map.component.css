@@ -1,0 +1,161 @@
+/* Unencapsulated (see the component): every rule is scoped under .haze-map,
+   a class only this component uses. */
+
+.haze-map-host {
+  display: block;
+  block-size: 100%;
+}
+
+.haze-map {
+  block-size: 100%;
+  min-block-size: 280px;
+  border-radius: inherit;
+}
+
+/* Compound selectors so these beat leaflet.css regardless of load order. */
+.haze-map.leaflet-container {
+  background: var(--map-water);
+  font: inherit;
+  font-size: 0.8125rem;
+}
+
+.haze-map.leaflet-container a {
+  color: var(--link);
+}
+
+/* --- Markers ----------------------------------------------------------- */
+
+/* Leaflet positions this zero-size wrapper on the city; the pill is centred on it. */
+.haze-map .haze-marker-anchor {
+  background: none;
+  border: 0;
+}
+
+.haze-map .haze-marker {
+  position: absolute;
+  translate: -50% -50%;
+  display: grid;
+  place-items: center;
+  min-inline-size: 30px;
+  block-size: 22px;
+  padding-inline: 6px;
+  border-radius: 999px;
+  background: var(--cat);
+  color: var(--cat-ink);
+  border: 1.5px solid var(--swatch-edge);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.3);
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  cursor: pointer;
+  transition: scale 120ms ease;
+}
+
+.haze-map .haze-marker:hover {
+  scale: 1.12;
+}
+
+.haze-map .haze-marker.is-selected {
+  scale: 1.25;
+  outline: 3px solid var(--text-1);
+  outline-offset: 2px;
+}
+
+/* Zoomed out, numbered pills would pile up: show colour dots, and keep the
+   number only on the selected city. Hover tooltips still carry the value. */
+.haze-map.is-compact .haze-marker:not(.is-selected) {
+  min-inline-size: 0;
+  inline-size: 14px;
+  block-size: 14px;
+  padding: 0;
+  font-size: 0;
+}
+
+.haze-map.is-compact .haze-marker:not(.is-selected):hover {
+  scale: 1.4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .haze-map .haze-marker {
+    transition: none;
+  }
+}
+
+/* --- Tiles ------------------------------------------------------------- */
+
+/* The map uses fractional zoom, so tiles are drawn scaled. leaflet.css hides
+   the resulting edge seams with mix-blend-mode: plus-lighter, but where the
+   scaled edges overlap that adds up to a bright hairline. Blend normally and
+   overlap each tile by a pixel instead; the 0.4% stretch is invisible. */
+.haze-map .leaflet-tile-container img.leaflet-tile {
+  mix-blend-mode: normal;
+  inline-size: 257px !important;
+  block-size: 257px !important;
+}
+
+/* OpenStreetMap only publishes a light style. In dark mode, invert it and
+   rotate the hue back so water stays blue — markers are in a separate pane
+   and keep their true AQI colours. */
+@media (prefers-color-scheme: dark) {
+  .haze-map .leaflet-tile-pane {
+    filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.9) saturate(0.7);
+  }
+}
+
+/* --- Leaflet chrome, themed ------------------------------------------- */
+
+.haze-map .haze-tooltip {
+  background: var(--surface);
+  color: var(--text-1);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  padding: 6px 8px;
+  font-size: 0.8125rem;
+  line-height: 1.35;
+}
+
+.haze-map .haze-tooltip.leaflet-tooltip-top::before {
+  border-top-color: var(--border-strong);
+}
+
+.haze-map .leaflet-bar a,
+.haze-map .leaflet-bar a:hover {
+  background: var(--surface);
+  color: var(--text-1);
+  border-bottom-color: var(--border);
+}
+
+.haze-map .leaflet-bar a.leaflet-disabled {
+  background: var(--surface-2);
+  color: var(--text-3);
+}
+
+.haze-map .leaflet-bar {
+  border: 1px solid var(--border-strong);
+  box-shadow: none;
+}
+
+.haze-map .leaflet-control-attribution {
+  background: color-mix(in srgb, var(--surface) 85%, transparent);
+  color: var(--text-2);
+}
+
+@media (pointer: coarse) {
+  .haze-map .leaflet-bar a {
+    inline-size: 36px;
+    block-size: 36px;
+    line-height: 36px;
+  }
+}
+
+@media (forced-colors: active) {
+  .haze-map .haze-marker {
+    border-color: CanvasText;
+  }
+
+  .haze-map .haze-marker.is-selected {
+    outline-color: Highlight;
+  }
+}

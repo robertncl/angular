@@ -16,9 +16,7 @@
             "outputPath": "dist/angular",
             "index": "src/index.html",
             "browser": "src/main.ts",
-            "polyfills": [
-              "zone.js"
-            ],
+            "polyfills": [],
             "tsConfig": "tsconfig.app.json",
             "assets": [
               {
@@ -27,10 +25,13 @@
               }
             ],
             "styles": [
-              "src/styles.css",
-              "src/styles/acme-tokens.css"
+              "node_modules/leaflet/dist/leaflet.css",
+              "src/styles.css"
             ],
-            "scripts": []
+            "scripts": [],
+            "allowedCommonJsDependencies": [
+              "leaflet"
+            ]
           },
           "configurations": {
             "production": {
@@ -46,7 +47,15 @@
                   "maximumError": "20kB"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "optimization": {
+                "scripts": true,
+                "styles": {
+                  "minify": true,
+                  "inlineCritical": false
+                },
+                "fonts": true
+              }
             },
             "development": {
               "optimization": false,
@@ -58,9 +67,6 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
-          "options": {
-            "proxyConfig": "proxy.conf.json"
-          },
           "configurations": {
             "production": {
               "buildTarget": "angular:build:production"
@@ -78,10 +84,7 @@
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
             "karmaConfig": "karma.conf.js",
-            "polyfills": [
-              "zone.js",
-              "zone.js/testing"
-            ],
+            "polyfills": [],
             "tsConfig": "tsconfig.spec.json",
             "assets": [
               {
@@ -90,8 +93,8 @@
               }
             ],
             "styles": [
-              "src/styles.css",
-              "src/styles/acme-tokens.css"
+              "node_modules/leaflet/dist/leaflet.css",
+              "src/styles.css"
             ],
             "scripts": []
           }

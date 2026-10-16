@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <style>
+    .haze { fill: none; stroke: #4a473f; stroke-width: 2.4; stroke-linecap: round; }
+    @media (prefers-color-scheme: dark) { .haze { stroke: #d6d3cb; } }
+  </style>
+  <circle cx="16" cy="13" r="7.5" fill="#e0912f"/>
+  <path class="haze" d="M3.5 19.5c3 0 3-1.5 6.25-1.5s3.25 1.5 6.25 1.5 3.25-1.5 6.25-1.5 3.25 1.5 6.25 1.5"/>
+  <path class="haze" d="M3.5 25c3 0 3-1.5 6.25-1.5S13 25 16 25s3.25-1.5 6.25-1.5S25.5 25 28.5 25"/>
+</svg>
