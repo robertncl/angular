@@ -1,9 +1,7 @@
 <figure class="chart">
   <figcaption class="chart__caption">
-    <span class="chart__title">Hourly US AQI — past 2 days and 4-day forecast</span>
-    @if (summary()) {
-      <span class="chart__summary">{{ summary() }}</span>
-    }
+    <span class="chart__title">Hourly US AQI</span>
+    <span class="chart__summary">Past 2 days and 4-day forecast. {{ summary() }}</span>
   </figcaption>
 
   @if (model(); as m) {
@@ -46,6 +44,12 @@
           <svg:text class="now__label" [attr.x]="m.nowX + 4" [attr.y]="m.top + 12">Now</svg:text>
         }
 
+        <!-- The one takeaway, labelled directly on the line. -->
+        @if (peakMark(); as pk) {
+          <svg:circle class="peak" [attr.cx]="pk.x" [attr.cy]="pk.y" r="5" />
+          <svg:text class="peak__label" [attr.x]="pk.x" [attr.y]="pk.labelY" [attr.text-anchor]="pk.anchor">{{ pk.label }}</svg:text>
+        }
+
         @if (hovered(); as h) {
           <svg:line class="cursor" [attr.x1]="h.x" [attr.x2]="h.x" [attr.y1]="m.top" [attr.y2]="m.bottom" />
           <svg:circle class="cursor__dot" [attr.cx]="h.x" [attr.cy]="h.y" r="4" />
@@ -58,6 +62,7 @@
     <p class="chart__key">
       <span class="key key--past" aria-hidden="true"></span> Modelled history
       <span class="key key--forecast" aria-hidden="true"></span> Forecast
+      <span class="key key--peak" aria-hidden="true"></span> Forecast peak
     </p>
   } @else {
     <p class="chart__empty">Not enough hourly data to draw a chart for this city.</p>

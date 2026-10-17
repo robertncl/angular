@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -22,6 +23,7 @@ import { AirQualityService, CityOutlook, CityReading } from './air-quality.servi
 import {
   AQI_CATEGORIES,
   AqiCategory,
+  AqiCategoryId,
   WHO_PM25_24H,
   aqiCategory,
   compassPoint,
@@ -36,6 +38,24 @@ import { HazeMapComponent } from './haze-map.component';
 
 export type SortOrder = 'worst' | 'best' | 'name';
 
+/** ACME alert tones. Success and warning share Oat ink, so the icon carries the difference. */
+export type AlertTone = 'success' | 'info' | 'warning' | 'danger';
+
+const ADVICE_TONE: Record<AqiCategoryId, AlertTone> = {
+  good: 'success',
+  moderate: 'info',
+  sensitive: 'warning',
+  unhealthy: 'warning',
+  'very-unhealthy': 'danger',
+  hazardous: 'danger'
+};
+
+const SORT_LABEL: Record<SortOrder, string> = {
+  worst: 'worst air first',
+  best: 'cleanest air first',
+  name: 'A–Z'
+};
+
 const CITY_STORAGE_KEY = 'hazewatch.city';
 /** CAMS publishes hourly; refreshing more often than this gains nothing. */
 const REFRESH_INTERVAL_MS = 30 * 60 * 1000;
@@ -47,7 +67,7 @@ type OutlookState =
 
 @Component({
   selector: 'app-haze-dashboard',
-  imports: [AqiChartComponent, HazeMapComponent],
+  imports: [AqiChartComponent, HazeMapComponent, NgTemplateOutlet],
   templateUrl: './haze-dashboard.component.html',
   styleUrl: './haze-dashboard.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -91,6 +111,14 @@ export class HazeDashboardComponent implements OnInit {
     const order = this.sortOrder();
     const rows = this.readings().filter(r => country === 'all' || r.city.country === country);
     return [...rows].sort((a, b) => compareReadings(a, b, order));
+  });
+
+  /** "39 cities, worst air first" / "13 in Indonesia, A–Z". */
+  protected readonly listSummary = computed(() => {
+    const n = this.visibleReadings().length;
+    const country = this.countryFilter();
+    const scope = country === 'all' ? `${n} ${n === 1 ? 'city' : 'cities'}` : `${n} in ${countryName(country)}`;
+    return `${scope}, ${SORT_LABEL[this.sortOrder()]}`;
   });
 
   protected readonly overview = computed(() => {
@@ -236,6 +264,10 @@ export class HazeDashboardComponent implements OnInit {
 
   protected categoryOf(aqi: number | null | undefined): AqiCategory | null {
     return aqiCategory(aqi);
+  }
+
+  protected adviceTone(category: AqiCategory): AlertTone {
+    return ADVICE_TONE[category.id];
   }
 
   protected aqi(value: number | null | undefined): string {

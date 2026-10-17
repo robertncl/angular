@@ -23,7 +23,9 @@ import {
 const HEIGHT = 200;
 const PAD = { top: 10, right: 10, bottom: 24, left: 38 };
 /** Closest two y-axis labels may sit, in px, before the upper one is dropped. */
-const MIN_TICK_GAP = 13;
+const MIN_TICK_GAP = 16;
+/** Narrowest day, in px, that fits a "Mon 19" label; below it the weekday stands alone. */
+const MIN_DAY_LABEL_WIDTH = 56;
 
 interface Band {
   id: AqiCategoryId;
@@ -109,7 +111,11 @@ export function buildChart(
   }
 
   const hourOf = safeFormatter(timeZone, { hour: '2-digit', hourCycle: 'h23' });
-  const dayLabel = safeFormatter(timeZone, { weekday: 'short', day: 'numeric' });
+  const dayWidth = ((right - left) * 24 * 3600 * 1000) / span;
+  const dayLabel = safeFormatter(
+    timeZone,
+    dayWidth < MIN_DAY_LABEL_WIDTH ? { weekday: 'short' } : { weekday: 'short', day: 'numeric' }
+  );
   const xTicks: Tick[] = points
     .filter(p => Number(hourOf.format(p.time)) === 0 && p.time > t0)
     .map(p => ({ pos: x(p.time), label: dayLabel.format(p.time) }));
@@ -194,6 +200,24 @@ export class AqiChartComponent {
     if (m.current) parts.push(`Now ${describe(m.current.usAqi)}.`);
     if (m.peak) parts.push(`Forecast peak ${describe(m.peak.usAqi)} on ${this.whenFormat().format(m.peak.time)}.`);
     return parts.join(' ');
+  });
+
+  private readonly peakWhenFormat = computed(() =>
+    safeFormatter(this.timeZone(), { weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
+  );
+
+  /**
+   * "Peak 225 · Sun 17:00", kept inside the plot. It sits above the dot unless
+   * that would put it in the row of the "Now" label, then drops below it.
+   */
+  protected readonly peakMark = computed(() => {
+    const m = this.model();
+    const p = m?.peak;
+    if (!m || !p || p.y == null) return null;
+    const anchor = p.x > m.right - 64 ? 'end' : p.x < m.left + 64 ? 'start' : 'middle';
+    const above = p.y - 10;
+    const labelY = above < m.top + 28 ? p.y + 20 : above;
+    return { x: p.x, y: p.y, labelY, anchor, label: `Peak ${formatAqi(p.usAqi)} · ${this.peakWhenFormat().format(p.time)}` };
   });
 
   protected readonly hovered = computed(() => {

@@ -74,6 +74,12 @@ describe('buildChart', () => {
     expect(m.xTicks[0].label).toContain('17');
   });
 
+  it('drops the day number when a phone-width chart has no room for it', () => {
+    const m = buildChart(series(Array(144).fill(50)), 'Asia/Singapore', START, 280)!;
+    expect(m.xTicks.length).toBe(5);
+    expect(m.xTicks.map(t => t.label)).toEqual(['Sat', 'Sun', 'Mon', 'Tue', 'Wed']);
+  });
+
   it('keeps every point inside the plot area', () => {
     const m = buildChart(series([0, 499, 250, 600]), 'Asia/Singapore', START, 400)!;
     for (const p of m.plot) {
@@ -110,6 +116,7 @@ describe('AqiChartComponent', () => {
     expect(title.textContent).toContain('Forecast peak 220 (very unhealthy)');
     expect(el.querySelector('.chart__summary')?.textContent).toContain('Now 90 (moderate)');
     expect(el.querySelectorAll('.band').length).toBeGreaterThan(0);
+    expect(el.querySelector('.peak__label')?.textContent).toBe('Peak 220 · Sat 06:00');
   });
 
   it('says so when there is not enough data', async () => {

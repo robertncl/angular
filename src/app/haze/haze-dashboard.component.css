@@ -2,89 +2,110 @@
   display: block;
 }
 
-.page {
-  max-inline-size: 1320px;
-  margin-inline: auto;
-  /* Capacitor draws edge-to-edge on Android 15+: keep content off the system bars. */
-  padding-block: calc(var(--safe-top) + 12px) calc(var(--safe-bottom) + 24px);
-  padding-inline: calc(var(--safe-left) + 16px) calc(var(--safe-right) + 16px);
-}
+/* --- Top bar ----------------------------------------------------------- */
 
-/* --- Masthead ---------------------------------------------------------- */
-
-.masthead {
+/* ACME's app bar: full width, opaque canvas fill, capped by a hairline, no
+   shadow. Capacitor draws edge-to-edge on Android 15+, so it also keeps its
+   content off the system bars. */
+.topbar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px 24px;
-  padding-block: 8px 16px;
+  gap: 8px 16px;
+  padding-block: calc(var(--safe-top) + 12px) 12px;
+  padding-inline: calc(var(--safe-left) + 20px) calc(var(--safe-right) + 20px);
+  background: var(--acme-color-canvas);
+  border-block-end: 1px solid var(--acme-color-border);
 }
 
 .brand {
   display: flex;
   align-items: center;
   gap: 12px;
+  min-inline-size: 0;
 }
 
-.brand__mark {
-  inline-size: 40px;
-  block-size: 40px;
-  flex: none;
+/* The ACME wordmark: a Clay square with an italic white "A", then the name
+   in the sans at 700, uppercase, 14% tracking. Never recoloured. */
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--acme-color-text);
 }
 
-.brand__sun {
-  fill: var(--brand-sun);
+.wordmark__mark {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 1.6em;
+  block-size: 1.6em;
+  border-radius: var(--acme-radius-sm);
+  background: var(--acme-color-mark);
+  color: var(--acme-color-on-primary);
+  font-style: italic;
+  letter-spacing: 0;
 }
 
-.brand__haze {
-  fill: none;
-  stroke: var(--text-2);
-  stroke-width: 2.2;
-  stroke-linecap: round;
+.brand__rule {
+  inline-size: 1px;
+  block-size: 28px;
+  background: var(--acme-color-border);
 }
 
 .brand__name {
-  font-size: 1.375rem;
-  font-weight: 750;
+  font-size: 1.25rem;
   letter-spacing: -0.01em;
-  line-height: 1.1;
 }
 
 .brand__tag {
-  color: var(--text-2);
-  font-size: 0.875rem;
+  color: var(--acme-color-text-muted);
+  font-size: 0.75rem;
 }
 
-.masthead__actions {
+.topbar__actions {
   display: flex;
   align-items: center;
   gap: 12px;
+  margin-inline-start: auto;
 }
 
 .updated {
-  color: var(--text-2);
+  color: var(--acme-color-text-muted);
   font-size: 0.875rem;
   font-variant-numeric: tabular-nums;
 }
 
+/* ACME secondary button: raised surface, control border, 8px radius. */
 .button {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  min-block-size: 36px;
-  padding-inline: 14px;
-  border: 1px solid var(--border-strong);
-  border-radius: 999px;
-  background: var(--surface);
-  color: var(--text-1);
-  font-weight: 600;
+  justify-content: center;
+  gap: 8px;
+  min-block-size: 40px;
+  padding-inline: 16px;
+  border: 1px solid var(--acme-color-border-strong);
+  border-radius: var(--acme-radius-md);
+  background: var(--acme-color-surface-raised);
+  box-shadow: var(--acme-shadow-sm);
+  color: var(--acme-color-text);
   font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1;
   cursor: pointer;
+  transition: background-color var(--acme-duration-base) var(--acme-ease-out);
 }
 
 .button:hover {
-  background: var(--surface-2);
+  background: var(--acme-color-surface);
+}
+
+.button:active {
+  border-color: var(--acme-color-text-subtle);
 }
 
 .button__icon {
@@ -92,7 +113,7 @@
   block-size: 16px;
   fill: none;
   stroke: currentColor;
-  stroke-width: 2.2;
+  stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
@@ -113,110 +134,211 @@
   }
 }
 
-main:focus {
+/* --- Page -------------------------------------------------------------- */
+
+.page {
+  display: grid;
+  gap: 24px;
+  max-inline-size: calc(1200px + 48px);
+  margin-inline: auto;
+  padding-block: 32px 48px;
+  padding-inline: calc(var(--safe-left) + 16px) calc(var(--safe-right) + 16px);
+}
+
+@media (min-width: 600px) {
+  .page {
+    padding-inline: calc(var(--safe-left) + 24px) calc(var(--safe-right) + 24px);
+  }
+}
+
+.page:focus {
   outline: none;
+}
+
+.panel {
+  padding: 20px;
+  border: 1px solid var(--acme-color-border);
+  border-radius: var(--acme-radius-xl);
+  background: var(--acme-color-surface-raised);
+  box-shadow: var(--acme-shadow-sm);
+}
+
+@media (min-width: 600px) {
+  .panel {
+    padding: 24px;
+  }
+}
+
+.panel h2 {
+  font-size: 1.5rem;
+}
+
+.kicker,
+.label-caps {
+  font-family: var(--acme-font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  line-height: 1.5;
+  text-transform: uppercase;
 }
 
 /* --- Alerts ------------------------------------------------------------ */
 
-.banner,
-.inline-error {
+/* ACME alert: soft tint, hairline border, 3px leading accent and a status
+   icon. The only decorative thick border the system allows. */
+.alert {
+  --tone: var(--acme-color-info);
+  --tone-soft: var(--acme-color-info-soft);
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px 16px;
-  padding: 12px 16px;
-  border: 1px solid var(--danger-border);
-  border-inline-start-width: 4px;
-  border-radius: var(--radius);
-  background: var(--danger-surface);
+  align-items: flex-start;
+  gap: 8px 12px;
+  padding: 16px;
+  border: 1px solid var(--acme-color-border);
+  border-inline-start: 3px solid var(--tone);
+  border-radius: var(--acme-radius-md);
+  background: var(--tone-soft);
+  font-size: 0.875rem;
+  line-height: 1.5;
 }
 
-.banner {
-  margin-block-end: 16px;
+.alert[data-tone='success'] {
+  --tone: var(--acme-color-success);
+  --tone-soft: var(--acme-color-success-soft);
+}
+
+.alert[data-tone='warning'] {
+  --tone: var(--acme-color-warning);
+  --tone-soft: var(--acme-color-warning-soft);
+}
+
+.alert[data-tone='danger'] {
+  --tone: var(--acme-color-danger);
+  --tone-soft: var(--acme-color-danger-soft);
+}
+
+.alert__icon {
+  flex: none;
+  inline-size: 16px;
+  block-size: 16px;
+  margin-block-start: 2px;
+  fill: none;
+  stroke: var(--tone);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.alert__body {
+  flex: 1 1 12rem;
+  min-inline-size: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.alert__title {
+  font-weight: 700;
+}
+
+.alert > .button {
+  margin-inline-start: auto;
 }
 
 /* --- Regional overview ------------------------------------------------- */
 
 .overview {
   display: grid;
-  gap: 8px;
-  padding: 16px 18px;
-  margin-block-end: 16px;
-  border: 1px solid var(--border);
-  border-inline-start: 6px solid var(--cat);
-  border-radius: var(--radius);
-  background: var(--surface);
+  gap: 12px;
+  padding-block: 8px;
+}
+
+.kicker {
+  color: var(--acme-color-accent);
 }
 
 .overview__headline {
-  font-size: clamp(1.25rem, 1rem + 1.2vw, 1.75rem);
-  line-height: 1.2;
+  font-size: clamp(1.875rem, 1.2rem + 2vw, 3rem);
+  line-height: 1.15;
   letter-spacing: -0.015em;
 }
 
 .overview__worst {
-  color: var(--text-2);
+  color: var(--acme-color-text-muted);
 }
 
 .link-button {
   padding: 0;
   border: 0;
   background: none;
-  color: var(--link);
+  color: var(--acme-color-link);
   font: inherit;
   font-weight: 600;
   text-decoration: underline;
+  text-decoration-thickness: 1px;
   text-underline-offset: 2px;
   cursor: pointer;
+}
+
+.link-button:hover {
+  color: var(--acme-color-link-hover);
+}
+
+/* Share of cities in each band, worst to the right. */
+.distribution {
+  display: flex;
+  gap: 2px;
+  block-size: 16px;
+  margin-block-start: 8px;
+  overflow: hidden;
+  border: 1px solid var(--acme-color-border-strong);
+  border-radius: var(--acme-radius-sm);
+  background: var(--acme-color-canvas);
+}
+
+.distribution__part {
+  flex: 0 1 0;
+  background: var(--cat);
 }
 
 .legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 16px;
-  margin-block-start: 6px;
+  gap: 8px 24px;
   padding: 0;
   list-style: none;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
 }
 
 .legend__item {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .legend__range {
-  color: var(--text-3);
+  color: var(--acme-color-text-subtle);
   font-variant-numeric: tabular-nums;
 }
 
 .legend__count {
-  min-inline-size: 1.6em;
-  padding: 1px 6px;
-  border-radius: 999px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
   font-weight: 700;
-  text-align: center;
   font-variant-numeric: tabular-nums;
 }
 
 .swatch {
   inline-size: 12px;
   block-size: 12px;
-  border-radius: 3px;
+  border: 1px solid var(--acme-color-border-strong);
+  border-radius: var(--acme-radius-sm);
   background: var(--cat);
-  border: 1px solid var(--swatch-edge);
 }
 
 /* --- Layout ------------------------------------------------------------ */
 
 .layout {
   display: grid;
-  gap: 16px;
+  gap: 24px;
   grid-template-columns: minmax(0, 1fr);
   grid-template-areas:
     'map'
@@ -238,7 +360,7 @@ main:focus {
 
 @media (min-width: 960px) {
   .layout {
-    grid-template-columns: minmax(0, 1.55fr) minmax(360px, 1fr);
+    grid-template-columns: minmax(0, 1.3fr) minmax(360px, 1fr);
     grid-template-areas:
       'map detail'
       'cities detail';
@@ -254,19 +376,6 @@ main:focus {
   }
 }
 
-.panel {
-  padding: 16px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--surface);
-  box-shadow: var(--shadow);
-}
-
-.panel h2 {
-  font-size: 1.125rem;
-  letter-spacing: -0.01em;
-}
-
 /* --- Map --------------------------------------------------------------- */
 
 .map-panel {
@@ -278,13 +387,13 @@ main:focus {
   /* svh, not dvh: the map keeps its size while a mobile address bar slides
      in and out, instead of resizing (and reloading tiles) mid-scroll. */
   block-size: min(56svh, 440px);
-  border-radius: var(--radius) var(--radius) 0 0;
+  border-radius: var(--acme-radius-xl) var(--acme-radius-xl) 0 0;
   overflow: hidden;
 }
 
 @media (min-width: 960px) {
   .map-frame {
-    block-size: min(64svh, 560px);
+    block-size: min(68svh, 600px);
   }
 }
 
@@ -292,15 +401,15 @@ main:focus {
   display: grid;
   place-items: center;
   block-size: 100%;
-  background: var(--map-water);
-  color: var(--text-2);
+  background: var(--acme-color-surface);
+  color: var(--acme-color-text-muted);
 }
 
 .hint {
-  padding: 10px 16px 12px;
-  color: var(--text-2);
-  font-size: 0.8125rem;
-  border-block-start: 1px solid var(--border);
+  padding: 12px 20px;
+  border-block-start: 1px solid var(--acme-color-border);
+  color: var(--acme-color-text-muted);
+  font-size: 0.875rem;
 }
 
 /* --- Detail ------------------------------------------------------------ */
@@ -308,7 +417,7 @@ main:focus {
 .detail {
   container-type: inline-size;
   display: grid;
-  gap: 14px;
+  gap: 20px;
   align-content: start;
 }
 
@@ -318,13 +427,13 @@ main:focus {
 }
 
 .panel .detail__city {
-  font-size: 1.5rem;
-  line-height: 1.15;
+  font-size: 1.875rem;
+  letter-spacing: -0.01em;
 }
 
 .detail__place,
 .detail__time {
-  color: var(--text-2);
+  color: var(--acme-color-text-muted);
   font-size: 0.875rem;
 }
 
@@ -334,11 +443,11 @@ main:focus {
   align-items: center;
   justify-content: space-between;
   gap: 8px 16px;
-  padding: 14px 16px;
-  border-radius: var(--radius);
+  padding: 16px 20px;
+  border: 1px solid var(--acme-color-border-strong);
+  border-radius: var(--acme-radius-lg);
   background: var(--cat);
   color: var(--cat-ink);
-  border: 1px solid var(--swatch-edge);
 }
 
 .reading__value {
@@ -348,36 +457,31 @@ main:focus {
 }
 
 .reading__number {
-  font-size: 3rem;
-  font-weight: 800;
+  font-family: var(--acme-font-display);
+  font-size: 3.5rem;
+  font-weight: 700;
   line-height: 1;
+  letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.03em;
 }
 
 .reading__unit {
-  font-weight: 700;
   font-size: 0.875rem;
+  font-weight: 600;
 }
 
 .reading__label {
   font-size: 1.125rem;
-  font-weight: 750;
+  font-weight: 700;
+  line-height: 1.3;
   text-align: end;
 }
 
-.advice {
-  padding: 12px 14px;
-  border-radius: var(--radius);
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  line-height: 1.5;
-}
-
+/* Recessed wells inside the panel: never card-on-card. */
 .metrics {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 8px;
 }
 
 @container (min-width: 520px) {
@@ -390,29 +494,28 @@ main:focus {
   display: grid;
   gap: 2px;
   align-content: start;
-  padding: 10px 12px;
-  border-radius: var(--radius-sm);
-  background: var(--surface-2);
-  border: 1px solid var(--border);
+  padding: 12px 16px;
+  border-radius: var(--acme-radius-md);
+  background: var(--acme-color-surface);
 }
 
 .metric dt {
-  color: var(--text-2);
-  font-size: 0.8125rem;
+  color: var(--acme-color-text-muted);
+  font-size: 0.75rem;
   font-weight: 600;
 }
 
 .metric dd {
   display: grid;
   gap: 2px;
-  color: var(--text-2);
-  font-size: 0.8125rem;
+  color: var(--acme-color-text-muted);
+  font-size: 0.75rem;
 }
 
 .metric__value {
-  color: var(--text-1);
-  font-size: 1.125rem;
-  font-weight: 700;
+  color: var(--acme-color-text);
+  font-size: 1.25rem;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
@@ -420,11 +523,11 @@ main:focus {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.9375rem;
+  font-size: 1rem;
 }
 
 .metric__note {
-  color: var(--text-3);
+  color: var(--acme-color-text-subtle);
   font-size: 0.75rem;
 }
 
@@ -437,15 +540,13 @@ main:focus {
 
 .outlook {
   display: grid;
-  gap: 14px;
-  padding-block-start: 4px;
-  border-block-start: 1px solid var(--border);
+  gap: 20px;
+  padding-block-start: 20px;
+  border-block-start: 1px solid var(--acme-color-border);
 }
 
-.outlook > :first-child {
-  margin-block-start: 10px;
-}
-
+/* ACME table: caps header row over a strong rule, hairlines between rows,
+   numbers right-aligned in tabular figures. */
 .daily {
   inline-size: 100%;
   border-collapse: collapse;
@@ -453,26 +554,49 @@ main:focus {
 }
 
 .daily caption {
-  padding-block-end: 6px;
-  font-weight: 600;
+  padding-block-end: 8px;
+  font-family: var(--acme-font-display);
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.3;
   text-align: start;
+}
+
+.daily__zone {
+  display: block;
+  color: var(--acme-color-text-subtle);
+  font-family: var(--acme-font-sans);
+  font-size: 0.75rem;
+  font-weight: 400;
 }
 
 .daily th,
 .daily td {
-  padding: 6px 8px;
-  border-block-end: 1px solid var(--border);
+  padding: 12px;
+  border-block-end: 1px solid var(--acme-color-border);
   text-align: start;
 }
 
 .daily thead th {
-  color: var(--text-2);
-  font-size: 0.8125rem;
+  padding-block: 8px;
+  border-block-end-color: var(--acme-color-border-strong);
+  color: var(--acme-color-text-muted);
+  font-size: 0.75rem;
   font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.daily tbody tr:hover {
+  background: var(--acme-color-surface);
 }
 
 .daily tbody th {
   font-weight: 600;
+}
+
+.daily .num {
+  text-align: end;
 }
 
 .num {
@@ -480,53 +604,64 @@ main:focus {
 }
 
 .unit {
-  color: var(--text-3);
   font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .detail__empty {
-  color: var(--text-2);
+  color: var(--acme-color-text-muted);
 }
 
-/* --- Badges ------------------------------------------------------------ */
+/* --- AQI badges -------------------------------------------------------- */
 
 .badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 3px 9px 3px 6px;
-  border-radius: 999px;
+  padding: 1px 10px 1px 8px;
+  border: 1px solid var(--acme-color-border-strong);
+  border-radius: var(--acme-radius-full);
   background: var(--cat);
   color: var(--cat-ink);
-  border: 1px solid var(--swatch-edge);
   white-space: nowrap;
 }
 
 .badge__value {
   min-inline-size: 2ch;
-  font-weight: 800;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
   text-align: center;
 }
 
 .badge__label {
   font-size: 0.75rem;
-  font-weight: 650;
-}
-
-.badge--compact {
-  padding-block: 1px;
+  font-weight: 600;
 }
 
 /* --- City list --------------------------------------------------------- */
+
+.cities {
+  display: grid;
+  gap: 16px;
+}
 
 .cities__head {
   display: flex;
   flex-wrap: wrap;
   align-items: end;
   justify-content: space-between;
-  gap: 12px;
-  margin-block-end: 12px;
+  gap: 16px;
+}
+
+.cities__title {
+  display: grid;
+  gap: 2px;
+}
+
+.cities__summary {
+  color: var(--acme-color-text-muted);
+  font-size: 0.875rem;
 }
 
 .filters {
@@ -535,24 +670,28 @@ main:focus {
   gap: 12px;
 }
 
+/* ACME field: label above, then a 40px control on the raised surface. */
 .field {
   display: grid;
   gap: 4px;
-  font-size: 0.8125rem;
-  color: var(--text-2);
+  font-size: 0.875rem;
   font-weight: 600;
 }
 
 .field select {
-  min-block-size: 36px;
-  padding-inline: 10px;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-  color: var(--text-1);
+  min-block-size: 40px;
+  padding-inline: 12px;
+  border: 1px solid var(--acme-color-border-strong);
+  border-radius: var(--acme-radius-md);
+  background: var(--acme-color-surface-raised);
+  color: var(--acme-color-text);
   font: inherit;
-  font-weight: 500;
-  font-size: 0.875rem;
+  font-weight: 400;
+  transition: border-color var(--acme-duration-base) var(--acme-ease-out);
+}
+
+.field select:hover {
+  border-color: var(--acme-color-text-subtle);
 }
 
 .city-list {
@@ -565,30 +704,50 @@ main:focus {
 
 .city-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   inline-size: 100%;
-  min-block-size: 56px;
-  padding: 8px 10px 8px 12px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
+  min-block-size: 60px;
+  padding: 8px 12px 8px 8px;
+  border: 1px solid var(--acme-color-border);
+  border-radius: var(--acme-radius-md);
+  background: var(--acme-color-surface-raised);
   color: inherit;
   font: inherit;
   text-align: start;
   cursor: pointer;
+  transition:
+    background-color var(--acme-duration-base) var(--acme-ease-out),
+    border-color var(--acme-duration-base) var(--acme-ease-out);
 }
 
 .city-row:hover {
-  background: var(--surface-2);
-  border-color: var(--border-strong);
+  background: var(--acme-color-surface);
+  border-color: var(--acme-color-border-strong);
 }
 
-.city-row[aria-current='true'] {
-  border-color: var(--link);
-  box-shadow: inset 0 0 0 1px var(--link);
-  background: var(--selected-surface);
+/* Selection is orientation, so it's Clay — and it doesn't react to hover. */
+.city-row[aria-current='true'],
+.city-row[aria-current='true']:hover {
+  border-color: var(--acme-color-selected);
+  box-shadow: inset 0 0 0 1px var(--acme-color-selected);
+  background: var(--acme-color-selected-soft);
+}
+
+.city-row__aqi {
+  display: grid;
+  place-items: center;
+  inline-size: 48px;
+  block-size: 44px;
+  border: 1px solid var(--acme-color-border-strong);
+  border-radius: var(--acme-radius-md);
+  background: var(--cat);
+  color: var(--cat-ink);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 
 .city-row__text {
@@ -597,15 +756,15 @@ main:focus {
 }
 
 .city-row__name {
-  font-weight: 650;
+  font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .city-row__place {
-  color: var(--text-2);
-  font-size: 0.8125rem;
+  color: var(--acme-color-text-muted);
+  font-size: 0.75rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -614,20 +773,20 @@ main:focus {
 .city-row__pm {
   display: grid;
   justify-items: end;
-  color: var(--text-1);
   font-size: 0.875rem;
   font-weight: 600;
+  line-height: 1.3;
   font-variant-numeric: tabular-nums;
 }
 
 .city-row__pm-label {
-  color: var(--text-3);
-  font-size: 0.6875rem;
-  font-weight: 600;
+  color: var(--acme-color-text-subtle);
+  font-size: 0.75rem;
+  font-weight: 500;
 }
 
 .city-list__empty {
-  color: var(--text-2);
+  color: var(--acme-color-text-muted);
   padding-block: 12px;
 }
 
@@ -635,54 +794,90 @@ main:focus {
 
 .about {
   display: grid;
-  gap: 10px;
-  margin-block-start: 16px;
-  line-height: 1.55;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
+  gap: 16px 48px;
+  margin-block-start: 24px;
+  padding-block-start: 32px;
+  border-block-start: 1px solid var(--acme-color-border);
+}
+
+.about__text,
+.about__sources {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+
+.about h2 {
+  font-size: 1.5rem;
 }
 
 .about p {
-  max-inline-size: 75ch;
-  color: var(--text-2);
+  max-inline-size: 65ch;
+  color: var(--acme-color-text-muted);
+}
+
+.about strong {
+  color: var(--acme-color-text);
+}
+
+.about__sources .label-caps {
+  color: var(--acme-color-text-muted);
 }
 
 .sources {
   display: grid;
-  gap: 4px;
-  padding-inline-start: 1.2em;
+  gap: 6px;
+  padding-inline-start: 1.25em;
 }
 
 .site-footer {
-  display: grid;
-  gap: 4px;
-  padding-block: 20px 0;
-  color: var(--text-3);
-  font-size: 0.8125rem;
+  border-block-start: 1px solid var(--acme-color-border);
+}
+
+.site-footer__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 24px;
+  max-inline-size: calc(1200px + 48px);
+  margin-inline: auto;
+  padding-block: 20px calc(var(--safe-bottom) + 32px);
+  padding-inline: calc(var(--safe-left) + 24px) calc(var(--safe-right) + 24px);
+  color: var(--acme-color-text-subtle);
+  font-size: 0.75rem;
   line-height: 1.5;
+}
+
+.site-footer__inner p:first-child {
+  max-inline-size: 80ch;
 }
 
 /* --- Loading skeletons -------------------------------------------------- */
 
 .skeleton {
-  border-radius: var(--radius-sm);
-  background: var(--skeleton);
+  border-radius: var(--acme-radius-md);
+  background: var(--acme-color-surface);
   animation: pulse 1.4s ease-in-out infinite;
 }
 
 .skeleton--title {
-  block-size: 28px;
+  block-size: 36px;
   inline-size: 55%;
 }
 
 .skeleton--hero {
-  block-size: 84px;
+  block-size: 90px;
+  border-radius: var(--acme-radius-lg);
 }
 
 .skeleton--chart {
-  block-size: 200px;
+  block-size: 220px;
 }
 
 .skeleton--row {
-  block-size: 56px;
+  block-size: 60px;
 }
 
 .detail__loading,
@@ -716,7 +911,8 @@ main:focus {
   .reading,
   .badge,
   .swatch,
-  .overview {
+  .city-row__aqi,
+  .alert {
     border-color: CanvasText;
   }
 

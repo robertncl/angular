@@ -20,7 +20,7 @@ export interface AqiCategory {
 }
 
 /**
- * US EPA AQI bands. Colours live in styles.css as --aqi-<id> so that chips,
+ * US EPA AQI bands. Colours live in styles.css as --acme-color-aqi-<id> so that chips,
  * map markers and chart bands all key off the same `data-cat` attribute.
  */
 export const AQI_CATEGORIES: readonly AqiCategory[] = [
