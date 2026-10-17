@@ -16,6 +16,17 @@
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#f3f0e7" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#100e08" media="(prefers-color-scheme: dark)">
+  <!--
+    Start DNS and TLS for the data APIs and map tiles while the JS downloads;
+    the first fetch otherwise waits for the app to boot. The APIs are CORS
+    fetches (crossorigin); tiles are plain image loads (no crossorigin).
+  -->
+  <link rel="preconnect" href="https://air-quality-api.open-meteo.com" crossorigin>
+  <link rel="preconnect" href="https://api.open-meteo.com" crossorigin>
+  <link rel="preconnect" href="https://tile.openstreetmap.org">
+  <!-- Body text and the serif headlines are above the fold; fetch them before the CSS asks. -->
+  <link rel="preload" href="fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/SourceSerif4-Bold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="icon" href="favicon.ico" sizes="32x32">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
 </head>

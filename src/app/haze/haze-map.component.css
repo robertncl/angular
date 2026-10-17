@@ -1,3 +1,7 @@
+/* Leaflet's own stylesheet ships with this lazy chunk rather than the global
+   CSS, so it no longer blocks the first render of a page that defers the map. */
+@import 'leaflet/dist/leaflet.css';
+
 /* Unencapsulated (see the component): every rule is scoped under .haze-map,
    a class only this component uses. */
 

@@ -1,9 +1,10 @@
+import { Location } from '@angular/common';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, TestRequest, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, DeferBlockBehavior, TestBed } from '@angular/core/testing';
 import { Title } from '@angular/platform-browser';
-import { Router, provideRouter } from '@angular/router';
+import { SpyLocation, provideLocationMocks } from '@angular/common/testing';
 
 import { AIR_QUALITY_API, WEATHER_API } from './air-quality.service';
 import { CITIES, City } from './cities';
@@ -50,7 +51,7 @@ function hourly(aqi: number) {
 describe('HazeDashboardComponent', () => {
   let fixture: ComponentFixture<HazeDashboardComponent>;
   let http: HttpTestingController;
-  let navigate: jasmine.Spy;
+  let location: SpyLocation;
   let el: HTMLElement;
 
   beforeEach(() => {
@@ -61,12 +62,12 @@ describe('HazeDashboardComponent', () => {
     }
     TestBed.configureTestingModule({
       imports: [HazeDashboardComponent],
-      providers: [provideZonelessChangeDetection(), provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
+      providers: [provideZonelessChangeDetection(), provideHttpClient(), provideHttpClientTesting(), provideLocationMocks()],
       // Keep the Leaflet map out of these tests; it has its own spec.
       deferBlockBehavior: DeferBlockBehavior.Manual
     });
     http = TestBed.inject(HttpTestingController);
-    navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
+    location = TestBed.inject(Location) as SpyLocation;
     fixture = TestBed.createComponent(HazeDashboardComponent);
     el = fixture.nativeElement;
   });
@@ -155,13 +156,13 @@ describe('HazeDashboardComponent', () => {
     expect(el.querySelector('.detail__city')?.textContent).toContain('Pekanbaru');
     expect(el.textContent).toContain('Thick haze');
     expect(rows().find(r => r.getAttribute('aria-current') === 'true')?.textContent).toContain('Pekanbaru');
-    expect(navigate).toHaveBeenCalledWith([], { queryParams: { city: 'pekanbaru' }, replaceUrl: true });
+    expect(location.urlChanges).toContain('replace: ?city=pekanbaru');
     expect(localStorage.getItem('hazewatch.city')).toBe('pekanbaru');
     expect(el.querySelector('[aria-live="polite"]')?.textContent).toContain('Showing Pekanbaru: US AQI 178, Unhealthy.');
   });
 
   it('opens on the city named in the ?city= link', async () => {
-    fixture.componentRef.setInput('city', 'chiang-mai');
+    location.setInitialPath('?city=chiang-mai');
     await loadAll();
     outlookRequest(city('chiang-mai')).flush(hourly(35));
     await fixture.whenStable();
@@ -171,12 +172,25 @@ describe('HazeDashboardComponent', () => {
   });
 
   it('ignores an unknown ?city= and falls back to the default', async () => {
-    fixture.componentRef.setInput('city', 'atlantis');
+    location.setInitialPath('?city=atlantis');
     await loadAll();
     outlookRequest(city('singapore')).flush(hourly(164));
     await fixture.whenStable();
 
     expect(el.querySelector('.detail__city')?.textContent).toContain('Singapore');
+  });
+
+  it('follows back/forward to a different ?city=', async () => {
+    await loadAll();
+    outlookRequest(city('singapore')).flush(hourly(164));
+    await fixture.whenStable();
+
+    location.simulateUrlPop('?city=pekanbaru');
+    await fixture.whenStable();
+    outlookRequest(city('pekanbaru')).flush(hourly(178));
+    await fixture.whenStable();
+
+    expect(el.querySelector('.detail__city')?.textContent).toContain('Pekanbaru');
   });
 
   it('filters by country and re-sorts', async () => {

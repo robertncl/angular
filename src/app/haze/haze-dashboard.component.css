@@ -782,7 +782,7 @@
 .city-row__pm-label {
   color: var(--acme-color-text-subtle);
   font-size: 0.75rem;
-  font-weight: 500;
+  font-weight: 400;
 }
 
 .city-list__empty {
