@@ -1,0 +1,65 @@
+<figure class="chart">
+  <figcaption class="chart__caption">
+    <span class="chart__title">Hourly US AQI — past 2 days and 4-day forecast</span>
+    @if (summary()) {
+      <span class="chart__summary">{{ summary() }}</span>
+    }
+  </figcaption>
+
+  @if (model(); as m) {
+    <div class="chart__frame" #frame>
+      <svg
+        class="chart__svg"
+        [attr.viewBox]="'0 0 ' + m.width + ' ' + m.height"
+        [attr.width]="m.width"
+        [attr.height]="m.height"
+        role="img"
+        [attr.aria-labelledby]="titleId"
+        (pointermove)="onPointerMove($event)"
+        (pointerdown)="onPointerMove($event)"
+        (pointerleave)="hoverIndex.set(null)"
+      >
+        <title [attr.id]="titleId">Hourly US AQI chart. {{ summary() }}</title>
+
+        <g class="bands">
+          @for (b of m.bands; track b.id) {
+            <svg:rect class="band" [attr.data-cat]="b.id" [attr.x]="m.left" [attr.y]="b.y" [attr.width]="m.right - m.left" [attr.height]="b.height" />
+          }
+        </g>
+
+        <g class="grid">
+          @for (t of m.yTicks; track t.label) {
+            <svg:line class="grid__y" [attr.x1]="m.left" [attr.x2]="m.right" [attr.y1]="t.pos" [attr.y2]="t.pos" />
+            <svg:text class="tick tick--y" [attr.x]="m.left - 6" [attr.y]="t.pos">{{ t.label }}</svg:text>
+          }
+          @for (t of m.xTicks; track t.pos) {
+            <svg:line class="grid__x" [attr.x1]="t.pos" [attr.x2]="t.pos" [attr.y1]="m.top" [attr.y2]="m.bottom" />
+            <svg:text class="tick tick--x" [attr.x]="t.pos + 4" [attr.y]="m.height - 6">{{ t.label }}</svg:text>
+          }
+        </g>
+
+        <path class="line line--past" [attr.d]="m.pastPath" />
+        <path class="line line--forecast" [attr.d]="m.forecastPath" />
+
+        @if (m.nowX !== null) {
+          <svg:line class="now" [attr.x1]="m.nowX" [attr.x2]="m.nowX" [attr.y1]="m.top" [attr.y2]="m.bottom" />
+          <svg:text class="now__label" [attr.x]="m.nowX + 4" [attr.y]="m.top + 12">Now</svg:text>
+        }
+
+        @if (hovered(); as h) {
+          <svg:line class="cursor" [attr.x1]="h.x" [attr.x2]="h.x" [attr.y1]="m.top" [attr.y2]="m.bottom" />
+          <svg:circle class="cursor__dot" [attr.cx]="h.x" [attr.cy]="h.y" r="4" />
+        }
+      </svg>
+    </div>
+
+    <!-- Pointer-only extra; the daily outlook table below carries the same data for everyone. -->
+    <p class="chart__readout" aria-hidden="true">{{ readout() || 'Point at the chart to read an hour.' }}</p>
+    <p class="chart__key">
+      <span class="key key--past" aria-hidden="true"></span> Modelled history
+      <span class="key key--forecast" aria-hidden="true"></span> Forecast
+    </p>
+  } @else {
+    <p class="chart__empty">Not enough hourly data to draw a chart for this city.</p>
+  }
+</figure>

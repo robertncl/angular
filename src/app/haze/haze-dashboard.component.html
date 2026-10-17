@@ -1,0 +1,305 @@
+<a class="skip-link visually-hidden" href="#content" (click)="skipToContent($event)">Skip to main content</a>
+
+<div class="page">
+  <header class="masthead">
+    <div class="brand">
+      <svg class="brand__mark" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="13" r="7" class="brand__sun" />
+        <path d="M4 19.5c3 0 3-1.5 6-1.5s3 1.5 6 1.5 3-1.5 6-1.5 3 1.5 6 1.5" class="brand__haze" />
+        <path d="M4 24.5c3 0 3-1.5 6-1.5s3 1.5 6 1.5 3-1.5 6-1.5 3 1.5 6 1.5" class="brand__haze" />
+      </svg>
+      <div>
+        <h1 class="brand__name">Haze Watch</h1>
+        <p class="brand__tag">Southeast Asia air quality</p>
+      </div>
+    </div>
+
+    <div class="masthead__actions">
+      <p class="updated">
+        @if (updatedAt(); as at) {
+          Updated <time>{{ localTime(at) }}</time>
+        } @else if (loading()) {
+          Loading readings…
+        }
+      </p>
+      <button type="button" class="button" (click)="refresh()" [attr.aria-busy]="loading()">
+        <svg class="button__icon" [class.is-spinning]="loading()" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5" />
+        </svg>
+        Refresh
+      </button>
+    </div>
+  </header>
+
+  <main id="content" tabindex="-1">
+    @if (errorMessage(); as message) {
+      <div class="banner" role="alert">
+        <p>
+          {{ message }}
+          @if (updatedAt(); as at) {
+            Showing readings from {{ localTime(at) }}.
+          }
+        </p>
+        <button type="button" class="button" (click)="refresh()">Try again</button>
+      </div>
+    }
+
+    <section class="overview" [attr.data-cat]="overview().worstCategory?.id ?? 'none'">
+      @if (readings().length) {
+        <h2 class="overview__headline">{{ overview().headline }}</h2>
+        @if (overview().worst; as w) {
+          <p class="overview__worst">
+            Worst right now:
+            <button type="button" class="link-button" (click)="select(w.city.id)">{{ w.city.name }}, {{ country(w.city) }}</button>
+            — US AQI {{ aqi(w.usAqi) }} ({{ overview().worstCategory?.label }})
+          </p>
+        }
+      } @else if (loading()) {
+        <h2 class="overview__headline">Loading the latest readings for {{ cityCount }} cities…</h2>
+      } @else {
+        <h2 class="overview__headline">Air-quality readings are unavailable</h2>
+      }
+
+      <ul class="legend" role="list" aria-label="Number of cities in each US AQI category">
+        @for (c of categories; track c.id) {
+          <li class="legend__item">
+            <span class="swatch" [attr.data-cat]="c.id" aria-hidden="true"></span>
+            <span class="legend__label">{{ c.label }}</span>
+            <span class="legend__range">{{ c.range }}</span>
+            @if (readings().length) {
+              <span class="legend__count">{{ overview().counts.get(c.id) }}<span class="visually-hidden"> cities</span></span>
+            }
+          </li>
+        }
+      </ul>
+    </section>
+
+    <div class="layout">
+      <section class="panel map-panel">
+        <h2 class="visually-hidden">Map</h2>
+        <div class="map-frame">
+          @defer (on viewport) {
+            <app-haze-map [readings]="readings()" [selectedId]="selectedId()" (citySelected)="select($event)" />
+          } @placeholder {
+            <div class="map-placeholder"><p>Loading map…</p></div>
+          }
+        </div>
+        <p class="hint">Markers show US AQI. Select one, or a city in the list, for details and a forecast.</p>
+      </section>
+
+      <section class="panel detail" #detailPanel>
+        @if (selected(); as r) {
+          @let cat = selectedCategory();
+          <header class="detail__head">
+            <h2 class="detail__city">{{ r.city.name }}</h2>
+            <p class="detail__place">{{ place(r.city) }}</p>
+          </header>
+
+          <div class="reading" [attr.data-cat]="cat?.id ?? 'none'">
+            <p class="reading__value">
+              <span class="reading__number">{{ aqi(r.usAqi) }}</span>
+              <span class="reading__unit">US AQI</span>
+            </p>
+            <p class="reading__label">{{ cat?.label ?? 'No data' }}</p>
+          </div>
+          <p class="detail__time">
+            Model estimate for {{ cityTime(r) }}. The AQI averages particles over the past 24 hours, so it can stay
+            high for a while after the air clears.
+          </p>
+
+          @if (cat) {
+            <p class="advice"><strong>Health advice.</strong> {{ cat.advice }}</p>
+          }
+
+          <dl class="metrics">
+            <div class="metric">
+              <dt>PM2.5 this hour</dt>
+              <dd>
+                <span class="metric__value">{{ concentration(r.pm25) }}</span> µg/m³
+                <span class="metric__note">WHO 24-hour guideline: {{ whoPm25 }}</span>
+              </dd>
+            </div>
+            <div class="metric">
+              <dt>Haze</dt>
+              <dd>
+                <span class="metric__value">{{ haze(r.aerosolOpticalDepth) }}</span>
+                <span class="metric__note">Aerosol optical depth {{ r.aerosolOpticalDepth == null ? '–' : r.aerosolOpticalDepth.toFixed(2) }}</span>
+              </dd>
+            </div>
+            <div class="metric">
+              <dt>Wind</dt>
+              <dd>
+                <span class="metric__value metric__value--wind">
+                  @if (r.windFrom != null && (r.windSpeed ?? 0) >= 1) {
+                    <svg class="wind-arrow" viewBox="0 0 24 24" aria-hidden="true">
+                      <path [attr.transform]="'rotate(' + windArrowRotation(r) + ' 12 12)'" d="M12 3l5 9h-3.5v9h-3v-9H7z" />
+                    </svg>
+                  }
+                  {{ wind(r) }}
+                </span>
+                <span class="metric__note">Arrow shows where smoke is drifting</span>
+              </dd>
+            </div>
+            <div class="metric">
+              <dt>PM10</dt>
+              <dd><span class="metric__value">{{ concentration(r.pm10) }}</span> µg/m³</dd>
+            </div>
+            <div class="metric">
+              <dt>Ozone</dt>
+              <dd><span class="metric__value">{{ concentration(r.ozone) }}</span> µg/m³</dd>
+            </div>
+            <div class="metric">
+              <dt>Carbon monoxide</dt>
+              <dd><span class="metric__value">{{ concentration(r.carbonMonoxide) }}</span> µg/m³</dd>
+            </div>
+          </dl>
+
+          <div class="outlook">
+            @let state = outlookState();
+            @if (state.status === 'ready') {
+              <app-aqi-chart [points]="state.outlook.points" [timeZone]="state.outlook.timeZone" />
+
+              @if (daily().length) {
+                <table class="daily">
+                  <caption>Daily outlook, {{ r.city.name }} local time</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Day</th>
+                      <th scope="col">Peak US AQI</th>
+                      <th scope="col">Peak PM2.5 <span class="unit">µg/m³</span></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (d of daily(); track d.date) {
+                      @let dayCat = categoryOf(d.peakAqi);
+                      <tr>
+                        <th scope="row">{{ d.label }}</th>
+                        <td>
+                          <span class="badge badge--compact" [attr.data-cat]="dayCat?.id ?? 'none'">
+                            <span class="badge__value">{{ aqi(d.peakAqi) }}</span>
+                            <span class="badge__label">{{ dayCat?.shortLabel ?? 'No data' }}</span>
+                          </span>
+                        </td>
+                        <td class="num">{{ concentration(d.peakPm25) }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              }
+            } @else if (state.status === 'error') {
+              <div class="inline-error">
+                <p>Couldn't load the forecast. {{ state.message }}</p>
+                <button type="button" class="button" (click)="retryOutlook()">Try again</button>
+              </div>
+            } @else {
+              <div class="skeleton skeleton--chart" aria-hidden="true"></div>
+            }
+          </div>
+        } @else if (loading()) {
+          <div class="detail__loading" aria-hidden="true">
+            <div class="skeleton skeleton--title"></div>
+            <div class="skeleton skeleton--hero"></div>
+            <div class="skeleton skeleton--chart"></div>
+          </div>
+        } @else {
+          <h2 class="detail__city">{{ selectedCity().name }}</h2>
+          <p class="detail__empty">No reading is available for this city right now.</p>
+        }
+      </section>
+
+      <section class="panel cities">
+        <div class="cities__head">
+          <h2 id="cities-heading">Cities</h2>
+          <div class="filters">
+            <div class="field">
+              <label for="country-filter">Country</label>
+              <select id="country-filter" (change)="setCountry($event)">
+                <option value="all" [selected]="countryFilter() === 'all'">All countries</option>
+                @for (c of countries; track c.code) {
+                  <option [value]="c.code" [selected]="countryFilter() === c.code">{{ c.name }}</option>
+                }
+              </select>
+            </div>
+            <div class="field">
+              <label for="sort-order">Sort</label>
+              <select id="sort-order" (change)="setSort($event)">
+                <option value="worst" [selected]="sortOrder() === 'worst'">Worst air first</option>
+                <option value="best" [selected]="sortOrder() === 'best'">Cleanest air first</option>
+                <option value="name" [selected]="sortOrder() === 'name'">Name (A–Z)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        @if (readings().length) {
+          <ul class="city-list" role="list" aria-labelledby="cities-heading">
+            @for (r of visibleReadings(); track r.city.id) {
+              @let rowCat = categoryOf(r.usAqi);
+              <li>
+                <button
+                  type="button"
+                  class="city-row"
+                  [attr.aria-current]="r.city.id === selectedId() ? 'true' : null"
+                  (click)="select(r.city.id)"
+                >
+                  <span class="city-row__text">
+                    <span class="city-row__name">{{ r.city.name }}</span>
+                    <span class="city-row__place">{{ place(r.city) }}</span>
+                  </span>
+                  <span class="city-row__pm">
+                    <span class="city-row__pm-label">PM2.5 now</span>
+                    {{ concentration(r.pm25) }}
+                  </span>
+                  <span class="badge" [attr.data-cat]="rowCat?.id ?? 'none'">
+                    <span class="visually-hidden">US AQI</span>
+                    <span class="badge__value">{{ aqi(r.usAqi) }}</span>
+                    <span class="badge__label">{{ rowCat?.shortLabel ?? 'No data' }}</span>
+                  </span>
+                </button>
+              </li>
+            } @empty {
+              <li class="city-list__empty">No cities match this filter.</li>
+            }
+          </ul>
+        } @else if (loading()) {
+          <div class="skeleton-list" aria-hidden="true">
+            @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+              <div class="skeleton skeleton--row"></div>
+            }
+          </div>
+        }
+      </section>
+    </div>
+
+    <section class="panel about">
+      <h2>About this data</h2>
+      <p>
+        Readings are <strong>model estimates</strong> from the Copernicus Atmosphere Monitoring Service (CAMS), served by
+        Open-Meteo on a grid of roughly 45 km. They capture regional smoke well but can differ from ground stations,
+        especially close to fires or in dense city centres. The map refreshes every 30 minutes while the page is open.
+      </p>
+      <p>
+        Values use the US EPA Air Quality Index. National indices are calculated differently, so Singapore's PSI,
+        Malaysia's API and Indonesia's ISPU won't match these numbers exactly. For official readings and advisories:
+      </p>
+      <ul class="sources">
+        <li><a href="https://www.haze.gov.sg/">Singapore: NEA haze updates</a></li>
+        <li><a href="https://eqms.doe.gov.my/APIMS/main">Malaysia: Air Pollutant Index (APIMS)</a></li>
+        <li><a href="https://ispu.kemenlh.go.id/">Indonesia: Air Pollution Standard Index (ISPU)</a></li>
+        <li><a href="https://air4thai.pcd.go.th/webV3/">Thailand: Air4Thai</a></li>
+        <li><a href="https://asmc.asean.org/">ASEAN Specialised Meteorological Centre: regional haze and hotspots</a></li>
+        <li><a href="https://firms.modaps.eosdis.nasa.gov/map/">NASA FIRMS: active fire map</a></li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>
+      Air-quality and wind data by <a href="https://open-meteo.com/">Open-Meteo</a> (CC BY 4.0), generated using
+      Copernicus Atmosphere Monitoring Service information. Map data © OpenStreetMap contributors.
+    </p>
+    <p>Not an official advisory. Follow the guidance of your local authorities.</p>
+  </footer>
+</div>
+
+<div class="visually-hidden" aria-live="polite" aria-atomic="true">{{ announcement() }}</div>

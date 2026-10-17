@@ -2,36 +2,22 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Stockwatch</title>
+  <title>Haze Watch · Southeast Asia air quality</title>
   <base href="/">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Track haze across Southeast Asia: modelled US AQI and PM2.5 for 39 cities, a 4-day outlook and health advice.">
   <!--
-    Baseline CSP for deployments that don't set response headers. nginx.conf
-    sends the same policy plus frame-ancestors, which a meta tag cannot carry.
-    The sha256 pins the inline theme-bootstrap script below; if that script is
-    edited, recompute the hash here AND in nginx.conf or it will stop running.
+    Baseline CSP for deployments that don't set response headers (and for the
+    Capacitor WebView). security-headers.conf sends the same policy plus
+    frame-ancestors, which a meta tag cannot carry — keep the two in sync.
+    The only third parties are the Open-Meteo APIs and OpenStreetMap tiles.
   -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-2yirsBSX3viP57TyxK5Vwds+ovtfiwh5352ybizU3J0='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://tile.openstreetmap.org; font-src 'self'; connect-src 'self' https://air-quality-api.open-meteo.com https://api.open-meteo.com; object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta name="color-scheme" content="light dark">
-  <meta name="theme-color" content="#0a0d12" media="(prefers-color-scheme: dark)">
-  <meta name="theme-color" content="#f4f6fb" media="(prefers-color-scheme: light)">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
-  <script>
-    (function () {
-      try {
-        var saved = localStorage.getItem('stockwatch.theme');
-        var prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
-        var theme = saved || (prefersLight ? 'light' : 'dark');
-        document.documentElement.setAttribute('data-theme', theme);
-        document.querySelector('meta[name="color-scheme"]').content = theme;
-      } catch (e) {
-        document.documentElement.setAttribute('data-theme', 'dark');
-      }
-    })();
-  </script>
+  <meta name="theme-color" content="#f3f2ee" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0f1215" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="favicon.ico" sizes="32x32">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
 </head>
 <body>
   <app-root></app-root>
