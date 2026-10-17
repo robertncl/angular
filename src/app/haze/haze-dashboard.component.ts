@@ -1,4 +1,4 @@
-import { NgTemplateOutlet } from '@angular/common';
+import { Location, NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -8,14 +8,12 @@ import {
   computed,
   effect,
   inject,
-  input,
   signal,
   untracked,
   viewChild
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Title } from '@angular/platform-browser';
-import { Router } from '@angular/router';
 import { Subject, catchError, finalize, map, of, switchMap } from 'rxjs';
 
 import { AqiChartComponent } from './aqi-chart.component';
@@ -73,11 +71,8 @@ type OutlookState =
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HazeDashboardComponent implements OnInit {
-  /** Bound from the `?city=` query parameter (withComponentInputBinding). */
-  readonly city = input<string | undefined>();
-
   private readonly airQuality = inject(AirQualityService);
-  private readonly router = inject(Router);
+  private readonly location = inject(Location);
   private readonly title = inject(Title);
   private readonly destroyRef = inject(DestroyRef);
   private readonly detailPanel = viewChild<ElementRef<HTMLElement>>('detailPanel');
@@ -162,11 +157,12 @@ export class HazeDashboardComponent implements OnInit {
       )
       .subscribe(state => this.outlookState.set(state));
 
-    // A changed ?city= (back/forward, a pasted link) moves the selection.
-    effect(() => {
-      const id = this.city();
-      if (id && CITY_BY_ID.has(id)) untracked(() => this.selectedId.set(id));
+    // Back/forward to a different ?city= moves the selection.
+    const stopListening = this.location.onUrlChange(url => {
+      const id = cityFromUrl(url);
+      if (id) this.selectedId.set(id);
     });
+    this.destroyRef.onDestroy(stopListening);
 
     effect(() => {
       const city = this.selectedCity();
@@ -187,10 +183,8 @@ export class HazeDashboardComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    if (!this.city() || !CITY_BY_ID.has(this.city()!)) {
-      const stored = readStoredCity();
-      if (stored) this.selectedId.set(stored);
-    }
+    const id = cityFromUrl(this.location.path()) ?? readStoredCity();
+    if (id) this.selectedId.set(id);
     this.refresh();
   }
 
@@ -231,7 +225,9 @@ export class HazeDashboardComponent implements OnInit {
     } catch {
       // Storage can be blocked; the URL still carries the selection.
     }
-    void this.router.navigate([], { queryParams: { city: id }, replaceUrl: true });
+    // Ids are URL-safe slugs. replaceState keeps the history stack flat.
+    const [path] = this.location.path().split('?');
+    this.location.replaceState(path, `city=${id}`);
 
     const r = this.byId().get(id);
     const cat = aqiCategory(r?.usAqi);
@@ -355,6 +351,13 @@ function compareReadings(a: CityReading, b: CityReading, order: SortOrder): numb
   }
   const diff = order === 'worst' ? b.usAqi - a.usAqi : a.usAqi - b.usAqi;
   return diff || a.city.name.localeCompare(b.city.name);
+}
+
+/** The ?city= id in a URL or path, if it names a known city. */
+function cityFromUrl(url: string): string | null {
+  const query = url.split('#')[0].split('?')[1] ?? '';
+  const id = new URLSearchParams(query).get('city');
+  return id && CITY_BY_ID.has(id) ? id : null;
 }
 
 function readStoredCity(): string | null {

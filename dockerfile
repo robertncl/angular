@@ -12,7 +12,11 @@ ENV PUPPETEER_SKIP_DOWNLOAD=true
 RUN npm ci
 
 COPY . .
-RUN npm run build
+RUN npm run build \
+    # Pre-compress text assets once, at maximum level, for nginx's gzip_static;
+    # -k keeps the originals for clients that don't accept gzip.
+    && find dist/angular/browser -type f \( -name '*.js' -o -name '*.css' -o -name '*.html' -o -name '*.svg' -o -name '*.txt' \) \
+       -exec gzip -9 -k {} +
 
 # ---- Stage 2: runtime -------------------------------------------------------
 # nginx:alpine — serves the compiled bundle. The previous image ran
