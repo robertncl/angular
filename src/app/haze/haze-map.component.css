@@ -14,13 +14,13 @@
 
 /* Compound selectors so these beat leaflet.css regardless of load order. */
 .haze-map.leaflet-container {
-  background: var(--map-water);
+  background: var(--acme-color-surface);
   font: inherit;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
 }
 
 .haze-map.leaflet-container a {
-  color: var(--link);
+  color: var(--acme-color-link);
 }
 
 /* --- Markers ----------------------------------------------------------- */
@@ -31,34 +31,36 @@
   border: 0;
 }
 
+/* AQI pills: the category fill, a control-strength edge, a resting shadow.
+   Hover raises the shadow; nothing scales or bounces. */
 .haze-map .haze-marker {
   position: absolute;
   translate: -50% -50%;
   display: grid;
   place-items: center;
-  min-inline-size: 30px;
-  block-size: 22px;
+  min-inline-size: 32px;
+  block-size: 24px;
   padding-inline: 6px;
-  border-radius: 999px;
+  border: 1px solid var(--acme-color-border-strong);
+  border-radius: var(--acme-radius-full);
   background: var(--cat);
   color: var(--cat-ink);
-  border: 1.5px solid var(--swatch-edge);
-  box-shadow: 0 1px 3px rgb(0 0 0 / 0.3);
+  box-shadow: var(--acme-shadow-sm);
   font-size: 0.75rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   line-height: 1;
   cursor: pointer;
-  transition: scale 120ms ease;
+  transition: box-shadow var(--acme-duration-base) var(--acme-ease-out);
 }
 
 .haze-map .haze-marker:hover {
-  scale: 1.12;
+  box-shadow: var(--acme-shadow-md);
 }
 
+/* Selection is orientation: the Clay ring, as on the selected list row. */
 .haze-map .haze-marker.is-selected {
-  scale: 1.25;
-  outline: 3px solid var(--text-1);
+  outline: 2px solid var(--acme-color-selected);
   outline-offset: 2px;
 }
 
@@ -70,16 +72,6 @@
   block-size: 14px;
   padding: 0;
   font-size: 0;
-}
-
-.haze-map.is-compact .haze-marker:not(.is-selected):hover {
-  scale: 1.4;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .haze-map .haze-marker {
-    transition: none;
-  }
 }
 
 /* --- Tiles ------------------------------------------------------------- */
@@ -106,40 +98,47 @@
 /* --- Leaflet chrome, themed ------------------------------------------- */
 
 .haze-map .haze-tooltip {
-  background: var(--surface);
-  color: var(--text-1);
-  border: 1px solid var(--border-strong);
-  border-radius: 8px;
-  box-shadow: var(--shadow);
-  padding: 6px 8px;
-  font-size: 0.8125rem;
-  line-height: 1.35;
+  padding: 8px 12px;
+  border: 1px solid var(--acme-color-border-strong);
+  border-radius: var(--acme-radius-md);
+  background: var(--acme-color-surface-raised);
+  box-shadow: var(--acme-shadow-md);
+  color: var(--acme-color-text);
+  font-size: 0.875rem;
+  line-height: 1.4;
 }
 
 .haze-map .haze-tooltip.leaflet-tooltip-top::before {
-  border-top-color: var(--border-strong);
+  border-top-color: var(--acme-color-border-strong);
+}
+
+.haze-map .leaflet-bar {
+  overflow: hidden;
+  border: 1px solid var(--acme-color-border-strong);
+  border-radius: var(--acme-radius-md);
+  box-shadow: var(--acme-shadow-sm);
 }
 
 .haze-map .leaflet-bar a,
 .haze-map .leaflet-bar a:hover {
-  background: var(--surface);
-  color: var(--text-1);
-  border-bottom-color: var(--border);
+  border-bottom-color: var(--acme-color-border);
+  background: var(--acme-color-surface-raised);
+  color: var(--acme-color-text);
+}
+
+.haze-map .leaflet-bar a:hover {
+  background: var(--acme-color-surface);
 }
 
 .haze-map .leaflet-bar a.leaflet-disabled {
-  background: var(--surface-2);
-  color: var(--text-3);
+  background: var(--acme-color-surface);
+  color: var(--acme-color-text-subtle);
 }
 
-.haze-map .leaflet-bar {
-  border: 1px solid var(--border-strong);
-  box-shadow: none;
-}
-
+/* Opaque, like every ACME surface. */
 .haze-map .leaflet-control-attribution {
-  background: color-mix(in srgb, var(--surface) 85%, transparent);
-  color: var(--text-2);
+  background: var(--acme-color-surface-raised);
+  color: var(--acme-color-text-muted);
 }
 
 @media (pointer: coarse) {

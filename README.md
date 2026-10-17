@@ -38,6 +38,19 @@ src/app/haze/
 
 The app is zoneless (`provideZonelessChangeDetection`): signals drive change detection, and `zone.js` isn't installed.
 
+## Design
+
+The UI follows the ACME design language: warm Oat neutrals, one Clay accent for actions, links, focus and selection,
+Brick for danger and Sky for info. The tokens are `--acme-*` custom properties in `src/styles.css`, with dark values
+under `prefers-color-scheme`.
+
+US AQI bands don't use the EPA's hues. They use an ACME scale (`--acme-color-aqi-*`) built from Oat, Clay and Brick
+that gets darker as the air gets worse, so neighbouring bands differ in lightness, not just hue. Every fill also prints
+its number and label.
+
+Inter and Source Serif 4 are self-hosted from `public/fonts/` (SIL OFL 1.1, licences alongside) as stand-ins for
+ACME's commercial Styrene B and Tiempos Headline.
+
 ## Development
 
 ```bash

@@ -1,48 +1,152 @@
 /*
- * Global tokens and base styles.
+ * Global tokens and base styles, in the ACME design language: warm Oat
+ * neutrals, one Clay accent (actions, links, focus, selection), Brick for
+ * danger and Sky for info only.
  *
  * The page follows the system colour scheme: light values on :root, dark
  * values under prefers-color-scheme. No toggle, no inline script, nothing to
  * flash. Contrast was checked for every text/background pair below (≥ 4.5:1)
- * and for --border-strong against surfaces (≥ 3:1, it outlines controls).
+ * and for --acme-color-border-strong against surfaces (≥ 3:1, it outlines
+ * controls).
  */
+
+/* Inter and Source Serif 4 (SIL OFL 1.1, licences in /fonts) stand in for
+   ACME's commercial Styrene B and Tiempos Headline, which stay first in the
+   stacks so a licensed install wins. */
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/Inter-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/Inter-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/Inter-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/Inter-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Source Serif 4';
+  src: url('/fonts/SourceSerif4-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   color-scheme: light dark;
 
-  --bg: #f3f2ee;
-  --surface: #ffffff;
-  --surface-2: #f7f6f2;
-  --selected-surface: #eef6f9;
-  --border: #e2dfd7;
-  --border-strong: #8a867d;
-  --text-1: #1b1a17;
-  --text-2: #4a473f;
-  --text-3: #69655c;
-  --link: #0a6680;
-  --focus: #0a6680;
-  --brand-sun: #e0912f;
-  --map-water: #e6e4df;
-  --chart-line: #1b1a17;
-  --chart-grid: rgb(27 26 23 / 0.1);
-  --band-opacity: 0.24;
-  --skeleton: #e6e3dc;
-  --danger-border: #b42318;
-  --danger-surface: #fdf0ee;
-  --shadow: 0 1px 2px rgb(28 25 20 / 0.06);
-  /* Outlines yellow and green swatches on white, maroon and purple on black. */
-  --swatch-edge: rgb(0 0 0 / 0.35);
+  /* Primitives: Oat (neutrals), Clay (the one accent), Brick (danger), Sky (info). */
+  --acme-gray-0: #fcfbf7;
+  --acme-gray-50: #f3f0e7;
+  --acme-gray-100: #e9e4d5;
+  --acme-gray-200: #c4bda4;
+  --acme-gray-300: #a29b89;
+  --acme-gray-400: #7e7764;
+  --acme-gray-500: #696352;
+  --acme-gray-600: #554f41;
+  --acme-gray-700: #433f32;
+  --acme-gray-800: #2f2b21;
+  --acme-gray-900: #1e1b13;
+  --acme-gray-950: #100e08;
+  --acme-clay-50: #faf0eb;
+  --acme-clay-200: #e9c3af;
+  --acme-clay-300: #dda588;
+  --acme-clay-400: #d18b6a;
+  --acme-clay-500: #b26e52;
+  --acme-clay-600: #94513b;
+  --acme-clay-700: #80432f;
+  --acme-clay-800: #6b3624;
+  --acme-clay-900: #552818;
+  --acme-red-50: #fbeeec;
+  --acme-red-300: #f3a395;
+  --acme-red-400: #ef7361;
+  --acme-red-600: #a82e1e;
+  --acme-red-700: #97291b;
+  --acme-sky-50: #edf1f4;
+  --acme-sky-300: #8db0c9;
+  --acme-sky-700: #305875;
 
-  --radius: 14px;
-  --radius-sm: 10px;
+  /* Semantic colours (light). */
+  --acme-color-canvas: var(--acme-gray-50);
+  --acme-color-surface: var(--acme-gray-100);
+  --acme-color-surface-raised: var(--acme-gray-0);
+  --acme-color-border: var(--acme-gray-200);
+  --acme-color-border-strong: var(--acme-gray-400);
+  --acme-color-text: var(--acme-gray-900);
+  --acme-color-text-muted: var(--acme-gray-600);
+  --acme-color-text-subtle: var(--acme-gray-500);
+  --acme-color-mark: var(--acme-clay-600);
+  --acme-color-on-primary: var(--acme-gray-0);
+  --acme-color-accent: var(--acme-clay-700);
+  --acme-color-selected: var(--acme-clay-700);
+  --acme-color-selected-soft: var(--acme-clay-50);
+  --acme-color-link: var(--acme-clay-700);
+  --acme-color-link-hover: var(--acme-clay-800);
+  --acme-color-focus: var(--acme-clay-600);
+  --acme-color-success: var(--acme-gray-600);
+  --acme-color-success-soft: var(--acme-gray-100);
+  --acme-color-warning: var(--acme-gray-600);
+  --acme-color-warning-soft: var(--acme-gray-100);
+  --acme-color-danger: var(--acme-red-700);
+  --acme-color-danger-soft: var(--acme-red-50);
+  --acme-color-info: var(--acme-sky-700);
+  --acme-color-info-soft: var(--acme-sky-50);
+  /* The one chart takeaway: differs from the line in lightness, not hue alone. */
+  --acme-color-data-highlight: var(--acme-clay-900);
 
-  /* US EPA AQI colours. Ink is the text colour that clears 4.5:1 on each. */
-  --aqi-good: #00e400;
-  --aqi-moderate: #ffff00;
-  --aqi-sensitive: #ff7e00;
-  --aqi-unhealthy: #ff0000;
-  --aqi-very-unhealthy: #8f3f97;
-  --aqi-hazardous: #7e0023;
-  --aqi-none: #a19d94;
+  --acme-shadow-sm: 0 1px 2px #1c19110f;
+  --acme-shadow-md: 0 2px 8px -2px #1c191117;
+
+  --acme-radius-sm: 4px;
+  --acme-radius-md: 8px;
+  --acme-radius-lg: 12px;
+  --acme-radius-xl: 16px;
+  --acme-radius-full: 999px;
+
+  --acme-duration-base: 150ms;
+  --acme-ease-out: cubic-bezier(0.2, 0.8, 0.4, 1);
+
+  --acme-font-sans: 'Styrene B', 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+  --acme-font-display: 'Tiempos Headline', 'Copernicus', 'Source Serif 4', Georgia, 'Times New Roman', ui-serif, serif;
+
+  /*
+   * US AQI scale, built from ACME primitives rather than the EPA's hues.
+   * Lightness falls as the air gets worse (L* 91 → 22), so neighbouring
+   * bands read apart without relying on hue; every fill also prints its
+   * number and label. Ink is the text colour that clears 4.5:1 on each.
+   * The same in both themes, like a fixed primary fill.
+   */
+  --acme-color-aqi-good: var(--acme-gray-100);
+  --acme-color-aqi-good-ink: var(--acme-gray-900);
+  --acme-color-aqi-moderate: var(--acme-gray-200);
+  --acme-color-aqi-moderate-ink: var(--acme-gray-900);
+  --acme-color-aqi-sensitive: var(--acme-clay-400);
+  --acme-color-aqi-sensitive-ink: var(--acme-gray-950);
+  --acme-color-aqi-unhealthy: var(--acme-clay-500);
+  --acme-color-aqi-unhealthy-ink: var(--acme-gray-950);
+  --acme-color-aqi-very-unhealthy: var(--acme-red-600);
+  --acme-color-aqi-very-unhealthy-ink: var(--acme-gray-0);
+  --acme-color-aqi-hazardous: var(--acme-clay-900);
+  --acme-color-aqi-hazardous-ink: var(--acme-gray-0);
+
+  --chart-band-opacity: 0.32;
 
   /* Capacitor's SystemBars plugin injects --safe-area-inset-* on Android;
      browsers (and newer WebViews) report env(). */
@@ -50,60 +154,66 @@
   --safe-right: var(--safe-area-inset-right, env(safe-area-inset-right, 0px));
   --safe-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
   --safe-left: var(--safe-area-inset-left, env(safe-area-inset-left, 0px));
-
-  --font: system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans', 'Helvetica Neue', Arial, sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0f1215;
-    --surface: #161a1f;
-    --surface-2: #1c2128;
-    --selected-surface: #13262d;
-    --border: #2a3038;
-    --border-strong: #6c747f;
-    --text-1: #ecebe6;
-    --text-2: #b8b5ad;
-    --text-3: #94918a;
-    --link: #6cc8e3;
-    --focus: #6cc8e3;
-    --brand-sun: #f0a443;
-    --map-water: #1a1e23;
-    --chart-line: #ecebe6;
-    --chart-grid: rgb(236 235 230 / 0.12);
-    --band-opacity: 0.2;
-    --skeleton: #222830;
-    --danger-border: #f97066;
-    --danger-surface: #2a1513;
-    --shadow: none;
-    --swatch-edge: rgb(255 255 255 / 0.45);
+    --acme-color-canvas: var(--acme-gray-950);
+    --acme-color-surface: var(--acme-gray-900);
+    --acme-color-surface-raised: var(--acme-gray-800);
+    --acme-color-border: var(--acme-gray-600);
+    --acme-color-text: var(--acme-gray-100);
+    --acme-color-text-muted: var(--acme-gray-200);
+    --acme-color-text-subtle: var(--acme-gray-300);
+    --acme-color-accent: var(--acme-clay-300);
+    --acme-color-selected: var(--acme-clay-300);
+    --acme-color-selected-soft: #3a2a1f;
+    --acme-color-link: var(--acme-clay-300);
+    --acme-color-link-hover: var(--acme-clay-200);
+    --acme-color-focus: var(--acme-clay-400);
+    --acme-color-success: var(--acme-gray-300);
+    --acme-color-success-soft: var(--acme-gray-800);
+    --acme-color-warning: var(--acme-gray-300);
+    --acme-color-warning-soft: var(--acme-gray-800);
+    --acme-color-danger: var(--acme-red-400);
+    --acme-color-danger-soft: #38241a;
+    --acme-color-info: var(--acme-sky-300);
+    --acme-color-info-soft: #2a2f2d;
+    --acme-color-data-highlight: var(--acme-clay-200);
+    --acme-shadow-sm: 0 1px 2px #00000059;
+    --acme-shadow-md: 0 2px 8px -2px #00000073;
+    --chart-band-opacity: 0.24;
   }
 }
 
 /* Any element tagged with an AQI category exposes --cat / --cat-ink. */
 [data-cat] {
-  --cat: var(--aqi-none);
-  --cat-ink: #000;
+  --cat: var(--acme-color-surface);
+  --cat-ink: var(--acme-color-text-muted);
 }
 [data-cat='good'] {
-  --cat: var(--aqi-good);
+  --cat: var(--acme-color-aqi-good);
+  --cat-ink: var(--acme-color-aqi-good-ink);
 }
 [data-cat='moderate'] {
-  --cat: var(--aqi-moderate);
+  --cat: var(--acme-color-aqi-moderate);
+  --cat-ink: var(--acme-color-aqi-moderate-ink);
 }
 [data-cat='sensitive'] {
-  --cat: var(--aqi-sensitive);
+  --cat: var(--acme-color-aqi-sensitive);
+  --cat-ink: var(--acme-color-aqi-sensitive-ink);
 }
 [data-cat='unhealthy'] {
-  --cat: var(--aqi-unhealthy);
+  --cat: var(--acme-color-aqi-unhealthy);
+  --cat-ink: var(--acme-color-aqi-unhealthy-ink);
 }
 [data-cat='very-unhealthy'] {
-  --cat: var(--aqi-very-unhealthy);
-  --cat-ink: #fff;
+  --cat: var(--acme-color-aqi-very-unhealthy);
+  --cat-ink: var(--acme-color-aqi-very-unhealthy-ink);
 }
 [data-cat='hazardous'] {
-  --cat: var(--aqi-hazardous);
-  --cat-ink: #fff;
+  --cat: var(--acme-color-aqi-hazardous);
+  --cat-ink: var(--acme-color-aqi-hazardous-ink);
 }
 
 *,
@@ -123,19 +233,21 @@ html {
 
 body {
   min-block-size: 100dvh;
-  background: var(--bg);
-  color: var(--text-1);
-  font-family: var(--font);
+  background: var(--acme-color-canvas);
+  color: var(--acme-color-text);
+  font-family: var(--acme-font-sans);
   font-size: 1rem;
-  line-height: 1.45;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  scrollbar-color: var(--border-strong) transparent;
+  scrollbar-color: var(--acme-color-border-strong) transparent;
   scrollbar-width: thin;
 }
 
 h1,
 h2,
 h3 {
+  font-family: var(--acme-font-display);
+  font-weight: 700;
   line-height: 1.2;
   text-wrap: balance;
 }
@@ -145,8 +257,14 @@ p {
 }
 
 a {
-  color: var(--link);
+  color: var(--acme-color-link);
+  text-decoration-thickness: 1px;
   text-underline-offset: 2px;
+  transition: color var(--acme-duration-base) var(--acme-ease-out);
+}
+
+a:hover {
+  color: var(--acme-color-link-hover);
 }
 
 button,
@@ -156,8 +274,17 @@ select {
 }
 
 :where(a, button, select, [tabindex]):focus-visible {
-  outline: 3px solid var(--focus);
+  outline: 2px solid var(--acme-color-focus);
   outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 .visually-hidden:where(:not(:focus-within, :active)) {
@@ -179,15 +306,16 @@ select {
   inset-block-start: calc(var(--safe-top) + 8px);
   inset-inline-start: calc(var(--safe-left) + 8px);
   z-index: 2000;
-  padding: 8px 14px;
-  border-radius: 8px;
-  background: var(--surface);
-  color: var(--text-1);
-  box-shadow: 0 2px 8px rgb(0 0 0 / 0.25);
+  padding: 8px 16px;
+  border: 1px solid var(--acme-color-border-strong);
+  border-radius: var(--acme-radius-md);
+  background: var(--acme-color-surface-raised);
+  color: var(--acme-color-text);
+  box-shadow: var(--acme-shadow-md);
 }
 
 @media (forced-colors: active) {
   :root {
-    --swatch-edge: CanvasText;
+    --acme-color-border-strong: CanvasText;
   }
 }
