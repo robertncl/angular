@@ -1,6 +1,6 @@
 # ---- Stage 1: build ---------------------------------------------------------
 # node:24-alpine — matches the Node version used in CI.
-FROM node@sha256:44fce696f38ba8c987c4db89954051000bbd05ffd8d8659ba15ed4a8602e937f AS build
+FROM node@sha256:1b84b89ada025e3b14543cbb837ffaa1c1b5273b841c5b94dd1a8f9c1d8cf7fe AS build
 
 WORKDIR /app
 
