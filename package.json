@@ -19,7 +19,8 @@
     "electron-to-chromium": "1.5.456",
     "@xmldom/xmldom": "0.9.12",
     "baseline-browser-mapping": "2.11.28",
-    "jose": "6.2.12"
+    "jose": "6.2.12",
+    "vite": "8.3.4"
   },
   "dependencies": {
     "@angular/common": "22.2.3",
