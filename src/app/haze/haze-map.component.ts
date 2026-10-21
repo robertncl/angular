@@ -28,7 +28,7 @@ import { placeLabel } from './cities';
  * in the CSP (src/index.html and security-headers.conf).
  */
 export const TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-const TILE_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+const TILE_ATTRIBUTION = 'Base map: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
 /** Roughly Myanmar to Timor-Leste, Sumatra to the Philippines. */
 const REGION_BOUNDS: L.LatLngBoundsExpression = [

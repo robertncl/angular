@@ -158,7 +158,7 @@ describe('HazeDashboardComponent', () => {
     expect(rows().find(r => r.getAttribute('aria-current') === 'true')?.textContent).toContain('Pekanbaru');
     expect(location.urlChanges).toContain('replace: ?city=pekanbaru');
     expect(localStorage.getItem('hazewatch.city')).toBe('pekanbaru');
-    expect(el.querySelector('[aria-live="polite"]')?.textContent).toContain('Showing Pekanbaru: US AQI 178, Unhealthy.');
+    expect(el.querySelector('.announcer[aria-live="polite"]')?.textContent).toContain('Showing Pekanbaru: US AQI 178, Unhealthy.');
   });
 
   it('opens on the city named in the ?city= link', async () => {

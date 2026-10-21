@@ -10,12 +10,13 @@
     Baseline CSP for deployments that don't set response headers (and for the
     Capacitor WebView). security-headers.conf sends the same policy plus
     frame-ancestors, which a meta tag cannot carry — keep the two in sync.
-    The only third parties are the Open-Meteo APIs and OpenStreetMap tiles.
+    The only third parties are the Open-Meteo APIs, OpenStreetMap tiles and
+    Google Fonts (stylesheet from fonts.googleapis.com, files from fonts.gstatic.com).
   -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://tile.openstreetmap.org; font-src 'self'; connect-src 'self' https://air-quality-api.open-meteo.com https://api.open-meteo.com; object-src 'none'; base-uri 'self'; form-action 'self'">
-  <meta name="color-scheme" content="light dark">
-  <meta name="theme-color" content="#f3f0e7" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#100e08" media="(prefers-color-scheme: dark)">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https://tile.openstreetmap.org; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://air-quality-api.open-meteo.com https://api.open-meteo.com; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <!-- Light only: the Modernist system has no dark theme. Matches --paper. -->
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#ffffff">
   <!--
     Start DNS and TLS for the data APIs and map tiles while the JS downloads;
     the first fetch otherwise waits for the app to boot. The APIs are CORS
@@ -24,9 +25,12 @@
   <link rel="preconnect" href="https://air-quality-api.open-meteo.com" crossorigin>
   <link rel="preconnect" href="https://api.open-meteo.com" crossorigin>
   <link rel="preconnect" href="https://tile.openstreetmap.org">
-  <!-- Body text and the serif headlines are above the fold; fetch them before the CSS asks. -->
-  <link rel="preload" href="fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="fonts/SourceSerif4-Bold.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Archivo (UI) and JetBrains Mono (codes). Production builds inline this
+       stylesheet (angular.json optimization.fonts); the font files still come
+       from fonts.gstatic.com. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
   <link rel="icon" href="favicon.ico" sizes="32x32">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
 </head>

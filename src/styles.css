@@ -1,145 +1,68 @@
 /*
- * Global tokens and base styles, in the ACME design language: warm Oat
- * neutrals, one Clay accent (actions, links, focus, selection), Brick for
- * danger and Sky for info only.
+ * Global tokens and base styles, in the Modernist design system: Swiss,
+ * black on white, rules instead of boxes. Colour has two jobs only — blue
+ * means act or "you are here", the data ramp means severity — and red is for
+ * errors, always with a word. Light theme only.
  *
- * The page follows the system colour scheme: light values on :root, dark
- * values under prefers-color-scheme. No toggle, no inline script, nothing to
- * flash. Contrast was checked for every text/background pair below (≥ 4.5:1)
- * and for --acme-color-border-strong against surfaces (≥ 3:1, it outlines
- * controls).
+ * Text contrast on --paper: ink 18.9:1, ink-2 9.6:1, ink-3 5.4:1 (4.8:1 on
+ * paper-2). Components use these tokens, never raw hex.
+ *
+ * Archivo and JetBrains Mono load from Google Fonts in index.html; the stacks
+ * fall back to Helvetica/Arial when offline.
  */
 
-/* Inter and Source Serif 4 (SIL OFL 1.1, licences in /fonts) stand in for
-   ACME's commercial Styrene B and Tiempos Headline, which stay first in the
-   stacks so a licensed install wins. */
-@font-face {
-  font-family: 'Inter';
-  src: url('/fonts/Inter-Regular.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Inter';
-  src: url('/fonts/Inter-SemiBold.woff2') format('woff2');
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Inter';
-  src: url('/fonts/Inter-Bold.woff2') format('woff2');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Source Serif 4';
-  src: url('/fonts/SourceSerif4-Bold.woff2') format('woff2');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
 
-  /* Primitives: Oat (neutrals), Clay (the one accent), Brick (danger), Sky (info). */
-  --acme-gray-0: #fcfbf7;
-  --acme-gray-50: #f3f0e7;
-  --acme-gray-100: #e9e4d5;
-  --acme-gray-200: #c4bda4;
-  --acme-gray-300: #a29b89;
-  --acme-gray-400: #7e7764;
-  --acme-gray-500: #696352;
-  --acme-gray-600: #554f41;
-  --acme-gray-700: #433f32;
-  --acme-gray-800: #2f2b21;
-  --acme-gray-900: #1e1b13;
-  --acme-gray-950: #100e08;
-  --acme-clay-50: #faf0eb;
-  --acme-clay-200: #e9c3af;
-  --acme-clay-300: #dda588;
-  --acme-clay-400: #d18b6a;
-  --acme-clay-500: #b26e52;
-  --acme-clay-600: #94513b;
-  --acme-clay-700: #80432f;
-  --acme-clay-800: #6b3624;
-  --acme-clay-900: #552818;
-  --acme-red-50: #fbeeec;
-  --acme-red-300: #f3a395;
-  --acme-red-400: #ef7361;
-  --acme-red-600: #a82e1e;
-  --acme-red-700: #97291b;
-  --acme-sky-50: #edf1f4;
-  --acme-sky-300: #8db0c9;
-  --acme-sky-700: #305875;
+  --paper: #ffffff;        /* page ground and every panel */
+  --paper-2: #f1f1ef;      /* recessed wells: map, skeletons, row hover */
+  --rule: #cfcfcb;         /* 1px hairlines between rows (decorative) */
+  --rule-strong: var(--ink); /* 2px section rules, control borders */
+  --ink: #111111;          /* text: 18.9:1 on paper */
+  --ink-2: #454542;        /* secondary text: 9.6:1 */
+  --ink-3: #6a6a66;        /* captions, axis labels: 5.4:1 on paper, 4.8:1 on paper-2 */
+  --blue: #1e40d8;         /* the ONLY action/orientation colour: links, primary button, focus, selected */
+  --blue-hover: #1631a8;
+  --blue-soft: #e6ebfc;    /* selected row background */
+  --on-blue: var(--paper);
+  --red: #b3170d;          /* danger/errors only, always with a word */
+  /* Severity ramp: lightness falls every step (L* 100, 85, 68, 48, 29, 5) */
+  --data-1: var(--paper);  --data-1-ink: var(--ink);
+  --data-2: #f6d21c;       --data-2-ink: var(--ink);
+  --data-3: #f08c1e;       --data-3-ink: var(--ink);
+  --data-4: #dc2a1e;       --data-4-ink: var(--paper); /* 4.8:1, bold 14px+ only */
+  --data-5: #8a1410;       --data-5-ink: var(--paper);
+  --data-6: var(--ink);    --data-6-ink: var(--paper);
+  --data-line: var(--ink);
+  --data-highlight: var(--blue);
+  --space-1: 4px; --space-2: 8px; --space-3: 16px; --space-4: 24px;
+  --space-5: 32px; --space-6: 48px; --space-7: 64px; --space-8: 96px;
+  --radius-none: 0px; --radius-hair: 2px; --radius-circle: 50%;
+  --stroke-hair: 1px; --stroke-rule: 2px; --stroke-alert: 4px; --stroke-bar: 8px;
+  --grid-max: 1280px; --grid-gutter: 24px;
+  --font-sans: "Archivo", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
 
-  /* Semantic colours (light). */
-  --acme-color-canvas: var(--acme-gray-50);
-  --acme-color-surface: var(--acme-gray-100);
-  --acme-color-surface-raised: var(--acme-gray-0);
-  --acme-color-border: var(--acme-gray-200);
-  --acme-color-border-strong: var(--acme-gray-400);
-  --acme-color-text: var(--acme-gray-900);
-  --acme-color-text-muted: var(--acme-gray-600);
-  --acme-color-text-subtle: var(--acme-gray-500);
-  --acme-color-mark: var(--acme-clay-600);
-  --acme-color-on-primary: var(--acme-gray-0);
-  --acme-color-accent: var(--acme-clay-700);
-  --acme-color-selected: var(--acme-clay-700);
-  --acme-color-selected-soft: var(--acme-clay-50);
-  --acme-color-link: var(--acme-clay-700);
-  --acme-color-link-hover: var(--acme-clay-800);
-  --acme-color-focus: var(--acme-clay-600);
-  --acme-color-success: var(--acme-gray-600);
-  --acme-color-success-soft: var(--acme-gray-100);
-  --acme-color-warning: var(--acme-gray-600);
-  --acme-color-warning-soft: var(--acme-gray-100);
-  --acme-color-danger: var(--acme-red-700);
-  --acme-color-danger-soft: var(--acme-red-50);
-  --acme-color-info: var(--acme-sky-700);
-  --acme-color-info-soft: var(--acme-sky-50);
-  /* The one chart takeaway: differs from the line in lightness, not hue alone. */
-  --acme-color-data-highlight: var(--acme-clay-900);
-
-  --acme-shadow-sm: 0 1px 2px #1c19110f;
-  --acme-shadow-md: 0 2px 8px -2px #1c191117;
-
-  --acme-radius-sm: 4px;
-  --acme-radius-md: 8px;
-  --acme-radius-lg: 12px;
-  --acme-radius-xl: 16px;
-  --acme-radius-full: 999px;
-
-  --acme-duration-base: 150ms;
-  --acme-ease-out: cubic-bezier(0.2, 0.8, 0.4, 1);
-
-  --acme-font-sans: 'Styrene B', 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
-  --acme-font-display: 'Tiempos Headline', 'Copernicus', 'Source Serif 4', Georgia, 'Times New Roman', ui-serif, serif;
+  /* Page side padding; cqi resolves against the dashboard's container. */
+  --page-pad: clamp(16px, 4cqi, 32px);
+  --chart-band-opacity: 0.32;
 
   /*
-   * US AQI scale, built from ACME primitives rather than the EPA's hues.
-   * Lightness falls as the air gets worse (L* 91 → 22), so neighbouring
-   * bands read apart without relying on hue; every fill also prints its
-   * number and label. Ink is the text colour that clears 4.5:1 on each.
-   * The same in both themes, like a fixed primary fill.
+   * US AQI bands on the Modernist ramp, data-1 (Good) to data-6 (Hazardous).
+   * Good is white like the page, so every AQI fill carries a 1px ink edge.
    */
-  --acme-color-aqi-good: var(--acme-gray-100);
-  --acme-color-aqi-good-ink: var(--acme-gray-900);
-  --acme-color-aqi-moderate: var(--acme-gray-200);
-  --acme-color-aqi-moderate-ink: var(--acme-gray-900);
-  --acme-color-aqi-sensitive: var(--acme-clay-400);
-  --acme-color-aqi-sensitive-ink: var(--acme-gray-950);
-  --acme-color-aqi-unhealthy: var(--acme-clay-500);
-  --acme-color-aqi-unhealthy-ink: var(--acme-gray-950);
-  --acme-color-aqi-very-unhealthy: var(--acme-red-600);
-  --acme-color-aqi-very-unhealthy-ink: var(--acme-gray-0);
-  --acme-color-aqi-hazardous: var(--acme-clay-900);
-  --acme-color-aqi-hazardous-ink: var(--acme-gray-0);
-
-  --chart-band-opacity: 0.32;
+  --aqi-good: var(--data-1);
+  --aqi-good-ink: var(--data-1-ink);
+  --aqi-moderate: var(--data-2);
+  --aqi-moderate-ink: var(--data-2-ink);
+  --aqi-sensitive: var(--data-3);
+  --aqi-sensitive-ink: var(--data-3-ink);
+  --aqi-unhealthy: var(--data-4);
+  --aqi-unhealthy-ink: var(--data-4-ink);
+  --aqi-very-unhealthy: var(--data-5);
+  --aqi-very-unhealthy-ink: var(--data-5-ink);
+  --aqi-hazardous: var(--data-6);
+  --aqi-hazardous-ink: var(--data-6-ink);
 
   /* Capacitor's SystemBars plugin injects --safe-area-inset-* on Android;
      browsers (and newer WebViews) report env(). */
@@ -149,64 +72,34 @@
   --safe-left: var(--safe-area-inset-left, env(safe-area-inset-left, 0px));
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --acme-color-canvas: var(--acme-gray-950);
-    --acme-color-surface: var(--acme-gray-900);
-    --acme-color-surface-raised: var(--acme-gray-800);
-    --acme-color-border: var(--acme-gray-600);
-    --acme-color-text: var(--acme-gray-100);
-    --acme-color-text-muted: var(--acme-gray-200);
-    --acme-color-text-subtle: var(--acme-gray-300);
-    --acme-color-accent: var(--acme-clay-300);
-    --acme-color-selected: var(--acme-clay-300);
-    --acme-color-selected-soft: #3a2a1f;
-    --acme-color-link: var(--acme-clay-300);
-    --acme-color-link-hover: var(--acme-clay-200);
-    --acme-color-focus: var(--acme-clay-400);
-    --acme-color-success: var(--acme-gray-300);
-    --acme-color-success-soft: var(--acme-gray-800);
-    --acme-color-warning: var(--acme-gray-300);
-    --acme-color-warning-soft: var(--acme-gray-800);
-    --acme-color-danger: var(--acme-red-400);
-    --acme-color-danger-soft: #38241a;
-    --acme-color-info: var(--acme-sky-300);
-    --acme-color-info-soft: #2a2f2d;
-    --acme-color-data-highlight: var(--acme-clay-200);
-    --acme-shadow-sm: 0 1px 2px #00000059;
-    --acme-shadow-md: 0 2px 8px -2px #00000073;
-    --chart-band-opacity: 0.24;
-  }
-}
-
 /* Any element tagged with an AQI category exposes --cat / --cat-ink. */
 [data-cat] {
-  --cat: var(--acme-color-surface);
-  --cat-ink: var(--acme-color-text-muted);
+  --cat: var(--paper-2);
+  --cat-ink: var(--ink-2);
 }
 [data-cat='good'] {
-  --cat: var(--acme-color-aqi-good);
-  --cat-ink: var(--acme-color-aqi-good-ink);
+  --cat: var(--aqi-good);
+  --cat-ink: var(--aqi-good-ink);
 }
 [data-cat='moderate'] {
-  --cat: var(--acme-color-aqi-moderate);
-  --cat-ink: var(--acme-color-aqi-moderate-ink);
+  --cat: var(--aqi-moderate);
+  --cat-ink: var(--aqi-moderate-ink);
 }
 [data-cat='sensitive'] {
-  --cat: var(--acme-color-aqi-sensitive);
-  --cat-ink: var(--acme-color-aqi-sensitive-ink);
+  --cat: var(--aqi-sensitive);
+  --cat-ink: var(--aqi-sensitive-ink);
 }
 [data-cat='unhealthy'] {
-  --cat: var(--acme-color-aqi-unhealthy);
-  --cat-ink: var(--acme-color-aqi-unhealthy-ink);
+  --cat: var(--aqi-unhealthy);
+  --cat-ink: var(--aqi-unhealthy-ink);
 }
 [data-cat='very-unhealthy'] {
-  --cat: var(--acme-color-aqi-very-unhealthy);
-  --cat-ink: var(--acme-color-aqi-very-unhealthy-ink);
+  --cat: var(--aqi-very-unhealthy);
+  --cat-ink: var(--aqi-very-unhealthy-ink);
 }
 [data-cat='hazardous'] {
-  --cat: var(--acme-color-aqi-hazardous);
-  --cat-ink: var(--acme-color-aqi-hazardous-ink);
+  --cat: var(--aqi-hazardous);
+  --cat-ink: var(--aqi-hazardous-ink);
 }
 
 *,
@@ -226,22 +119,21 @@ html {
 
 body {
   min-block-size: 100dvh;
-  background: var(--acme-color-canvas);
-  color: var(--acme-color-text);
-  font-family: var(--acme-font-sans);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
   font-size: 1rem;
   line-height: 1.5;
+  font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
-  scrollbar-color: var(--acme-color-border-strong) transparent;
+  scrollbar-color: var(--ink-3) transparent;
   scrollbar-width: thin;
 }
 
 h1,
 h2,
 h3 {
-  font-family: var(--acme-font-display);
   font-weight: 700;
-  line-height: 1.2;
   text-wrap: balance;
 }
 
@@ -249,15 +141,18 @@ p {
   text-wrap: pretty;
 }
 
+ul {
+  padding: 0;
+}
+
 a {
-  color: var(--acme-color-link);
+  color: var(--blue);
   text-decoration-thickness: 1px;
-  text-underline-offset: 2px;
-  transition: color var(--acme-duration-base) var(--acme-ease-out);
+  text-underline-offset: 3px;
 }
 
 a:hover {
-  color: var(--acme-color-link-hover);
+  color: var(--blue-hover);
 }
 
 button,
@@ -266,8 +161,8 @@ select {
   font: inherit;
 }
 
-:where(a, button, select, [tabindex]):focus-visible {
-  outline: 2px solid var(--acme-color-focus);
+:focus-visible {
+  outline: 2px solid var(--blue);
   outline-offset: 2px;
 }
 
@@ -279,6 +174,173 @@ select {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* --- Type -------------------------------------------------------------- */
+
+/* Uppercase is styling only; the markup stays sentence case. */
+.label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.heading-2 {
+  font-size: 1.75rem;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.heading-3 {
+  font-size: 1.125rem;
+  line-height: 1.25;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+/* Inline 24px icons: 2px stroke, square caps, always beside a word. */
+.icon {
+  flex: none;
+  inline-size: 24px;
+  block-size: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+}
+
+/* --- Shared controls --------------------------------------------------- */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-block-size: 44px;
+  padding-inline: 16px;
+  border: 2px solid var(--ink);
+  border-radius: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.button:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* At most one per view. */
+.button--primary {
+  border-color: var(--blue);
+  background: var(--blue);
+  color: var(--on-blue);
+}
+
+.button--primary:hover {
+  border-color: var(--blue-hover);
+  background: var(--blue-hover);
+  color: var(--on-blue);
+}
+
+.link-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--blue);
+  font: inherit;
+  font-weight: 600;
+  text-align: start;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.link-button:hover {
+  color: var(--blue-hover);
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+}
+
+.field label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.field select {
+  min-block-size: 44px;
+  min-inline-size: 200px;
+  padding-inline: 12px;
+  border: 2px solid var(--ink);
+  border-radius: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+/* A rule, a bold title, then the body in ink-2. Tones other than danger
+   (success, info, warning) look the same on purpose. */
+.alert {
+  display: grid;
+  gap: 4px;
+  padding-block-start: 12px;
+  border-block-start: 4px solid var(--ink);
+}
+
+.alert__title {
+  font-weight: 700;
+}
+
+.alert__body {
+  color: var(--ink-2);
+}
+
+.alert[data-tone='danger'] {
+  border-block-start-color: var(--red);
+}
+
+.alert[data-tone='danger'] .alert__title {
+  color: var(--red);
+}
+
+.alert__actions {
+  margin-block-start: 8px;
+}
+
+/* --- Loading ----------------------------------------------------------- */
+
+.skeleton {
+  border-radius: 0;
+  background: var(--paper-2);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+/* --- Utilities --------------------------------------------------------- */
 
 .visually-hidden:where(:not(:focus-within, :active)) {
   position: absolute !important;
@@ -300,15 +362,16 @@ select {
   inset-inline-start: calc(var(--safe-left) + 8px);
   z-index: 2000;
   padding: 8px 16px;
-  border: 1px solid var(--acme-color-border-strong);
-  border-radius: var(--acme-radius-md);
-  background: var(--acme-color-surface-raised);
-  color: var(--acme-color-text);
-  box-shadow: var(--acme-shadow-md);
+  border: 2px solid var(--ink);
+  background: var(--paper);
+  color: var(--ink);
+  font-weight: 600;
 }
 
 @media (forced-colors: active) {
-  :root {
-    --acme-color-border-strong: CanvasText;
+  .alert,
+  .button,
+  .field select {
+    border-color: CanvasText;
   }
 }

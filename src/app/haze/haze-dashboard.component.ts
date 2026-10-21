@@ -1,4 +1,4 @@
-import { Location, NgTemplateOutlet } from '@angular/common';
+import { Location } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -36,7 +36,7 @@ import { HazeMapComponent } from './haze-map.component';
 
 export type SortOrder = 'worst' | 'best' | 'name';
 
-/** ACME alert tones. Success and warning share Oat ink, so the icon carries the difference. */
+/** Alert tones by band. Only danger looks different: a red rule and title. */
 export type AlertTone = 'success' | 'info' | 'warning' | 'danger';
 
 const ADVICE_TONE: Record<AqiCategoryId, AlertTone> = {
@@ -65,7 +65,7 @@ type OutlookState =
 
 @Component({
   selector: 'app-haze-dashboard',
-  imports: [AqiChartComponent, HazeMapComponent, NgTemplateOutlet],
+  imports: [AqiChartComponent, HazeMapComponent],
   templateUrl: './haze-dashboard.component.html',
   styleUrl: './haze-dashboard.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
