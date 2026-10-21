@@ -1,6 +1,8 @@
 # ---- Stage 1: build ---------------------------------------------------------
-# node:24-alpine — matches the Node version used in CI.
-FROM node@sha256:44fce696f38ba8c987c4db89954051000bbd05ffd8d8659ba15ed4a8602e937f AS build
+# node:24-alpine — matches the Node version used in CI. Pinned as tag@digest:
+# a bare `node@sha256:` gives Dependabot no tag to track, so it proposed
+# node:latest (Node 26, Debian) in #113.
+FROM node:24-alpine@sha256:44fce696f38ba8c987c4db89954051000bbd05ffd8d8659ba15ed4a8602e937f AS build
 
 WORKDIR /app
 
@@ -19,10 +21,12 @@ RUN npm run build \
        -exec gzip -9 -k {} +
 
 # ---- Stage 2: runtime -------------------------------------------------------
-# nginx:alpine — serves the compiled bundle. The previous image ran
+# nginx:alpine (tag@digest, see above; the bare digest had drifted to the
+# Debian image, which has no wget, so the HEALTHCHECK below always failed)
+# — serves the compiled bundle. The previous image ran
 # `ng serve` (the Angular dev server) on 0.0.0.0, which is unhardened, serves
 # source maps, and exposes an unauthenticated HMR websocket.
-FROM nginx@sha256:332d0beea97cff8c0d5d27976c0778a4b00345b9d74c2feaaf8efde548314948
+FROM nginx:alpine@sha256:892bb2152464f0c5d8972593a5f5afaf8054552580b699d95f8ff4af08c2d33d
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY security-headers.conf /etc/nginx/snippets/security-headers.conf
