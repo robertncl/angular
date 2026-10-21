@@ -40,16 +40,20 @@ The app is zoneless (`provideZonelessChangeDetection`): signals drive change det
 
 ## Design
 
-The UI follows the ACME design language: warm Oat neutrals, one Clay accent for actions, links, focus and selection,
-Brick for danger and Sky for info. The tokens are `--acme-*` custom properties in `src/styles.css`, with dark values
-under `prefers-color-scheme`.
+The UI follows the Modernist design system: Swiss layout on a flush-left 12-column grid (max 1280px, 24px
+gutters), black on white, and rules instead of boxes. Sections open on a 2px ink rule and rows are separated by 1px
+hairlines. There are no cards, shadows or rounded corners. Colour has two jobs: blue (`--blue`) means act or "you are
+here" (links, focus, the selected city), and the data ramp (`--data-1` to `--data-6`) means severity. Red (`--red`)
+is for errors only. The page is light-only. The tokens are custom properties at the top of `src/styles.css`, which
+also holds the shared controls (`.button`, `.field`, `.alert`, `.link-button`, `.label`).
 
-US AQI bands don't use the EPA's hues. They use an ACME scale (`--acme-color-aqi-*`) built from Oat, Clay and Brick
-that gets darker as the air gets worse, so neighbouring bands differ in lightness, not just hue. Every fill also prints
-its number and label.
+US AQI bands map onto the data ramp, Good (`--data-1`, white) to Hazardous (`--data-6`, ink). Lightness falls at
+every step, so neighbouring bands differ in lightness, not just hue. Every AQI fill has a 1px ink edge, because Good
+is the same white as the page, and every fill also prints its number and label.
 
-Inter and Source Serif 4 are self-hosted from `public/fonts/` (SIL OFL 1.1, licences alongside) as stand-ins for
-ACME's commercial Styrene B and Tiempos Headline.
+Type is Archivo, with JetBrains Mono for codes, loaded from Google Fonts in `src/index.html`. Production builds
+inline the font stylesheet. Offline (for example in the Android app with no connection) the stacks fall back to
+Helvetica and Arial.
 
 ## Development
 
@@ -82,4 +86,5 @@ cd android && ./gradlew assembleDebug    # needs JDK 21 and the Android SDK
 The policy lives in two places that must stay in sync: the `<meta>` tag in `src/index.html` (used by the Capacitor
 WebView and any static host) and `security-headers.conf` (nginx, which adds `frame-ancestors`). The page has no inline
 scripts. For the same reason critical-CSS inlining is turned off in `angular.json`: it injects an inline script to load
-the stylesheet, and `script-src 'self'` blocks it. If you add a third-party origin, add it to both policies.
+the stylesheet, and `script-src 'self'` blocks it. Google Fonts needs `https://fonts.googleapis.com` in
+`style-src` and `https://fonts.gstatic.com` in `font-src`. If you add a third-party origin, add it to both policies.
