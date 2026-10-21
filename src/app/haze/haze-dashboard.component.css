@@ -247,15 +247,17 @@
       'cities detail';
   }
 
-  /* Clears the sticky top bar. The panel scrolls on its own when it's taller
-     than the window, so its forecast table is never out of reach. */
+  /* Clears the sticky top bar (--topbar-h is measured; 80px until then) by
+     24px. The panel scrolls on its own when it's taller than the window, so
+     its forecast table is never out of reach. */
   .detail {
     position: sticky;
-    top: 104px;
-    max-block-size: calc(100dvh - 128px);
+    top: calc(var(--topbar-h, 80px) + 24px);
+    max-block-size: calc(100dvh - var(--topbar-h, 80px) - 48px);
     overflow-y: auto;
     overscroll-behavior: contain;
   }
+
 }
 
 /* --- Map --------------------------------------------------------------- */
@@ -266,15 +268,24 @@
 }
 
 /* A square well: the region (95–127°E, 9.5°S–23°N) is about as tall as it
-   is wide. isolation keeps Leaflet's z-indexed panes under the top bar. */
+   is wide. In one column the cap stops a portrait tablet's map filling the
+   screen, where one-finger swipes would pan the map instead of scrolling the
+   page; beside the detail column it can stay square at full width.
+   isolation keeps Leaflet's z-indexed panes under the top bar. */
 .map-frame {
   position: relative;
   isolation: isolate;
   aspect-ratio: 1;
-  max-block-size: 85svh;
+  max-block-size: min(70svh, 720px);
   overflow: hidden;
   border: 1px solid var(--ink);
   background: var(--paper-2);
+}
+
+@container (min-width: 1040px) {
+  .map-frame {
+    max-block-size: 85svh;
+  }
 }
 
 .map-placeholder {
@@ -439,10 +450,6 @@
 .daily thead th {
   border-block-end: 2px solid var(--ink);
   color: var(--ink-2);
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
 }
 
 .daily tbody th {

@@ -115,6 +115,9 @@
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  /* Anything scrolled into view lands below the sticky top bar, whose
+     height the dashboard measures into --topbar-h. */
+  scroll-padding-block-start: calc(var(--topbar-h, 0px) + 16px);
 }
 
 body {
@@ -178,7 +181,8 @@ select {
 /* --- Type -------------------------------------------------------------- */
 
 /* Uppercase is styling only; the markup stays sentence case. */
-.label {
+.label,
+.field label {
   font-size: 0.75rem;
   font-weight: 600;
   line-height: 1.2;
@@ -274,14 +278,6 @@ select {
 .field {
   display: grid;
   gap: 6px;
-}
-
-.field label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
 }
 
 .field select {

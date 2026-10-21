@@ -5,6 +5,7 @@ import {
   DestroyRef,
   ElementRef,
   OnInit,
+  afterNextRender,
   computed,
   effect,
   inject,
@@ -76,6 +77,7 @@ export class HazeDashboardComponent implements OnInit {
   private readonly title = inject(Title);
   private readonly destroyRef = inject(DestroyRef);
   private readonly detailPanel = viewChild<ElementRef<HTMLElement>>('detailPanel');
+  private readonly topbar = viewChild.required<ElementRef<HTMLElement>>('topbar');
 
   protected readonly categories = AQI_CATEGORIES;
   protected readonly countries = COUNTRIES.filter(c => CITIES.some(city => city.country === c.code));
@@ -180,6 +182,7 @@ export class HazeDashboardComponent implements OnInit {
     });
 
     this.scheduleRefreshes();
+    afterNextRender(() => this.trackTopbarHeight());
   }
 
   ngOnInit(): void {
@@ -316,9 +319,28 @@ export class HazeDashboardComponent implements OnInit {
     const el = this.detailPanel()?.nativeElement;
     if (!el) return;
     const rect = el.getBoundingClientRect();
-    if (rect.top >= 0 && rect.top < window.innerHeight * 0.5) return;
+    // The sticky top bar covers the top of the viewport, so "in view" starts below it.
+    const covered = this.topbar().nativeElement.getBoundingClientRect().bottom;
+    if (rect.top >= covered && rect.top < window.innerHeight * 0.5) return;
     const smooth = !matchMedia('(prefers-reduced-motion: reduce)').matches;
     el.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'start' });
+  }
+
+  /**
+   * Publish the sticky top bar's real height as --topbar-h on <html>. It wraps
+   * on phones, grows with the Android status-bar inset and with text size, so
+   * scroll-padding (scrollIntoView, the skip link, focus scrolling) and the
+   * sticky detail column read it instead of assuming a fixed height.
+   */
+  private trackTopbarHeight(): void {
+    const bar = this.topbar().nativeElement;
+    const root = document.documentElement;
+    const observer = new ResizeObserver(() => root.style.setProperty('--topbar-h', `${bar.offsetHeight}px`));
+    observer.observe(bar);
+    this.destroyRef.onDestroy(() => {
+      observer.disconnect();
+      root.style.removeProperty('--topbar-h');
+    });
   }
 
   /**
