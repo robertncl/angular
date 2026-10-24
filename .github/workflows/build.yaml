@@ -3,8 +3,8 @@ name: Build, Dockerize, and Deploy
 on:
   workflow_dispatch:
 
+# Install, test and build only: nothing here needs a cloud (OIDC) token.
 permissions:
-  id-token: write
   contents: read
 
 jobs:
