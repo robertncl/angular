@@ -1,6 +1,6 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, catchError, forkJoin, map, of, tap, throwError } from 'rxjs';
+import { Observable, catchError, combineLatest, map, of, startWith, tap, throwError } from 'rxjs';
 
 import { OutlookPoint } from './aqi';
 import { City } from './cities';
@@ -25,6 +25,16 @@ const CURRENT_AIR = [
 ] as const;
 
 const OUTLOOK_TTL_MS = 15 * 60 * 1000;
+export const HOUR_MS = 60 * 60 * 1000;
+
+/**
+ * The first UTC hour boundary after `epochMs`. Open-Meteo's `current` values
+ * step on UTC hours for every city here (Yangon's UTC+6:30 included), so
+ * this is when new readings appear.
+ */
+export function nextHourBoundary(epochMs: number): number {
+  return Math.floor(epochMs / HOUR_MS) * HOUR_MS + HOUR_MS;
+}
 
 export interface CityReading {
   city: City;
@@ -62,13 +72,14 @@ interface OmLocation {
 @Injectable({ providedIn: 'root' })
 export class AirQualityService {
   private readonly http = inject(HttpClient);
-  private readonly outlookCache = new Map<string, { fetchedAt: number; outlook: CityOutlook }>();
+  private readonly outlookCache = new Map<string, { expiresAt: number; outlook: CityOutlook }>();
 
   /**
    * Latest model hour for every city, in one request per API: Open-Meteo
    * accepts comma-separated coordinates and returns an array in the same order.
-   * Wind is a nice-to-have, so a failure there degrades to nulls instead of
-   * failing the whole snapshot.
+   * Wind is a nice-to-have: both requests go out together, but readings are
+   * emitted as soon as air quality arrives and again once wind fills in. A
+   * wind failure degrades to nulls instead of failing the snapshot.
    */
   getCurrent(cities: readonly City[]): Observable<CityReading[]> {
     const latitude = cities.map(c => c.lat).join(',');
@@ -88,9 +99,13 @@ export class AirQualityService {
           timeformat: 'unixtime'
         }
       })
-      .pipe(catchError(() => of(null)));
+      // `undefined` = still pending, `null` = failed; both render without wind.
+      .pipe(
+        catchError(() => of(null)),
+        startWith(undefined)
+      );
 
-    return forkJoin([air$, wind$]).pipe(
+    return combineLatest([air$, wind$]).pipe(
       map(([airRes, windRes]) => {
         const air = asList(airRes);
         if (air.length !== cities.length) throw new Error('Unexpected response from the air-quality service.');
@@ -102,12 +117,14 @@ export class AirQualityService {
   }
 
   /**
-   * Two days of history plus the four-day forecast, hourly. Cached briefly so
-   * flicking between cities doesn't refetch; `force` bypasses the cache.
+   * Two days of history plus the four-day forecast, hourly. Cached so
+   * flicking between cities doesn't refetch, but never across an hour
+   * boundary, where the model hour and the history/forecast split move on.
+   * `force` bypasses the cache.
    */
   getOutlook(city: City, force = false): Observable<CityOutlook> {
     const cached = this.outlookCache.get(city.id);
-    if (!force && cached && Date.now() - cached.fetchedAt < OUTLOOK_TTL_MS) return of(cached.outlook);
+    if (!force && cached && Date.now() < cached.expiresAt) return of(cached.outlook);
 
     return this.http
       .get<OmLocation>(AIR_QUALITY_API, {
@@ -123,7 +140,10 @@ export class AirQualityService {
       })
       .pipe(
         map(res => toOutlook(city, res)),
-        tap(outlook => this.outlookCache.set(city.id, { fetchedAt: Date.now(), outlook })),
+        tap(outlook => {
+          const now = Date.now();
+          this.outlookCache.set(city.id, { expiresAt: Math.min(now + OUTLOOK_TTL_MS, nextHourBoundary(now)), outlook });
+        }),
         catchError(err => throwError(() => new Error(describeError(err))))
       );
   }

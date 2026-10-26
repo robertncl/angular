@@ -18,7 +18,7 @@ import { Title } from '@angular/platform-browser';
 import { Subject, catchError, finalize, map, of, switchMap } from 'rxjs';
 
 import { AqiChartComponent } from './aqi-chart.component';
-import { AirQualityService, CityOutlook, CityReading } from './air-quality.service';
+import { AirQualityService, CityOutlook, CityReading, nextHourBoundary } from './air-quality.service';
 import {
   AQI_CATEGORIES,
   AqiCategory,
@@ -56,8 +56,20 @@ const SORT_LABEL: Record<SortOrder, string> = {
 };
 
 const CITY_STORAGE_KEY = 'hazewatch.city';
-/** CAMS publishes hourly; refreshing more often than this gains nothing. */
-const REFRESH_INTERVAL_MS = 30 * 60 * 1000;
+
+const MINUTE_MS = 60 * 1000;
+/** Fetch this long after the hour turns, spread so open tabs don't all hit the API at once. */
+const REFRESH_DELAY_MS = { min: MINUTE_MS, spread: 2 * MINUTE_MS };
+/** If the API still serves the previous hour, look again after this. */
+const LATE_DATA_RETRY_MS = 5 * MINUTE_MS;
+const MAX_BACKOFF_MS = 15 * MINUTE_MS;
+/** How often to check the schedule. Background tabs are throttled to about this anyway. */
+const TICK_MS = 30 * 1000;
+/**
+ * The page clock (chart "Now", daily "Today") advances on half-hours, which
+ * covers every city's local midnight, Myanmar's UTC+6:30 included.
+ */
+const CLOCK_STEP_MS = 30 * MINUTE_MS;
 
 type OutlookState =
   | { status: 'loading' }
@@ -87,7 +99,15 @@ export class HazeDashboardComponent implements OnInit {
   protected readonly readings = signal<readonly CityReading[]>([]);
   protected readonly loading = signal(true);
   protected readonly errorMessage = signal<string | null>(null);
+  /** When the last successful fetch finished (the "checked" time). */
   protected readonly updatedAt = signal<number | null>(null);
+  /** Page clock, stepped on half-hours so time-dependent views stay current without re-rendering every tick. */
+  protected readonly now = signal(Date.now());
+  /** The model hour the readings describe, which can lag the fetch time by up to an hour. */
+  protected readonly dataTime = computed(() => {
+    const times = this.readings().map(r => r.time);
+    return times.length ? Math.max(...times) : null;
+  });
   protected readonly selectedId = signal(DEFAULT_CITY_ID);
   protected readonly countryFilter = signal<CountryCode | 'all'>('all');
   protected readonly sortOrder = signal<SortOrder>('worst');
@@ -139,11 +159,14 @@ export class HazeDashboardComponent implements OnInit {
   protected readonly daily = computed(() => {
     const state = this.outlookState();
     if (state.status !== 'ready') return [];
-    return dailySummaries(state.outlook.points, state.outlook.timeZone, Date.now());
+    return dailySummaries(state.outlook.points, state.outlook.timeZone, this.now());
   });
 
   private readonly outlookRequests = new Subject<{ city: City; force: boolean }>();
   private fetching = false;
+  /** When the scheduler should fetch next; Infinity until the first fetch settles. */
+  private nextRefreshAt = Number.POSITIVE_INFINITY;
+  private consecutiveFailures = 0;
 
   constructor() {
     this.outlookRequests
@@ -205,13 +228,21 @@ export class HazeDashboardComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe({
+        // Emits once air quality arrives and again when wind fills in.
         next: readings => {
           this.readings.set(readings);
           this.updatedAt.set(Date.now());
           this.errorMessage.set(null);
+          this.loading.set(false);
+          this.consecutiveFailures = 0;
+          this.nextRefreshAt = planNextRefresh(readings, Date.now());
         },
         // Keep showing the last good snapshot; the banner explains it's stale.
-        error: (err: Error) => this.errorMessage.set(err.message)
+        error: (err: Error) => {
+          this.errorMessage.set(err.message);
+          this.consecutiveFailures++;
+          this.nextRefreshAt = Date.now() + backoff(this.consecutiveFailures);
+        }
       });
     if (this.updatedAt() != null) this.outlookRequests.next({ city: this.selectedCity(), force: true });
   }
@@ -344,24 +375,49 @@ export class HazeDashboardComponent implements OnInit {
   }
 
   /**
-   * Refresh every half hour while the page is visible, and catch up straight
-   * away when a hidden tab or a backgrounded app comes back.
+   * Fetch just after each hour turns, when Open-Meteo starts serving the new
+   * model hour, rather than on a fixed interval that can trail it by half an
+   * hour. Hidden tabs and backgrounded apps catch up as soon as they're
+   * visible, and coming back online retries at once.
    */
   private scheduleRefreshes(): void {
-    const isStale = () => {
-      const at = this.updatedAt();
-      return at != null && Date.now() - at >= REFRESH_INTERVAL_MS;
+    const tick = () => {
+      const t = Date.now();
+      if (Math.floor(t / CLOCK_STEP_MS) !== Math.floor(this.now() / CLOCK_STEP_MS)) this.now.set(t);
+      if (document.visibilityState === 'visible' && t >= this.nextRefreshAt) this.refresh();
     };
-    const maybeRefresh = () => {
-      if (document.visibilityState === 'visible' && isStale()) this.refresh();
+    const onOnline = () => {
+      // The outage is over: drop the backoff instead of waiting it out.
+      this.consecutiveFailures = 0;
+      if (this.errorMessage() != null) this.nextRefreshAt = 0;
+      tick();
     };
-    const timer = setInterval(maybeRefresh, 60 * 1000);
-    document.addEventListener('visibilitychange', maybeRefresh);
+    const timer = setInterval(tick, TICK_MS);
+    document.addEventListener('visibilitychange', tick);
+    window.addEventListener('online', onOnline);
     this.destroyRef.onDestroy(() => {
       clearInterval(timer);
-      document.removeEventListener('visibilitychange', maybeRefresh);
+      document.removeEventListener('visibilitychange', tick);
+      window.removeEventListener('online', onOnline);
     });
   }
+}
+
+/**
+ * Next fetch: shortly after the hour following the newest reading. If that
+ * moment has already passed, the API is still serving last hour's data, so
+ * look again in a few minutes.
+ */
+export function planNextRefresh(readings: readonly CityReading[], now: number, random = Math.random): number {
+  if (!readings.length) return now + LATE_DATA_RETRY_MS;
+  const newest = Math.max(...readings.map(r => r.time));
+  const due = nextHourBoundary(newest) + REFRESH_DELAY_MS.min + random() * REFRESH_DELAY_MS.spread;
+  return due > now ? due : now + LATE_DATA_RETRY_MS;
+}
+
+/** 1, 2, 4, 8 … minutes after consecutive failures, capped at 15. */
+export function backoff(failures: number): number {
+  return Math.min(MAX_BACKOFF_MS, MINUTE_MS * 2 ** Math.max(0, failures - 1));
 }
 
 function compareReadings(a: CityReading, b: CityReading, order: SortOrder): number {

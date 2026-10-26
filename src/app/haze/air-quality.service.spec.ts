@@ -3,7 +3,7 @@ import { HttpTestingController, TestRequest, provideHttpClientTesting } from '@a
 import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
-import { AIR_QUALITY_API, AirQualityService, CityOutlook, CityReading, WEATHER_API } from './air-quality.service';
+import { AIR_QUALITY_API, AirQualityService, CityOutlook, CityReading, WEATHER_API, nextHourBoundary } from './air-quality.service';
 import { CITY_BY_ID, City } from './cities';
 
 describe('AirQualityService', () => {
@@ -168,10 +168,37 @@ describe('AirQualityService', () => {
       let message = '';
       service.getCurrent([singapore, pekanbaru]).subscribe({ error: (e: Error) => (message = e.message) });
 
+      const wind = windRequest();
       airRequest().flush([airLocation()]);
-      windRequest().flush([windLocation(), windLocation()]);
 
       expect(message).toContain('Unexpected response');
+      expect(wind.cancelled).toBeTrue();
+    });
+
+    it('shows air quality without waiting for wind, then fills wind in', () => {
+      const emitted: CityReading[][] = [];
+      service.getCurrent([singapore]).subscribe(r => emitted.push(r));
+
+      const wind = windRequest();
+      airRequest().flush(airLocation());
+      expect(emitted.length).toBe(1);
+      expect(emitted[0][0].usAqi).toBe(164);
+      expect(emitted[0][0].windSpeed).toBeNull();
+
+      wind.flush(windLocation());
+      expect(emitted.length).toBe(2);
+      expect(emitted[1][0].windSpeed).toBe(5.7);
+    });
+
+    it('emits once when wind answers first', () => {
+      const emitted: CityReading[][] = [];
+      service.getCurrent([singapore]).subscribe(r => emitted.push(r));
+
+      windRequest().flush(windLocation());
+      airRequest().flush(airLocation());
+
+      expect(emitted.length).toBe(1);
+      expect(emitted[0][0].windSpeed).toBe(5.7);
     });
   });
 
@@ -221,6 +248,43 @@ describe('AirQualityService', () => {
 
       service.getOutlook(pekanbaru, true).subscribe();
       outlookRequest(pekanbaru).flush(hourly);
+    });
+
+    describe('cache expiry', () => {
+      afterEach(() => jasmine.clock().uninstall());
+
+      it('drops a cached outlook when the hour turns, even within 15 minutes', () => {
+        jasmine.clock().install();
+        jasmine.clock().mockDate(new Date(Date.UTC(2026, 9, 26, 12, 58)));
+        service.getOutlook(pekanbaru).subscribe();
+        outlookRequest(pekanbaru).flush(hourly);
+
+        jasmine.clock().mockDate(new Date(Date.UTC(2026, 9, 26, 12, 59, 59)));
+        service.getOutlook(pekanbaru).subscribe();
+        http.expectNone(req => req.params.has('hourly'));
+
+        jasmine.clock().mockDate(new Date(Date.UTC(2026, 9, 26, 13, 0, 1)));
+        service.getOutlook(pekanbaru).subscribe();
+        outlookRequest(pekanbaru).flush(hourly);
+      });
+
+      it('still expires after 15 minutes within one hour', () => {
+        jasmine.clock().install();
+        jasmine.clock().mockDate(new Date(Date.UTC(2026, 9, 26, 12, 5)));
+        service.getOutlook(pekanbaru).subscribe();
+        outlookRequest(pekanbaru).flush(hourly);
+
+        jasmine.clock().mockDate(new Date(Date.UTC(2026, 9, 26, 12, 21)));
+        service.getOutlook(pekanbaru).subscribe();
+        outlookRequest(pekanbaru).flush(hourly);
+      });
+    });
+  });
+
+  describe('nextHourBoundary', () => {
+    it('returns the next UTC hour, strictly after the given time', () => {
+      expect(nextHourBoundary(Date.UTC(2026, 9, 26, 12, 0))).toBe(Date.UTC(2026, 9, 26, 13, 0));
+      expect(nextHourBoundary(Date.UTC(2026, 9, 26, 12, 59, 59))).toBe(Date.UTC(2026, 9, 26, 13, 0));
     });
   });
 });

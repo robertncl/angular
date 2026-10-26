@@ -21,8 +21,10 @@ These are **model estimates**, not station readings. The US AQI uses 24-hour ave
 hourly PM2.5 figure. National indices (Singapore PSI, Malaysia API, Indonesia ISPU, Thailand AQI) are calculated
 differently. The page links to the official sources.
 
-Readings refresh every 30 minutes while the page is visible. A selected city is kept in the URL (`/?city=pekanbaru`) and
-remembered in `localStorage`.
+Open-Meteo's current values step on the UTC hour, so the page fetches 1–3 minutes after each hour turns (spread so
+open tabs don't all call at once), catches up as soon as a hidden tab or backgrounded app is visible again, backs off
+on errors (1, 2, 4 … 15 minutes) and retries at once when the browser comes back online. A selected city is kept in
+the URL (`/?city=pekanbaru`) and remembered in `localStorage`.
 
 ## Code map
 
