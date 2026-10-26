@@ -6,9 +6,9 @@ import { ComponentFixture, DeferBlockBehavior, TestBed } from '@angular/core/tes
 import { Title } from '@angular/platform-browser';
 import { SpyLocation, provideLocationMocks } from '@angular/common/testing';
 
-import { AIR_QUALITY_API, WEATHER_API } from './air-quality.service';
+import { AIR_QUALITY_API, CityReading, WEATHER_API } from './air-quality.service';
 import { CITIES, City } from './cities';
-import { HazeDashboardComponent } from './haze-dashboard.component';
+import { HazeDashboardComponent, backoff, planNextRefresh } from './haze-dashboard.component';
 
 const NOW_S = Math.floor(Date.now() / 1000 / 3600) * 3600;
 
@@ -251,5 +251,98 @@ describe('HazeDashboardComponent', () => {
 
     expect(el.querySelector('.inline-error')).toBeNull();
     expect(el.querySelector('app-aqi-chart')).toBeTruthy();
+  });
+
+  it('labels the header with the data hour, not just the fetch time', async () => {
+    await loadAll();
+    outlookRequest(city('singapore')).flush(hourly(164));
+    await fixture.whenStable();
+
+    const text = el.querySelector('.updated')?.textContent ?? '';
+    expect(text).toContain('Data for');
+    expect(text).toContain('checked');
+  });
+
+  describe('refresh schedule', () => {
+    const HOUR = 3600 * 1000;
+    const dataHour = NOW_S * 1000;
+    const nextHour = dataHour + HOUR;
+    let clock: jasmine.Spy<() => number>;
+
+    beforeEach(() => (clock = spyOn(Date, 'now').and.returnValue(dataHour + 10 * 60 * 1000)));
+
+    async function tick(): Promise<void> {
+      document.dispatchEvent(new Event('visibilitychange'));
+      await fixture.whenStable();
+    }
+
+    function pendingCurrent(): number {
+      return http.match(req => req.url === AIR_QUALITY_API && req.params.has('current')).length;
+    }
+
+    it('fetches again just after the next hour turns, not before', async () => {
+      await loadAll();
+      outlookRequest(city('singapore')).flush(hourly(164));
+
+      clock.and.returnValue(nextHour - 60 * 1000);
+      await tick();
+      expect(pendingCurrent()).toBe(0);
+
+      clock.and.returnValue(nextHour + 4 * 60 * 1000);
+      await tick();
+      const { air, wind } = currentRequests();
+      air.flush(currentAir(CITIES));
+      wind.flush(currentWind(CITIES));
+      // The forecast is refetched with the new hour too.
+      outlookRequest(city('singapore')).flush(hourly(164));
+    });
+
+    it('backs off after a failure, and retries at once when the browser comes back online', async () => {
+      await fixture.whenStable();
+      currentRequests().air.error(new ProgressEvent('error'), { status: 0 });
+      outlookRequest(city('singapore')).flush(hourly(164));
+      await fixture.whenStable();
+
+      // 30 s later: still inside the 1-minute backoff.
+      clock.and.returnValue(dataHour + 10 * 60 * 1000 + 30 * 1000);
+      await tick();
+      expect(pendingCurrent()).toBe(0);
+
+      window.dispatchEvent(new Event('online'));
+      await fixture.whenStable();
+      const { air, wind } = currentRequests();
+      air.flush(currentAir(CITIES));
+      wind.flush(currentWind(CITIES));
+      await fixture.whenStable();
+      expect(el.querySelector('[role="alert"]')).toBeNull();
+    });
+  });
+});
+
+describe('planNextRefresh', () => {
+  const HOUR = 3600 * 1000;
+  const hour12 = Date.UTC(2026, 9, 26, 12, 0);
+  const reading = (time: number) => ({ time }) as CityReading;
+
+  it('lands 1–3 minutes after the hour following the newest reading', () => {
+    const now = hour12 + 20 * 60 * 1000;
+    expect(planNextRefresh([reading(hour12)], now, () => 0)).toBe(hour12 + HOUR + 60 * 1000);
+    expect(planNextRefresh([reading(hour12)], now, () => 1)).toBe(hour12 + HOUR + 3 * 60 * 1000);
+  });
+
+  it('retries in 5 minutes when the API is still serving the previous hour', () => {
+    const now = hour12 + HOUR + 10 * 60 * 1000;
+    expect(planNextRefresh([reading(hour12)], now, () => 0)).toBe(now + 5 * 60 * 1000);
+  });
+
+  it('uses the newest reading when hours differ', () => {
+    const now = hour12 + 30 * 60 * 1000;
+    expect(planNextRefresh([reading(hour12 - HOUR), reading(hour12)], now, () => 0)).toBe(hour12 + HOUR + 60 * 1000);
+  });
+});
+
+describe('backoff', () => {
+  it('doubles from one minute and caps at fifteen', () => {
+    expect([1, 2, 3, 4, 5, 9].map(n => backoff(n) / 60000)).toEqual([1, 2, 4, 8, 15, 15]);
   });
 });

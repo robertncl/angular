@@ -719,3 +719,14 @@
     outline: 2px solid Highlight;
   }
 }
+
+/* The fetch time is secondary to the data hour; drop it when the bar is tight. */
+.updated__checked {
+  color: var(--ink-3);
+}
+
+@media (max-width: 480px) {
+  .updated__checked {
+    display: none;
+  }
+}

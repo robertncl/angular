@@ -9,8 +9,11 @@
 
     <div class="topbar__actions">
       <p class="updated" aria-live="polite">
-        @if (updatedAt(); as at) {
-          Updated <time>{{ localTime(at) }}</time>
+        @if (dataTime(); as data) {
+          Data for <time>{{ localTime(data) }}</time>
+          @if (updatedAt(); as at) {
+            <span class="updated__checked">· checked {{ localTime(at) }}</span>
+          }
         } @else if (loading()) {
           Loading readings…
         }
@@ -32,8 +35,8 @@
       <p class="alert__title">Couldn’t load new readings</p>
       <p class="alert__body">
         {{ message }}
-        @if (updatedAt(); as at) {
-          Showing readings from {{ localTime(at) }}.
+        @if (dataTime(); as data) {
+          Showing readings for {{ localTime(data) }}.
         }
       </p>
       <div class="alert__actions">
@@ -176,7 +179,7 @@
         <div class="outlook">
           @let state = outlookState();
           @if (state.status === 'ready') {
-            <app-aqi-chart [points]="state.outlook.points" [timeZone]="state.outlook.timeZone" />
+            <app-aqi-chart [points]="state.outlook.points" [timeZone]="state.outlook.timeZone" [now]="now()" />
 
             @if (daily().length) {
               <table class="daily">
