@@ -43,10 +43,9 @@ describe('aqiCategory', () => {
     expect(aqiCategory(Number.POSITIVE_INFINITY)).toBeNull();
   });
 
-  it('defines contiguous bands with advice for each', () => {
+  it('defines contiguous bands', () => {
     AQI_CATEGORIES.forEach((c, i) => {
       if (i > 0) expect(c.min).toBe(AQI_CATEGORIES[i - 1].max + 1);
-      expect(c.advice.length).toBeGreaterThan(20);
     });
   });
 
@@ -59,11 +58,11 @@ describe('aqiCategory', () => {
 
 describe('hazeLevel', () => {
   it('maps aerosol optical depth to a plain-language level', () => {
-    expect(hazeLevel(0.1)).toBe('Clear');
-    expect(hazeLevel(0.25)).toBe('Light haze');
-    expect(hazeLevel(0.8)).toBe('Hazy');
-    expect(hazeLevel(1)).toBe('Thick haze');
-    expect(hazeLevel(3.2)).toBe('Thick haze');
+    expect(hazeLevel(0.1)).toBe('clear');
+    expect(hazeLevel(0.25)).toBe('light');
+    expect(hazeLevel(0.8)).toBe('hazy');
+    expect(hazeLevel(1)).toBe('thick');
+    expect(hazeLevel(3.2)).toBe('thick');
   });
 
   it('returns null without a usable value', () => {
@@ -97,6 +96,11 @@ describe('formatting', () => {
     expect(formatConcentration(1466)).toBe('1,466');
   });
 
+  it('formats concentrations with the locale’s separators', () => {
+    expect(formatConcentration(8.44, 'id-ID')).toBe('8,4');
+    expect(formatConcentration(1466, 'id-ID')).toBe('1.466');
+  });
+
   it('formats AQI as a whole number', () => {
     expect(formatAqi(163.6)).toBe('164');
     expect(formatAqi(null)).toBe('–');
@@ -124,12 +128,17 @@ describe('dailySummaries', () => {
     const days = dailySummaries(points, 'Asia/Singapore', now);
 
     expect(days.map(d => d.date)).toEqual(['2026-10-16', '2026-10-17', '2026-10-18', '2026-10-19']);
-    expect(days[0].label).toBe('Today');
-    expect(days[1].label).toBe('Tomorrow');
+    expect(days.map(d => d.relative)).toEqual(['today', 'tomorrow', null, null]);
     expect(days[2].label).toContain('18');
     expect(days[1].peakAqi).toBe(240);
     expect(days[1].peakPm25).toBe(120);
     expect(days[0].peakAqi).toBe(80);
+  });
+
+  it('names later days in the requested locale', () => {
+    const points = hourly(todayStart, 24 * 4, () => 60);
+    const [, , sunday] = dailySummaries(points, 'Asia/Singapore', now, 4, 'id-ID');
+    expect(sunday.label).toContain('Min');
   });
 
   it('respects the requested number of days', () => {

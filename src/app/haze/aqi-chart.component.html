@@ -1,7 +1,7 @@
 <figure class="chart">
   <figcaption class="chart__caption">
-    <span class="chart__title">Hourly US AQI</span>
-    <span class="chart__summary">Past 2 days and 4-day forecast. {{ summary() }}</span>
+    <span class="chart__title">{{ t().chartTitle }}</span>
+    <span class="chart__summary">{{ t().chartRange }} {{ summary() }}</span>
   </figcaption>
 
   @if (model(); as m) {
@@ -17,7 +17,7 @@
         (pointerdown)="onPointerMove($event)"
         (pointerleave)="hoverIndex.set(null)"
       >
-        <title [attr.id]="titleId">Hourly US AQI chart. {{ summary() }}</title>
+        <title [attr.id]="titleId">{{ t().chartAriaTitle }} {{ summary() }}</title>
 
         <g class="bands">
           @for (b of m.bands; track b.id) {
@@ -26,13 +26,13 @@
         </g>
 
         <g class="grid">
-          @for (t of m.yTicks; track t.label) {
-            <svg:line class="grid__y" [attr.x1]="m.left" [attr.x2]="m.right" [attr.y1]="t.pos" [attr.y2]="t.pos" />
-            <svg:text class="tick tick--y" [attr.x]="m.left - 6" [attr.y]="t.pos">{{ t.label }}</svg:text>
+          @for (tick of m.yTicks; track tick.label) {
+            <svg:line class="grid__y" [attr.x1]="m.left" [attr.x2]="m.right" [attr.y1]="tick.pos" [attr.y2]="tick.pos" />
+            <svg:text class="tick tick--y" [attr.x]="m.left - 6" [attr.y]="tick.pos">{{ tick.label }}</svg:text>
           }
-          @for (t of m.xTicks; track t.pos) {
-            <svg:line class="grid__x" [attr.x1]="t.pos" [attr.x2]="t.pos" [attr.y1]="m.top" [attr.y2]="m.bottom" />
-            <svg:text class="tick tick--x" [attr.x]="t.pos + 4" [attr.y]="m.height - 6">{{ t.label }}</svg:text>
+          @for (tick of m.xTicks; track tick.pos) {
+            <svg:line class="grid__x" [attr.x1]="tick.pos" [attr.x2]="tick.pos" [attr.y1]="m.top" [attr.y2]="m.bottom" />
+            <svg:text class="tick tick--x" [attr.x]="tick.pos + 4" [attr.y]="m.height - 6">{{ tick.label }}</svg:text>
           }
         </g>
 
@@ -41,7 +41,7 @@
 
         @if (m.nowX !== null) {
           <svg:line class="now" [attr.x1]="m.nowX" [attr.x2]="m.nowX" [attr.y1]="m.top" [attr.y2]="m.bottom" />
-          <svg:text class="now__label" [attr.x]="m.nowX + 4" [attr.y]="m.top + 12">Now</svg:text>
+          <svg:text class="now__label" [attr.x]="m.nowX + 4" [attr.y]="m.top + 12">{{ t().chartNowLabel }}</svg:text>
         }
 
         <!-- The one takeaway, labelled directly on the line. -->
@@ -58,13 +58,13 @@
     </div>
 
     <!-- Pointer-only extra; the daily outlook table below carries the same data for everyone. -->
-    <p class="chart__readout" aria-hidden="true">{{ readout() || 'Point at the chart to read an hour.' }}</p>
+    <p class="chart__readout" aria-hidden="true">{{ readout() || t().chartHint }}</p>
     <p class="chart__key">
-      <span class="key key--past" aria-hidden="true"></span> Modelled history
-      <span class="key key--forecast" aria-hidden="true"></span> Forecast
-      <span class="key key--peak" aria-hidden="true"></span> Forecast peak
+      <span class="key key--past" aria-hidden="true"></span> {{ t().chartKeyHistory }}
+      <span class="key key--forecast" aria-hidden="true"></span> {{ t().chartKeyForecast }}
+      <span class="key key--peak" aria-hidden="true"></span> {{ t().chartKeyPeak }}
     </p>
   } @else {
-    <p class="chart__empty">Not enough hourly data to draw a chart for this city.</p>
+    <p class="chart__empty">{{ t().chartEmpty }}</p>
   }
 </figure>

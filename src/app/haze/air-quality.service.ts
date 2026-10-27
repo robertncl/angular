@@ -69,6 +69,24 @@ interface OmLocation {
   hourly?: Record<string, unknown>;
 }
 
+export type AirQualityErrorCode = 'offline' | 'rate-limited' | 'api' | 'unexpected';
+
+/**
+ * A failed fetch, classified so the page can explain it in the reader's
+ * language. `message` stays English for logs; `detail` is the API's own
+ * reason, when it gave one.
+ */
+export class AirQualityError extends Error {
+  constructor(
+    readonly code: AirQualityErrorCode,
+    message: string,
+    readonly detail?: string
+  ) {
+    super(message);
+    this.name = 'AirQualityError';
+  }
+}
+
 @Injectable({ providedIn: 'root' })
 export class AirQualityService {
   private readonly http = inject(HttpClient);
@@ -108,11 +126,11 @@ export class AirQualityService {
     return combineLatest([air$, wind$]).pipe(
       map(([airRes, windRes]) => {
         const air = asList(airRes);
-        if (air.length !== cities.length) throw new Error('Unexpected response from the air-quality service.');
+        if (air.length !== cities.length) throw new AirQualityError('unexpected', 'Unexpected response from the air-quality service.');
         const wind = windRes ? asList(windRes) : [];
         return cities.map((city, i) => toReading(city, air[i], wind.length === cities.length ? wind[i] : undefined));
       }),
-      catchError(err => throwError(() => new Error(describeError(err))))
+      catchError(err => throwError(() => toAirQualityError(err)))
     );
   }
 
@@ -144,7 +162,7 @@ export class AirQualityService {
           const now = Date.now();
           this.outlookCache.set(city.id, { expiresAt: Math.min(now + OUTLOOK_TTL_MS, nextHourBoundary(now)), outlook });
         }),
-        catchError(err => throwError(() => new Error(describeError(err))))
+        catchError(err => throwError(() => toAirQualityError(err)))
       );
   }
 }
@@ -193,13 +211,14 @@ function num(value: unknown): number | null {
   return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
-function describeError(err: unknown): string {
+function toAirQualityError(err: unknown): AirQualityError {
+  if (err instanceof AirQualityError) return err;
   if (err instanceof HttpErrorResponse) {
-    if (err.status === 0) return 'Could not reach the air-quality service. Check your connection and try again.';
-    if (err.status === 429) return 'The air-quality service is rate-limiting requests. Try again in a few minutes.';
+    if (err.status === 0) return new AirQualityError('offline', 'Could not reach the air-quality service.');
+    if (err.status === 429) return new AirQualityError('rate-limited', 'The air-quality service is rate-limiting requests.');
     const reason = (err.error as { reason?: unknown } | null)?.reason;
-    if (typeof reason === 'string') return `The air-quality service returned an error: ${reason}`;
-    return `The air-quality service returned an error (HTTP ${err.status}).`;
+    const detail = typeof reason === 'string' ? reason : `HTTP ${err.status}`;
+    return new AirQualityError('api', `The air-quality service returned an error: ${detail}`, detail);
   }
-  return err instanceof Error ? err.message : 'Something went wrong while loading air-quality data.';
+  return new AirQualityError('unexpected', err instanceof Error ? err.message : 'Unexpected error loading air-quality data.');
 }

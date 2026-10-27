@@ -730,3 +730,10 @@
     display: none;
   }
 }
+
+/* The language picker sits in the bar beside Refresh: narrower than the
+   filter selects, and labelled for screen readers only. */
+.language select {
+  min-inline-size: 0;
+  min-block-size: 40px;
+}

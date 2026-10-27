@@ -36,9 +36,29 @@ src/app/haze/
   haze-dashboard.component   the page: overview, map, detail, city list
   haze-map.component         Leaflet map, lazy-loaded with @defer
   aqi-chart.component        SVG hourly chart, sized in real pixels
+src/app/i18n/
+  i18n.ts                    language detection, lazy loading, the t() signal
+  messages/                  one file per language; en.ts defines the shape
 ```
 
 The app is zoneless (`provideZonelessChangeDetection`): signals drive change detection, and `zone.js` isn't installed.
+
+## Languages
+
+English, 简体中文, Bahasa Indonesia, Bahasa Melayu, ไทย, Tiếng Việt and Filipino: the languages of the countries most
+affected by the region's haze. The page picks the reader's browser language on first visit, remembers a choice made
+in the top-bar picker, and switches in place without a reload.
+
+Strings live in `src/app/i18n/messages/`. `en.ts` is the source and defines the `Messages` type, so a translation that
+misses a key or a parameter doesn't compile. Strings that take values are functions, which leaves word order and
+plurals to each language. English ships in the main bundle; each other language is its own lazy chunk (about 3 kB
+compressed), loaded by an app initializer before first render so there's no flash of English. Dates and numbers use
+the language's locale (`8,4` and `1.466` in Indonesian). City names are translated where the script differs (Chinese,
+Thai) or a common exonym exists (Vietnamese); untranslated names fall back to English.
+
+To add a language: copy `en.ts`, translate it, and add it to `LANGUAGES` and `LOADERS` in `src/app/i18n/i18n.ts`.
+Translations were written without native-speaker review; health advice in particular should be checked before
+relying on it.
 
 ## Design
 

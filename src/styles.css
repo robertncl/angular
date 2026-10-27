@@ -371,3 +371,26 @@ select {
     border-color: CanvasText;
   }
 }
+
+/* --- Other scripts ------------------------------------------------------ */
+
+/* Archivo has no Chinese or Thai glyphs. Name system faces that do, so
+   Chinese gets Simplified (not Japanese) forms and Thai a face drawn for it. */
+:root:lang(zh) {
+  --font-sans: "Archivo", "PingFang SC", "Noto Sans SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+}
+
+:root:lang(th) {
+  --font-sans: "Archivo", "Noto Sans Thai", Thonburi, "Leelawadee UI", Tahoma, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Thai stacks vowels and tone marks above and below the line. */
+:root:lang(th) body {
+  line-height: 1.65;
+}
+
+/* Tracking pulls Chinese and Thai apart, and neither script has case. */
+:lang(zh) :is(.label, .field label),
+:lang(th) :is(.label, .field label) {
+  letter-spacing: normal;
+}
