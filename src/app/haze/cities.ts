@@ -1,3 +1,5 @@
+import { en, type Messages } from '../i18n/messages/en';
+
 export type CountryCode = 'BN' | 'KH' | 'ID' | 'LA' | 'MY' | 'MM' | 'PH' | 'SG' | 'TH' | 'TL' | 'VN';
 
 export interface Country {
@@ -85,15 +87,13 @@ export const DEFAULT_CITY_ID = 'singapore';
 
 export const CITY_BY_ID: ReadonlyMap<string, City> = new Map(CITIES.map(c => [c.id, c]));
 
-const COUNTRY_BY_CODE: ReadonlyMap<CountryCode, Country> = new Map(COUNTRIES.map(c => [c.code, c]));
-
-export function countryName(code: CountryCode): string {
-  return COUNTRY_BY_CODE.get(code)?.name ?? code;
+export function countryName(code: CountryCode, messages: Messages = en): string {
+  return messages.countries[code] ?? code;
 }
 
-/** "Riau, Indonesia" / "Singapore" — the line under a city's name. */
-export function placeLabel(city: City): string {
-  const country = countryName(city.country);
-  if (city.area) return `${city.area}, ${country}`;
-  return city.name === country ? 'City-state' : country;
+/** "Riau, Indonesia" / "Singapore" — the line under a city's name, in the given language. */
+export function placeLabel(city: City, messages: Messages = en): string {
+  const country = countryName(city.country, messages);
+  if (city.area) return messages.placeWithArea(messages.areas[city.area] ?? city.area, country);
+  return city.name === en.countries[city.country] ? messages.cityState : country;
 }

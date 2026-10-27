@@ -4,6 +4,7 @@ import {
   ElementRef,
   computed,
   effect,
+  inject,
   input,
   signal,
   viewChild
@@ -19,6 +20,7 @@ import {
   formatConcentration,
   safeFormatter
 } from './aqi';
+import { I18n, type Messages } from '../i18n/i18n';
 
 const HEIGHT = 200;
 const PAD = { top: 10, right: 10, bottom: 24, left: 38 };
@@ -71,7 +73,8 @@ export function buildChart(
   points: readonly OutlookPoint[],
   timeZone: string,
   now: number,
-  width: number
+  width: number,
+  locale = 'en-GB'
 ): ChartModel | null {
   const valid = points.filter(p => p.usAqi != null);
   if (valid.length < 2 || width < PAD.left + PAD.right + 20) return null;
@@ -114,7 +117,8 @@ export function buildChart(
   const dayWidth = ((right - left) * 24 * 3600 * 1000) / span;
   const dayLabel = safeFormatter(
     timeZone,
-    dayWidth < MIN_DAY_LABEL_WIDTH ? { weekday: 'short' } : { weekday: 'short', day: 'numeric' }
+    dayWidth < MIN_DAY_LABEL_WIDTH ? { weekday: 'short' } : { weekday: 'short', day: 'numeric' },
+    locale
   );
   const xTicks: Tick[] = points
     .filter(p => Number(hourOf.format(p.time)) === 0 && p.time > t0)
@@ -182,28 +186,36 @@ export class AqiChartComponent {
   /** Injectable clock, so tests don't depend on the wall time. */
   readonly now = input<number>(Date.now());
 
+  private readonly i18n = inject(I18n);
+  protected readonly t = this.i18n.t;
+
   readonly titleId = `aqi-chart-title-${nextId++}`;
   private readonly width = signal(640);
   private readonly frame = viewChild<ElementRef<HTMLElement>>('frame');
   protected readonly hoverIndex = signal<number | null>(null);
 
-  readonly model = computed(() => buildChart(this.points(), this.timeZone(), this.now(), this.width()));
+  readonly model = computed(() => buildChart(this.points(), this.timeZone(), this.now(), this.width(), this.i18n.locale()));
 
   private readonly whenFormat = computed(() =>
-    safeFormatter(this.timeZone(), { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
+    safeFormatter(
+      this.timeZone(),
+      { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' },
+      this.i18n.locale()
+    )
   );
 
   readonly summary = computed(() => {
     const m = this.model();
     if (!m) return '';
     const parts: string[] = [];
-    if (m.current) parts.push(`Now ${describe(m.current.usAqi)}.`);
-    if (m.peak) parts.push(`Forecast peak ${describe(m.peak.usAqi)} on ${this.whenFormat().format(m.peak.time)}.`);
+    const t = this.t();
+    if (m.current) parts.push(t.chartNow(describe(m.current.usAqi, t, this.i18n.locale())));
+    if (m.peak) parts.push(t.chartForecastPeak(describe(m.peak.usAqi, t, this.i18n.locale()), this.whenFormat().format(m.peak.time)));
     return parts.join(' ');
   });
 
   private readonly peakWhenFormat = computed(() =>
-    safeFormatter(this.timeZone(), { weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
+    safeFormatter(this.timeZone(), { weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }, this.i18n.locale())
   );
 
   /**
@@ -217,7 +229,7 @@ export class AqiChartComponent {
     const anchor = p.x > m.right - 64 ? 'end' : p.x < m.left + 64 ? 'start' : 'middle';
     const above = p.y - 10;
     const labelY = above < m.top + 28 ? p.y + 20 : above;
-    return { x: p.x, y: p.y, labelY, anchor, label: `Peak ${formatAqi(p.usAqi)} · ${this.peakWhenFormat().format(p.time)}` };
+    return { x: p.x, y: p.y, labelY, anchor, label: this.t().chartPeakLabel(formatAqi(p.usAqi), this.peakWhenFormat().format(p.time)) };
   });
 
   protected readonly hovered = computed(() => {
@@ -231,7 +243,8 @@ export class AqiChartComponent {
   protected readonly readout = computed(() => {
     const p = this.hovered();
     if (!p) return '';
-    return `${this.whenFormat().format(p.time)} · US AQI ${describe(p.usAqi)} · PM2.5 ${formatConcentration(p.pm25)} µg/m³`;
+    const locale = this.i18n.locale();
+    return `${this.whenFormat().format(p.time)} · US AQI ${describe(p.usAqi, this.t(), locale)} · PM2.5 ${formatConcentration(p.pm25, locale)} µg/m³`;
   });
 
   constructor() {
@@ -263,7 +276,8 @@ export class AqiChartComponent {
   }
 }
 
-function describe(aqi: number | null): string {
+/** "164 (unhealthy)" — the category in lower case where the script has one. */
+function describe(aqi: number | null, t: Messages, locale: string): string {
   const cat = aqiCategory(aqi);
-  return cat ? `${formatAqi(aqi)} (${cat.label.toLowerCase()})` : formatAqi(aqi);
+  return cat ? `${formatAqi(aqi)} (${t.categories[cat.id].label.toLocaleLowerCase(locale)})` : formatAqi(aqi);
 }

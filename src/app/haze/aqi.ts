@@ -6,17 +6,14 @@ export type AqiCategoryId =
   | 'very-unhealthy'
   | 'hazardous';
 
+/** Labels and health advice are per language: see `categories` in i18n/messages. */
 export interface AqiCategory {
   id: AqiCategoryId;
-  label: string;
-  /** Fits in a list row or a map tooltip. */
-  shortLabel: string;
   /** Inclusive US AQI range. Hazardous is open-ended: heavy smoke runs past 500. */
   min: number;
   max: number;
   /** "51–100", "301+" */
   range: string;
-  advice: string;
 }
 
 /**
@@ -24,65 +21,12 @@ export interface AqiCategory {
  * map markers and chart bands all key off the same `data-cat` attribute.
  */
 export const AQI_CATEGORIES: readonly AqiCategory[] = [
-  {
-    id: 'good',
-    label: 'Good',
-    shortLabel: 'Good',
-    min: 0,
-    max: 50,
-    range: '0–50',
-    advice: 'Air quality is satisfactory. Enjoy your usual outdoor activities.'
-  },
-  {
-    id: 'moderate',
-    label: 'Moderate',
-    shortLabel: 'Moderate',
-    min: 51,
-    max: 100,
-    range: '51–100',
-    advice:
-      'Acceptable for most people. If you are unusually sensitive to air pollution, consider shorter or less intense outdoor activity.'
-  },
-  {
-    id: 'sensitive',
-    label: 'Unhealthy for sensitive groups',
-    shortLabel: 'Sensitive groups',
-    min: 101,
-    max: 150,
-    range: '101–150',
-    advice:
-      'Children, older adults, pregnant women and people with heart or lung conditions should cut back on long or strenuous outdoor activity.'
-  },
-  {
-    id: 'unhealthy',
-    label: 'Unhealthy',
-    shortLabel: 'Unhealthy',
-    min: 151,
-    max: 200,
-    range: '151–200',
-    advice:
-      'Everyone should reduce long or strenuous outdoor activity; sensitive groups should avoid it. Wear a well-fitted N95 mask if you must be outdoors for long.'
-  },
-  {
-    id: 'very-unhealthy',
-    label: 'Very unhealthy',
-    shortLabel: 'Very unhealthy',
-    min: 201,
-    max: 300,
-    range: '201–300',
-    advice:
-      'Everyone should avoid long or strenuous outdoor activity. Sensitive groups should stay indoors with windows closed and an air purifier running if possible.'
-  },
-  {
-    id: 'hazardous',
-    label: 'Hazardous',
-    shortLabel: 'Hazardous',
-    min: 301,
-    max: Number.POSITIVE_INFINITY,
-    range: '301+',
-    advice:
-      'Everyone should avoid all outdoor physical activity and stay indoors with windows closed. Follow the advice of local health authorities.'
-  }
+  { id: 'good', min: 0, max: 50, range: '0–50' },
+  { id: 'moderate', min: 51, max: 100, range: '51–100' },
+  { id: 'sensitive', min: 101, max: 150, range: '101–150' },
+  { id: 'unhealthy', min: 151, max: 200, range: '151–200' },
+  { id: 'very-unhealthy', min: 201, max: 300, range: '201–300' },
+  { id: 'hazardous', min: 301, max: Number.POSITIVE_INFINITY, range: '301+' }
 ];
 
 /** Upper edges of each band below Hazardous, used for chart bands and gridlines. */
@@ -97,7 +41,7 @@ export function aqiCategory(aqi: number | null | undefined): AqiCategory | null 
 /** WHO 2021 air quality guideline for 24-hour mean PM2.5, in µg/m³. */
 export const WHO_PM25_24H = 15;
 
-export type HazeLevel = 'Clear' | 'Light haze' | 'Hazy' | 'Thick haze';
+export type HazeLevel = 'clear' | 'light' | 'hazy' | 'thick';
 
 /**
  * Rough reading of aerosol optical depth at 550 nm: how much sunlight the
@@ -105,25 +49,29 @@ export type HazeLevel = 'Clear' | 'Light haze' | 'Hazy' | 'Thick haze';
  */
 export function hazeLevel(aod: number | null | undefined): HazeLevel | null {
   if (aod == null || !Number.isFinite(aod) || aod < 0) return null;
-  if (aod < 0.25) return 'Clear';
-  if (aod < 0.6) return 'Light haze';
-  if (aod < 1) return 'Hazy';
-  return 'Thick haze';
+  if (aod < 0.25) return 'clear';
+  if (aod < 0.6) return 'light';
+  if (aod < 1) return 'hazy';
+  return 'thick';
 }
 
 const COMPASS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'] as const;
+export type CompassPoint = (typeof COMPASS)[number];
 
-/** Eight-point compass label for a bearing in degrees. */
-export function compassPoint(degrees: number): string {
+/** Eight-point compass code for a bearing in degrees; the words are per language. */
+export function compassPoint(degrees: number): CompassPoint {
   const normalized = ((degrees % 360) + 360) % 360;
   return COMPASS[Math.round(normalized / 45) % COMPASS.length];
 }
 
-/** "8.4" below 10, "84" above: enough precision without false accuracy. */
-export function formatConcentration(value: number | null | undefined): string {
+/**
+ * "8.4" below 10, "84" above: enough precision without false accuracy.
+ * Separators follow the locale ("8,4" and "1.466" in Indonesian).
+ */
+export function formatConcentration(value: number | null | undefined, locale = 'en'): string {
   if (value == null || !Number.isFinite(value)) return '–';
-  if (value < 10) return value.toFixed(1);
-  return Math.round(value).toLocaleString('en');
+  const digits = value < 10 ? 1 : 0;
+  return new Intl.NumberFormat(locale, { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(value);
 }
 
 export function formatAqi(value: number | null | undefined): string {
@@ -140,6 +88,9 @@ export interface OutlookPoint {
 export interface DailySummary {
   /** YYYY-MM-DD in the city's own time zone. */
   date: string;
+  /** Today and tomorrow get words from the messages; later days use `label`. */
+  relative: 'today' | 'tomorrow' | null;
+  /** "Thu 29 Oct", in the given locale. */
   label: string;
   peakAqi: number | null;
   peakPm25: number | null;
@@ -153,7 +104,8 @@ export function dailySummaries(
   points: readonly OutlookPoint[],
   timeZone: string,
   now: number,
-  days = 4
+  days = 4,
+  locale = 'en-GB'
 ): DailySummary[] {
   const dayKey = dateKeyFormatter(timeZone);
   const today = dayKey(now);
@@ -166,14 +118,15 @@ export function dailySummaries(
     else byDay.set(key, [p]);
   }
 
-  const weekday = safeFormatter(timeZone, { weekday: 'short', day: 'numeric', month: 'short' });
+  const weekday = safeFormatter(timeZone, { weekday: 'short', day: 'numeric', month: 'short' }, locale);
   const tomorrow = nextDay(today);
   return [...byDay.entries()]
     .sort(([a], [b]) => a.localeCompare(b))
     .slice(0, days)
     .map(([date, dayPoints]) => ({
       date,
-      label: date === today ? 'Today' : date === tomorrow ? 'Tomorrow' : weekday.format(dayPoints[0].time),
+      relative: date === today ? 'today' : date === tomorrow ? 'tomorrow' : null,
+      label: weekday.format(dayPoints[0].time),
       peakAqi: maxOf(dayPoints.map(p => p.usAqi)),
       peakPm25: maxOf(dayPoints.map(p => p.pm25))
     }));

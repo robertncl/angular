@@ -8,6 +8,7 @@ import { SpyLocation, provideLocationMocks } from '@angular/common/testing';
 
 import { AIR_QUALITY_API, CityReading, WEATHER_API } from './air-quality.service';
 import { CITIES, City } from './cities';
+import { I18n } from '../i18n/i18n';
 import { HazeDashboardComponent, backoff, planNextRefresh } from './haze-dashboard.component';
 
 const NOW_S = Math.floor(Date.now() / 1000 / 3600) * 3600;
@@ -242,7 +243,7 @@ describe('HazeDashboardComponent', () => {
     outlookRequest(city('singapore')).flush({ error: true, reason: 'Boom' }, { status: 500, statusText: 'Server Error' });
     await fixture.whenStable();
 
-    expect(el.querySelector('.inline-error')?.textContent).toContain("Couldn't load the forecast");
+    expect(el.querySelector('.inline-error')?.textContent).toContain('Couldn’t load the forecast');
 
     el.querySelector<HTMLButtonElement>('.inline-error button')!.click();
     await fixture.whenStable();
@@ -261,6 +262,32 @@ describe('HazeDashboardComponent', () => {
     const text = el.querySelector('.updated')?.textContent ?? '';
     expect(text).toContain('Data for');
     expect(text).toContain('checked');
+  });
+
+  it('switches language from the picker without reloading', async () => {
+    await loadAll();
+    outlookRequest(city('singapore')).flush(hourly(164));
+    await fixture.whenStable();
+
+    const i18n = TestBed.inject(I18n);
+    const use = spyOn(i18n, 'use').and.callThrough();
+    const picker = el.querySelector<HTMLSelectElement>('#language')!;
+    picker.value = 'zh';
+    picker.dispatchEvent(new Event('change'));
+    expect(use).toHaveBeenCalledWith('zh');
+    await use.calls.mostRecent().returnValue;
+    await fixture.whenStable();
+
+    try {
+      expect(el.querySelector('.overview__headline')?.textContent).toContain(`${CITIES.length} 个城市中有 3 个空气不健康`);
+      expect(el.querySelector('.detail__city')?.textContent).toContain('新加坡');
+      expect(el.querySelector('.reading__label')?.textContent).toContain('不健康');
+      expect(document.documentElement.lang).toBe('zh-Hans');
+      expect(TestBed.inject(Title).getTitle()).toBe('新加坡：美国 AQI 164（不健康）· 烟霾观察');
+    } finally {
+      await i18n.use('en', false);
+      localStorage.removeItem('hazewatch.lang');
+    }
   });
 
   describe('refresh schedule', () => {

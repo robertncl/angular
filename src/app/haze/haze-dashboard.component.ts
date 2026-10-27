@@ -18,7 +18,7 @@ import { Title } from '@angular/platform-browser';
 import { Subject, catchError, finalize, map, of, switchMap } from 'rxjs';
 
 import { AqiChartComponent } from './aqi-chart.component';
-import { AirQualityService, CityOutlook, CityReading, nextHourBoundary } from './air-quality.service';
+import { AirQualityError, AirQualityService, CityOutlook, CityReading, nextHourBoundary } from './air-quality.service';
 import {
   AQI_CATEGORIES,
   AqiCategory,
@@ -34,6 +34,7 @@ import {
 } from './aqi';
 import { CITIES, CITY_BY_ID, COUNTRIES, City, CountryCode, DEFAULT_CITY_ID, countryName, placeLabel } from './cities';
 import { HazeMapComponent } from './haze-map.component';
+import { I18n, LANGUAGES, type LangCode } from '../i18n/i18n';
 
 export type SortOrder = 'worst' | 'best' | 'name';
 
@@ -47,12 +48,6 @@ const ADVICE_TONE: Record<AqiCategoryId, AlertTone> = {
   unhealthy: 'warning',
   'very-unhealthy': 'danger',
   hazardous: 'danger'
-};
-
-const SORT_LABEL: Record<SortOrder, string> = {
-  worst: 'worst air first',
-  best: 'cleanest air first',
-  name: 'A–Z'
 };
 
 const CITY_STORAGE_KEY = 'hazewatch.city';
@@ -74,7 +69,7 @@ const CLOCK_STEP_MS = 30 * MINUTE_MS;
 type OutlookState =
   | { status: 'loading' }
   | { status: 'ready'; outlook: CityOutlook }
-  | { status: 'error'; message: string };
+  | { status: 'error'; error: AirQualityError };
 
 @Component({
   selector: 'app-haze-dashboard',
@@ -87,6 +82,11 @@ export class HazeDashboardComponent implements OnInit {
   private readonly airQuality = inject(AirQualityService);
   private readonly location = inject(Location);
   private readonly title = inject(Title);
+  private readonly i18n = inject(I18n);
+  /** Active strings; templates read `t().key`. */
+  protected readonly t = this.i18n.t;
+  protected readonly lang = this.i18n.lang;
+  protected readonly languages = LANGUAGES;
   private readonly destroyRef = inject(DestroyRef);
   private readonly detailPanel = viewChild<ElementRef<HTMLElement>>('detailPanel');
   private readonly topbar = viewChild.required<ElementRef<HTMLElement>>('topbar');
@@ -98,7 +98,7 @@ export class HazeDashboardComponent implements OnInit {
 
   protected readonly readings = signal<readonly CityReading[]>([]);
   protected readonly loading = signal(true);
-  protected readonly errorMessage = signal<string | null>(null);
+  protected readonly loadError = signal<AirQualityError | null>(null);
   /** When the last successful fetch finished (the "checked" time). */
   protected readonly updatedAt = signal<number | null>(null);
   /** Page clock, stepped on half-hours so time-dependent views stay current without re-rendering every tick. */
@@ -127,15 +127,16 @@ export class HazeDashboardComponent implements OnInit {
     const country = this.countryFilter();
     const order = this.sortOrder();
     const rows = this.readings().filter(r => country === 'all' || r.city.country === country);
-    return [...rows].sort((a, b) => compareReadings(a, b, order));
+    const locale = this.i18n.locale();
+    const name = (r: CityReading) => this.cityName(r.city);
+    return [...rows].sort((a, b) => compareReadings(a, b, order, name, locale));
   });
 
   /** "39 cities, worst air first" / "13 in Indonesia, A–Z". */
   protected readonly listSummary = computed(() => {
-    const n = this.visibleReadings().length;
     const country = this.countryFilter();
-    const scope = country === 'all' ? `${n} ${n === 1 ? 'city' : 'cities'}` : `${n} in ${countryName(country)}`;
-    return `${scope}, ${SORT_LABEL[this.sortOrder()]}`;
+    const t = this.t();
+    return t.listSummary(this.visibleReadings().length, country === 'all' ? null : t.countries[country], this.sortOrder());
   });
 
   protected readonly overview = computed(() => {
@@ -148,18 +149,19 @@ export class HazeDashboardComponent implements OnInit {
     const worst = rated.reduce<CityReading | null>((w, r) => (w == null || r.usAqi! > w.usAqi! ? r : w), null);
     const unhealthy = rated.filter(r => r.usAqi! > 150).length;
     const sensitive = rated.filter(r => r.usAqi! > 100).length;
+    const t = this.t();
     let headline: string;
-    if (!rated.length) headline = 'No readings available right now';
-    else if (unhealthy) headline = `Unhealthy air in ${unhealthy} of ${rated.length} cities`;
-    else if (sensitive) headline = `Unhealthy for sensitive groups in ${sensitive} of ${rated.length} cities`;
-    else headline = `Good or moderate air in all ${rated.length} cities`;
+    if (!rated.length) headline = t.headlineNone;
+    else if (unhealthy) headline = t.headlineUnhealthy(unhealthy, rated.length);
+    else if (sensitive) headline = t.headlineSensitive(sensitive, rated.length);
+    else headline = t.headlineClear(rated.length);
     return { headline, worst, worstCategory: aqiCategory(worst?.usAqi), counts };
   });
 
   protected readonly daily = computed(() => {
     const state = this.outlookState();
     if (state.status !== 'ready') return [];
-    return dailySummaries(state.outlook.points, state.outlook.timeZone, this.now());
+    return dailySummaries(state.outlook.points, state.outlook.timeZone, this.now(), 4, this.i18n.locale());
   });
 
   private readonly outlookRequests = new Subject<{ city: City; force: boolean }>();
@@ -175,7 +177,7 @@ export class HazeDashboardComponent implements OnInit {
           this.outlookState.set({ status: 'loading' });
           return this.airQuality.getOutlook(city, force).pipe(
             map((outlook): OutlookState => ({ status: 'ready', outlook })),
-            catchError((err: Error) => of<OutlookState>({ status: 'error', message: err.message }))
+            catchError((error: AirQualityError) => of<OutlookState>({ status: 'error', error }))
           );
         }),
         takeUntilDestroyed()
@@ -197,10 +199,9 @@ export class HazeDashboardComponent implements OnInit {
     effect(() => {
       const r = this.selected();
       const cat = aqiCategory(r?.usAqi);
+      const t = this.t();
       this.title.setTitle(
-        r && cat
-          ? `${r.city.name}: US AQI ${formatAqi(r.usAqi)} (${cat.label}) · Haze Watch`
-          : 'Haze Watch · Southeast Asia air quality'
+        r && cat ? t.cityPageTitle(this.cityName(r.city), formatAqi(r.usAqi), t.categories[cat.id].label) : t.pageTitle
       );
     });
 
@@ -232,14 +233,14 @@ export class HazeDashboardComponent implements OnInit {
         next: readings => {
           this.readings.set(readings);
           this.updatedAt.set(Date.now());
-          this.errorMessage.set(null);
+          this.loadError.set(null);
           this.loading.set(false);
           this.consecutiveFailures = 0;
           this.nextRefreshAt = planNextRefresh(readings, Date.now());
         },
         // Keep showing the last good snapshot; the banner explains it's stale.
-        error: (err: Error) => {
-          this.errorMessage.set(err.message);
+        error: (err: AirQualityError) => {
+          this.loadError.set(err);
           this.consecutiveFailures++;
           this.nextRefreshAt = Date.now() + backoff(this.consecutiveFailures);
         }
@@ -265,9 +266,10 @@ export class HazeDashboardComponent implements OnInit {
 
     const r = this.byId().get(id);
     const cat = aqiCategory(r?.usAqi);
-    const city = CITY_BY_ID.get(id)!;
+    const name = this.cityName(CITY_BY_ID.get(id)!);
+    const t = this.t();
     this.announcement.set(
-      cat ? `Showing ${city.name}: US AQI ${formatAqi(r!.usAqi)}, ${cat.label}.` : `Showing ${city.name}.`
+      cat ? t.showing(name, formatAqi(r!.usAqi), t.categories[cat.id].label) : t.showingNoData(name)
     );
 
     this.revealDetail();
@@ -281,6 +283,10 @@ export class HazeDashboardComponent implements OnInit {
   protected setSort(event: Event): void {
     const value = (event.target as HTMLSelectElement).value;
     this.sortOrder.set(value === 'best' || value === 'name' ? value : 'worst');
+  }
+
+  protected setLanguage(event: Event): void {
+    void this.i18n.use((event.target as HTMLSelectElement).value as LangCode);
   }
 
   protected skipToContent(event: Event): void {
@@ -305,25 +311,51 @@ export class HazeDashboardComponent implements OnInit {
   }
 
   protected concentration(value: number | null | undefined): string {
-    return formatConcentration(value);
+    return formatConcentration(value, this.i18n.locale());
+  }
+
+  protected decimal(value: number | null, digits: number): string {
+    if (value == null) return '–';
+    return new Intl.NumberFormat(this.i18n.locale(), { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(value);
+  }
+
+  protected cityName(city: City): string {
+    return this.i18n.cityName(city.id, city.name);
   }
 
   protected place(city: City): string {
-    return placeLabel(city);
+    return placeLabel(city, this.t());
   }
 
   protected country(city: City): string {
-    return countryName(city.country);
+    return countryName(city.country, this.t());
   }
 
   protected haze(aod: number | null): string {
-    return hazeLevel(aod) ?? '–';
+    const level = hazeLevel(aod);
+    return level ? this.t().hazeLevels[level] : '–';
   }
 
   protected wind(r: CityReading): string {
-    if (r.windSpeed == null || r.windFrom == null) return 'Not available';
-    if (r.windSpeed < 1) return 'Calm';
-    return `${Math.round(r.windSpeed)} km/h from the ${compassPoint(r.windFrom)}`;
+    const t = this.t();
+    if (r.windSpeed == null || r.windFrom == null) return t.windUnavailable;
+    if (r.windSpeed < 1) return t.windCalm;
+    return t.windFrom(Math.round(r.windSpeed), t.compass[compassPoint(r.windFrom)]);
+  }
+
+  /** A failed load, in the reader's language. */
+  protected errorText(error: AirQualityError): string {
+    const errors = this.t().errors;
+    switch (error.code) {
+      case 'offline':
+        return errors.offline;
+      case 'rate-limited':
+        return errors.rateLimited;
+      case 'api':
+        return errors.api(error.detail ?? '');
+      default:
+        return errors.unexpected;
+    }
   }
 
   /** The arrow points where the wind is blowing to — where smoke drifts. */
@@ -332,11 +364,15 @@ export class HazeDashboardComponent implements OnInit {
   }
 
   protected cityTime(r: CityReading): string {
-    return safeFormatter(r.timeZone, { weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZoneName: 'short' }).format(r.time);
+    return safeFormatter(
+      r.timeZone,
+      { weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZoneName: 'short' },
+      this.i18n.locale()
+    ).format(r.time);
   }
 
   protected localTime(epochMs: number): string {
-    return new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(epochMs);
+    return new Intl.DateTimeFormat(this.i18n.locale(), { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(epochMs);
   }
 
   // --- Internals ----------------------------------------------------------
@@ -389,7 +425,7 @@ export class HazeDashboardComponent implements OnInit {
     const onOnline = () => {
       // The outage is over: drop the backoff instead of waiting it out.
       this.consecutiveFailures = 0;
-      if (this.errorMessage() != null) this.nextRefreshAt = 0;
+      if (this.loadError() != null) this.nextRefreshAt = 0;
       tick();
     };
     const timer = setInterval(tick, TICK_MS);
@@ -420,15 +456,22 @@ export function backoff(failures: number): number {
   return Math.min(MAX_BACKOFF_MS, MINUTE_MS * 2 ** Math.max(0, failures - 1));
 }
 
-function compareReadings(a: CityReading, b: CityReading, order: SortOrder): number {
-  if (order === 'name') return a.city.name.localeCompare(b.city.name);
+function compareReadings(
+  a: CityReading,
+  b: CityReading,
+  order: SortOrder,
+  name: (r: CityReading) => string,
+  locale: string
+): number {
+  const byName = () => name(a).localeCompare(name(b), locale);
+  if (order === 'name') return byName();
   // Cities without a reading always sink to the bottom.
   if (a.usAqi == null || b.usAqi == null) {
-    if (a.usAqi == null && b.usAqi == null) return a.city.name.localeCompare(b.city.name);
+    if (a.usAqi == null && b.usAqi == null) return byName();
     return a.usAqi == null ? 1 : -1;
   }
   const diff = order === 'worst' ? b.usAqi - a.usAqi : a.usAqi - b.usAqi;
-  return diff || a.city.name.localeCompare(b.city.name);
+  return diff || byName();
 }
 
 /** The ?city= id in a URL or path, if it names a known city. */

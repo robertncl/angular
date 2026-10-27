@@ -18,6 +18,7 @@ import * as L from 'leaflet';
 import { CityReading } from './air-quality.service';
 import { aqiCategory, formatAqi } from './aqi';
 import { placeLabel } from './cities';
+import { I18n } from '../i18n/i18n';
 
 /**
  * OpenStreetMap's standard tiles: no key, but the usage policy applies —
@@ -28,7 +29,8 @@ import { placeLabel } from './cities';
  * in the CSP (src/index.html and security-headers.conf).
  */
 export const TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-const TILE_ATTRIBUTION = 'Base map: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+/** The licence line itself; the lead-in word ("Base map") is translated. */
+const OSM_CREDIT = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
 /** Roughly Myanmar to Timor-Leste, Sumatra to the Philippines. */
 const REGION_BOUNDS: L.LatLngBoundsExpression = [
@@ -45,7 +47,7 @@ const PILL_ZOOM = 6;
 
 @Component({
   selector: 'app-haze-map',
-  template: `<div #mapEl class="haze-map" role="group" aria-label="Map of US AQI by city"></div>`,
+  template: `<div #mapEl class="haze-map" role="group" [attr.aria-label]="t().mapLabel"></div>`,
   styleUrl: './haze-map.component.css',
   // Leaflet builds marker and tooltip DOM itself, outside Angular's template,
   // so emulated encapsulation can't reach it. Rules are scoped under the
@@ -62,6 +64,9 @@ export class HazeMapComponent {
   private readonly mapEl = viewChild.required<ElementRef<HTMLElement>>('mapEl');
   private readonly destroyRef = inject(DestroyRef);
   private readonly ready = signal(false);
+  private readonly i18n = inject(I18n);
+  protected readonly t = this.i18n.t;
+  private attribution = '';
 
   private map?: L.Map;
   private markerLayer?: L.LayerGroup;
@@ -72,6 +77,8 @@ export class HazeMapComponent {
 
     effect(() => {
       const readings = this.readings();
+      // Tooltips are built as DOM, so a language change rebuilds them too.
+      this.t();
       if (!this.ready()) return;
       this.renderMarkers(readings);
       // Re-apply the current highlight to the new markers without panning;
@@ -83,6 +90,14 @@ export class HazeMapComponent {
       const id = this.selectedId();
       if (!this.ready()) return;
       this.highlight(id, true);
+    });
+
+    effect(() => {
+      const credit = `${this.t().mapAttribution}: ${OSM_CREDIT}`;
+      if (!this.ready() || !this.map) return;
+      // Static strings only (messages and the constant above), never API data.
+      this.map.attributionControl.removeAttribution(this.attribution).addAttribution(credit);
+      this.attribution = credit;
     });
   }
 
@@ -107,7 +122,7 @@ export class HazeMapComponent {
       markerZoomAnimation: !reduceMotion
     });
     map.attributionControl.setPrefix(false);
-    L.tileLayer(TILE_URL, { maxZoom: 19, attribution: TILE_ATTRIBUTION }).addTo(map);
+    L.tileLayer(TILE_URL, { maxZoom: 19 }).addTo(map);
     this.markerLayer = L.layerGroup().addTo(map);
 
     const syncMarkerSize = () => container.classList.toggle('is-compact', map.getZoom() < PILL_ZOOM);
@@ -148,6 +163,7 @@ export class HazeMapComponent {
 
     for (const r of readings) {
       const cat = aqiCategory(r.usAqi);
+      const t = this.i18n.t();
       // Built with textContent rather than an HTML string so nothing from the
       // API ever reaches innerHTML.
       const el = document.createElement('span');
@@ -157,12 +173,12 @@ export class HazeMapComponent {
 
       const tip = document.createElement('span');
       const name = document.createElement('strong');
-      name.textContent = r.city.name;
+      name.textContent = this.i18n.cityName(r.city.id, r.city.name);
       tip.append(
         name,
-        ` · ${placeLabel(r.city)}`,
+        ` · ${placeLabel(r.city, t)}`,
         document.createElement('br'),
-        `US AQI ${formatAqi(r.usAqi)}${cat ? ` — ${cat.shortLabel}` : ''}`
+        `US AQI ${formatAqi(r.usAqi)}${cat ? ` — ${t.categories[cat.id].short}` : ''}`
       );
 
       const marker = L.marker([r.city.lat, r.city.lon], {

@@ -3,7 +3,7 @@ import { HttpTestingController, TestRequest, provideHttpClientTesting } from '@a
 import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
-import { AIR_QUALITY_API, AirQualityService, CityOutlook, CityReading, WEATHER_API, nextHourBoundary } from './air-quality.service';
+import { AIR_QUALITY_API, AirQualityError, AirQualityService, CityOutlook, CityReading, WEATHER_API, nextHourBoundary } from './air-quality.service';
 import { CITY_BY_ID, City } from './cities';
 
 describe('AirQualityService', () => {
@@ -131,47 +131,49 @@ describe('AirQualityService', () => {
     });
 
     it('explains a network failure', () => {
-      let message = '';
-      service.getCurrent([singapore]).subscribe({ error: (e: Error) => (message = e.message) });
+      let error: AirQualityError | undefined;
+      service.getCurrent([singapore]).subscribe({ error: (e: AirQualityError) => (error = e) });
 
       const wind = windRequest();
       airRequest().error(new ProgressEvent('error'), { status: 0 });
 
-      expect(message).toContain('Could not reach');
+      expect(error?.code).toBe('offline');
       // forkJoin drops the still-pending wind request once air quality fails.
       expect(wind.cancelled).toBeTrue();
     });
 
     it('explains rate limiting', () => {
-      let message = '';
-      service.getCurrent([singapore]).subscribe({ error: (e: Error) => (message = e.message) });
+      let error: AirQualityError | undefined;
+      service.getCurrent([singapore]).subscribe({ error: (e: AirQualityError) => (error = e) });
 
       const wind = windRequest();
       airRequest().flush({ error: true, reason: 'Too many requests' }, { status: 429, statusText: 'Too Many Requests' });
       expect(wind.cancelled).toBeTrue();
 
-      expect(message).toContain('rate-limiting');
+      expect(error?.code).toBe('rate-limited');
     });
 
     it("passes on the API's reason for a bad request", () => {
-      let message = '';
-      service.getCurrent([singapore]).subscribe({ error: (e: Error) => (message = e.message) });
+      let error: AirQualityError | undefined;
+      service.getCurrent([singapore]).subscribe({ error: (e: AirQualityError) => (error = e) });
 
       const wind = windRequest();
       airRequest().flush({ error: true, reason: 'Latitude must be in range' }, { status: 400, statusText: 'Bad Request' });
       expect(wind.cancelled).toBeTrue();
 
-      expect(message).toContain('Latitude must be in range');
+      expect(error?.code).toBe('api');
+      expect(error?.detail).toBe('Latitude must be in range');
     });
 
     it('rejects a response that does not line up with the cities asked for', () => {
-      let message = '';
-      service.getCurrent([singapore, pekanbaru]).subscribe({ error: (e: Error) => (message = e.message) });
+      let error: AirQualityError | undefined;
+      service.getCurrent([singapore, pekanbaru]).subscribe({ error: (e: AirQualityError) => (error = e) });
 
       const wind = windRequest();
       airRequest().flush([airLocation()]);
 
-      expect(message).toContain('Unexpected response');
+      expect(error?.code).toBe('unexpected');
+      expect(error?.message).toContain('Unexpected response');
       expect(wind.cancelled).toBeTrue();
     });
 

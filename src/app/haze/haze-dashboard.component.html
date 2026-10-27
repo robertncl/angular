@@ -1,54 +1,62 @@
-<a class="skip-link visually-hidden" href="#content" (click)="skipToContent($event)">Skip to main content</a>
+<a class="skip-link visually-hidden" href="#content" (click)="skipToContent($event)">{{ t().skipToContent }}</a>
 
 <header class="topbar" #topbar>
   <div class="topbar__inner">
     <div class="brand">
-      <h1 class="brand__name">Haze Watch</h1>
-      <p class="brand__tag label">Southeast Asia air quality</p>
+      <h1 class="brand__name">{{ t().appName }}</h1>
+      <p class="brand__tag label">{{ t().tagline }}</p>
     </div>
 
     <div class="topbar__actions">
       <p class="updated" aria-live="polite">
         @if (dataTime(); as data) {
-          Data for <time>{{ localTime(data) }}</time>
+          {{ t().dataFor }} <time>{{ localTime(data) }}</time>
           @if (updatedAt(); as at) {
-            <span class="updated__checked">· checked {{ localTime(at) }}</span>
+            <span class="updated__checked">· {{ t().checked(localTime(at)) }}</span>
           }
         } @else if (loading()) {
-          Loading readings…
+          {{ t().loadingReadings }}
         }
       </p>
+      <div class="field language">
+        <label for="language" class="visually-hidden">{{ t().language }}</label>
+        <select id="language" (change)="setLanguage($event)">
+          @for (l of languages; track l.code) {
+            <option [value]="l.code" [attr.lang]="l.htmlLang" [selected]="lang() === l.code">{{ l.nativeName }}</option>
+          }
+        </select>
+      </div>
       <button type="button" class="button" (click)="refresh()" [attr.aria-busy]="loading()">
         <svg class="icon refresh-icon" [class.is-spinning]="loading()" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M20 12a8 8 0 1 1-2.34-5.66" />
           <path d="M20 4v5h-5" />
         </svg>
-        Refresh
+        {{ t().refresh }}
       </button>
     </div>
   </div>
 </header>
 
 <main id="content" class="page" tabindex="-1">
-  @if (errorMessage(); as message) {
+  @if (loadError(); as error) {
     <div class="alert banner" data-tone="danger" role="alert">
-      <p class="alert__title">Couldn’t load new readings</p>
+      <p class="alert__title">{{ t().loadErrorTitle }}</p>
       <p class="alert__body">
-        {{ message }}
+        {{ errorText(error) }}
         @if (dataTime(); as data) {
-          Showing readings for {{ localTime(data) }}.
+          {{ t().showingReadingsFor(localTime(data)) }}
         }
       </p>
       <div class="alert__actions">
-        <button type="button" class="button" (click)="refresh()">Try again</button>
+        <button type="button" class="button" (click)="refresh()">{{ t().tryAgain }}</button>
       </div>
     </div>
   }
 
   <section class="section overview" aria-labelledby="overview-title">
     <div class="overview__intro">
-      <p class="label">Regional overview</p>
-      <p class="overview__meta">{{ cityCount }} cities · US AQI</p>
+      <p class="label">{{ t().overviewLabel }}</p>
+      <p class="overview__meta">{{ t().overviewMeta(cityCount) }}</p>
     </div>
 
     <div class="overview__main">
@@ -56,9 +64,12 @@
         <h2 id="overview-title" class="overview__headline">{{ overview().headline }}</h2>
         @if (overview().worst; as w) {
           <p class="overview__worst">
-            Worst right now:
-            <button type="button" class="link-button" (click)="select(w.city.id)">{{ w.city.name }}, {{ country(w.city) }}</button>
-            — US AQI {{ aqi(w.usAqi) }} ({{ overview().worstCategory?.label }})
+            {{ t().worstRightNow }}
+            <button type="button" class="link-button" (click)="select(w.city.id)">{{ cityName(w.city) }}, {{ country(w.city) }}</button>
+            — US AQI {{ aqi(w.usAqi) }}
+            @if (overview().worstCategory; as wc) {
+              ({{ t().categories[wc.id].label }})
+            }
           </p>
         }
         <!-- The legend below carries the same counts as text. -->
@@ -70,21 +81,21 @@
           }
         </div>
       } @else if (loading()) {
-        <h2 id="overview-title" class="overview__headline">Loading the latest readings for {{ cityCount }} cities…</h2>
+        <h2 id="overview-title" class="overview__headline">{{ t().loadingOverview(cityCount) }}</h2>
       } @else {
-        <h2 id="overview-title" class="overview__headline">Air-quality readings are unavailable</h2>
+        <h2 id="overview-title" class="overview__headline">{{ t().readingsUnavailable }}</h2>
       }
 
-      <ul class="legend" role="list" aria-label="Number of cities in each US AQI category">
+      <ul class="legend" role="list" [attr.aria-label]="t().legendLabel">
         @for (c of categories; track c.id) {
           <li class="legend__item">
             <span class="legend__top">
               <span class="swatch" [attr.data-cat]="c.id" aria-hidden="true"></span>
               @if (readings().length) {
-                <span class="legend__count">{{ overview().counts.get(c.id) }}<span class="visually-hidden"> cities</span></span>
+                <span class="legend__count">{{ overview().counts.get(c.id) }}<span class="visually-hidden">{{ t().cityCount(overview().counts.get(c.id) ?? 0) }}</span></span>
               }
             </span>
-            <span class="legend__label">{{ c.label }}</span>
+            <span class="legend__label">{{ t().categories[c.id].label }}</span>
             <span class="legend__range">{{ c.range }}</span>
           </li>
         }
@@ -94,23 +105,23 @@
 
   <div class="layout">
     <section class="section map-panel" aria-labelledby="map-title">
-      <h2 id="map-title" class="label">Map · US AQI by city</h2>
+      <h2 id="map-title" class="label">{{ t().mapTitle }}</h2>
       <div class="map-frame">
         @defer (on viewport) {
           <app-haze-map [readings]="readings()" [selectedId]="selectedId()" (citySelected)="select($event)" />
         } @placeholder {
-          <div class="map-placeholder"><p>Loading map…</p></div>
+          <div class="map-placeholder"><p>{{ t().mapLoading }}</p></div>
         }
       </div>
-      <p class="hint">Markers show US AQI. Select one, or a city in the list, for details and a 4-day forecast.</p>
+      <p class="hint">{{ t().mapHint }}</p>
     </section>
 
     <section class="section detail" #detailPanel>
       @if (selected(); as r) {
         @let cat = selectedCategory();
         <header class="detail__head">
-          <p class="label detail__kicker">Selected city</p>
-          <h2 class="detail__city">{{ r.city.name }}</h2>
+          <p class="label detail__kicker">{{ t().selectedCity }}</p>
+          <h2 class="detail__city">{{ cityName(r.city) }}</h2>
           <p class="detail__place">{{ place(r.city) }}</p>
         </header>
 
@@ -119,37 +130,36 @@
             <span class="reading__number">{{ aqi(r.usAqi) }}</span>
             <span class="reading__unit label">US AQI</span>
           </p>
-          <p class="reading__label">{{ cat?.label ?? 'No data' }}</p>
+          <p class="reading__label">{{ cat ? t().categories[cat.id].label : t().noData }}</p>
         </div>
         <p class="detail__time">
-          Model estimate for {{ cityTime(r) }}. The AQI averages particles over the past 24 hours, so it can stay
-          high for a while after the air clears.
+          {{ t().modelEstimate(cityTime(r)) }}
         </p>
 
         @if (cat) {
           <div class="alert advice" [attr.data-tone]="adviceTone(cat)">
-            <p class="alert__title">Health advice</p>
-            <p class="alert__body">{{ cat.advice }}</p>
+            <p class="alert__title">{{ t().healthAdvice }}</p>
+            <p class="alert__body">{{ t().categories[cat.id].advice }}</p>
           </div>
         }
 
         <dl class="metrics">
           <div class="metric">
-            <dt class="label">PM2.5 this hour</dt>
+            <dt class="label">{{ t().pm25ThisHour }}</dt>
             <dd>
               <span><span class="metric__value">{{ concentration(r.pm25) }}</span> µg/m³</span>
-              <span>WHO 24-hour guideline: {{ whoPm25 }}</span>
+              <span>{{ t().whoGuideline(whoPm25) }}</span>
             </dd>
           </div>
           <div class="metric">
-            <dt class="label">Haze</dt>
+            <dt class="label">{{ t().haze }}</dt>
             <dd>
               <span class="metric__value metric__value--word">{{ haze(r.aerosolOpticalDepth) }}</span>
-              <span>Aerosol optical depth {{ r.aerosolOpticalDepth == null ? '–' : r.aerosolOpticalDepth.toFixed(2) }}</span>
+              <span>{{ t().aerosolOpticalDepth(decimal(r.aerosolOpticalDepth, 2)) }}</span>
             </dd>
           </div>
           <div class="metric">
-            <dt class="label">Wind</dt>
+            <dt class="label">{{ t().wind }}</dt>
             <dd>
               <span class="metric__value metric__value--wind">
                 @if (r.windFrom != null && (r.windSpeed ?? 0) >= 1) {
@@ -159,7 +169,7 @@
                 }
                 {{ wind(r) }}
               </span>
-              <span>Arrow shows where smoke is drifting</span>
+              <span>{{ t().windNote }}</span>
             </dd>
           </div>
           <div class="metric">
@@ -167,11 +177,11 @@
             <dd><span><span class="metric__value">{{ concentration(r.pm10) }}</span> µg/m³</span></dd>
           </div>
           <div class="metric">
-            <dt class="label">Ozone</dt>
+            <dt class="label">{{ t().ozone }}</dt>
             <dd><span><span class="metric__value">{{ concentration(r.ozone) }}</span> µg/m³</span></dd>
           </div>
           <div class="metric">
-            <dt class="label">Carbon monoxide</dt>
+            <dt class="label">{{ t().carbonMonoxide }}</dt>
             <dd><span><span class="metric__value">{{ concentration(r.carbonMonoxide) }}</span> µg/m³</span></dd>
           </div>
         </dl>
@@ -183,23 +193,23 @@
 
             @if (daily().length) {
               <table class="daily">
-                <caption>Daily outlook <span class="daily__zone">{{ r.city.name }} local time</span></caption>
+                <caption>{{ t().dailyOutlook }} <span class="daily__zone">{{ t().localTimeIn(cityName(r.city)) }}</span></caption>
                 <thead>
                   <tr>
-                    <th scope="col" class="label">Day</th>
-                    <th scope="col" class="label">Peak US AQI</th>
-                    <th scope="col" class="label num">Peak PM2.5 <span class="unit">µg/m³</span></th>
+                    <th scope="col" class="label">{{ t().day }}</th>
+                    <th scope="col" class="label">{{ t().peakUsAqi }}</th>
+                    <th scope="col" class="label num">{{ t().peakPm25 }} <span class="unit">µg/m³</span></th>
                   </tr>
                 </thead>
                 <tbody>
                   @for (d of daily(); track d.date) {
                     @let dayCat = categoryOf(d.peakAqi);
                     <tr>
-                      <th scope="row">{{ d.label }}</th>
+                      <th scope="row">{{ d.relative === 'today' ? t().today : d.relative === 'tomorrow' ? t().tomorrow : d.label }}</th>
                       <td>
                         <span class="badge" [attr.data-cat]="dayCat?.id ?? 'none'">
                           <span class="badge__value">{{ aqi(d.peakAqi) }}</span>
-                          <span class="badge__label">{{ dayCat?.shortLabel ?? 'No data' }}</span>
+                          <span class="badge__label">{{ dayCat ? t().categories[dayCat.id].short : t().noData }}</span>
                         </span>
                       </td>
                       <td class="num">{{ concentration(d.peakPm25) }}</td>
@@ -210,10 +220,10 @@
             }
           } @else if (state.status === 'error') {
             <div class="alert inline-error" data-tone="danger" role="alert">
-              <p class="alert__title">Couldn't load the forecast</p>
-              <p class="alert__body">{{ state.message }}</p>
+              <p class="alert__title">{{ t().forecastError }}</p>
+              <p class="alert__body">{{ errorText(state.error) }}</p>
               <div class="alert__actions">
-                <button type="button" class="button" (click)="retryOutlook()">Try again</button>
+                <button type="button" class="button" (click)="retryOutlook()">{{ t().tryAgain }}</button>
               </div>
             </div>
           } @else {
@@ -228,36 +238,36 @@
           <div class="skeleton skeleton--chart"></div>
         </div>
       } @else {
-        <p class="label detail__kicker">Selected city</p>
-        <h2 class="detail__city">{{ selectedCity().name }}</h2>
-        <p class="detail__empty">No reading is available for this city right now.</p>
+        <p class="label detail__kicker">{{ t().selectedCity }}</p>
+        <h2 class="detail__city">{{ cityName(selectedCity()) }}</h2>
+        <p class="detail__empty">{{ t().noReading }}</p>
       }
     </section>
 
     <section class="section cities" aria-labelledby="cities-heading">
       <div class="cities__head">
         <div class="cities__title">
-          <h2 id="cities-heading" class="heading-2">Cities</h2>
+          <h2 id="cities-heading" class="heading-2">{{ t().citiesHeading }}</h2>
           @if (readings().length) {
             <p class="cities__summary">{{ listSummary() }}</p>
           }
         </div>
         <div class="filters">
           <div class="field">
-            <label for="country-filter">Country</label>
+            <label for="country-filter">{{ t().country }}</label>
             <select id="country-filter" (change)="setCountry($event)">
-              <option value="all" [selected]="countryFilter() === 'all'">All countries</option>
+              <option value="all" [selected]="countryFilter() === 'all'">{{ t().allCountries }}</option>
               @for (c of countries; track c.code) {
-                <option [value]="c.code" [selected]="countryFilter() === c.code">{{ c.name }}</option>
+                <option [value]="c.code" [selected]="countryFilter() === c.code">{{ t().countries[c.code] }}</option>
               }
             </select>
           </div>
           <div class="field">
-            <label for="sort-order">Sort</label>
+            <label for="sort-order">{{ t().sort }}</label>
             <select id="sort-order" (change)="setSort($event)">
-              <option value="worst" [selected]="sortOrder() === 'worst'">Worst air first</option>
-              <option value="best" [selected]="sortOrder() === 'best'">Cleanest air first</option>
-              <option value="name" [selected]="sortOrder() === 'name'">Name (A–Z)</option>
+              <option value="worst" [selected]="sortOrder() === 'worst'">{{ t().sortWorst }}</option>
+              <option value="best" [selected]="sortOrder() === 'best'">{{ t().sortBest }}</option>
+              <option value="name" [selected]="sortOrder() === 'name'">{{ t().sortName }}</option>
             </select>
           </div>
         </div>
@@ -278,8 +288,8 @@
                   <span><span class="visually-hidden">US AQI </span>{{ aqi(r.usAqi) }}</span>
                 </span>
                 <span class="city-row__text">
-                  <span class="city-row__name">{{ r.city.name }}</span>
-                  <span class="city-row__place">{{ rowCat?.shortLabel ?? 'No data' }} · {{ place(r.city) }}</span>
+                  <span class="city-row__name">{{ cityName(r.city) }}</span>
+                  <span class="city-row__place">{{ rowCat ? t().categories[rowCat.id].short : t().noData }} · {{ place(r.city) }}</span>
                 </span>
                 <span class="city-row__pm">
                   <span class="city-row__pm-label label">PM2.5</span>
@@ -288,7 +298,7 @@
               </button>
             </li>
           } @empty {
-            <li class="city-list__empty">No cities match this filter.</li>
+            <li class="city-list__empty">{{ t().noCitiesMatch }}</li>
           }
         </ul>
       } @else if (loading()) {
@@ -303,26 +313,19 @@
 
   <section class="section about" aria-labelledby="about-heading">
     <div class="about__text">
-      <h2 id="about-heading" class="heading-2">About this data</h2>
-      <p>
-        Readings are <strong>model estimates</strong> from the Copernicus Atmosphere Monitoring Service (CAMS), served by
-        Open-Meteo on a grid of roughly 45 km. They capture regional smoke well but can differ from ground stations,
-        especially close to fires or in dense city centres. The map refreshes every 30 minutes while the page is open.
-      </p>
-      <p>
-        Values use the US EPA Air Quality Index. National indices are calculated differently, so Singapore's PSI,
-        Malaysia's API and Indonesia's ISPU won't match these numbers exactly.
-      </p>
+      <h2 id="about-heading" class="heading-2">{{ t().aboutHeading }}</h2>
+      <p>{{ t().aboutModelBefore }}<strong>{{ t().aboutModelStrong }}</strong>{{ t().aboutModelAfter }}</p>
+      <p>{{ t().aboutIndex }}</p>
     </div>
     <div class="about__sources">
-      <h3 class="label">Official readings and advisories</h3>
+      <h3 class="label">{{ t().sourcesHeading }}</h3>
       <ul class="sources">
-        <li><a href="https://www.haze.gov.sg/">Singapore: NEA haze updates</a></li>
-        <li><a href="https://eqms.doe.gov.my/APIMS/main">Malaysia: Air Pollutant Index (APIMS)</a></li>
-        <li><a href="https://ispu.kemenlh.go.id/">Indonesia: Air Pollution Standard Index (ISPU)</a></li>
-        <li><a href="https://air4thai.pcd.go.th/webV3/">Thailand: Air4Thai</a></li>
-        <li><a href="https://asmc.asean.org/">ASEAN Specialised Meteorological Centre: regional haze and hotspots</a></li>
-        <li><a href="https://firms.modaps.eosdis.nasa.gov/map/">NASA FIRMS: active fire map</a></li>
+        <li><a href="https://www.haze.gov.sg/">{{ t().sources.sg }}</a></li>
+        <li><a href="https://eqms.doe.gov.my/APIMS/main">{{ t().sources.my }}</a></li>
+        <li><a href="https://ispu.kemenlh.go.id/">{{ t().sources.id }}</a></li>
+        <li><a href="https://air4thai.pcd.go.th/webV3/">{{ t().sources.th }}</a></li>
+        <li><a href="https://asmc.asean.org/">{{ t().sources.asmc }}</a></li>
+        <li><a href="https://firms.modaps.eosdis.nasa.gov/map/">{{ t().sources.firms }}</a></li>
       </ul>
     </div>
   </section>
@@ -330,11 +333,8 @@
 
 <footer class="site-footer">
   <div class="site-footer__inner">
-    <p>
-      Air-quality and wind data by <a href="https://open-meteo.com/">Open-Meteo</a> (CC BY 4.0), generated using
-      Copernicus Atmosphere Monitoring Service information. Map data © OpenStreetMap contributors.
-    </p>
-    <p>Not an official advisory. Follow the guidance of your local authorities.</p>
+    <p>{{ t().footerDataBefore }}<a href="https://open-meteo.com/">Open-Meteo</a>{{ t().footerDataAfter }}</p>
+    <p>{{ t().footerDisclaimer }}</p>
   </div>
 </footer>
 
