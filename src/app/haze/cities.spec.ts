@@ -9,20 +9,20 @@ describe('cities', () => {
 
   it('places every city inside Southeast Asia', () => {
     for (const c of CITIES) {
-      expect(c.lat).withContext(c.name).toBeGreaterThan(-11);
-      expect(c.lat).withContext(c.name).toBeLessThan(24);
-      expect(c.lon).withContext(c.name).toBeGreaterThan(92);
-      expect(c.lon).withContext(c.name).toBeLessThan(128);
+      expect(c.lat, c.name).toBeGreaterThan(-11);
+      expect(c.lat, c.name).toBeLessThan(24);
+      expect(c.lon, c.name).toBeGreaterThan(92);
+      expect(c.lon, c.name).toBeLessThan(128);
     }
   });
 
   it('only uses known countries', () => {
     const codes = new Set(COUNTRIES.map(c => c.code));
-    for (const c of CITIES) expect(codes.has(c.country)).withContext(c.name).toBeTrue();
+    for (const c of CITIES) expect(codes.has(c.country), c.name).toBe(true);
   });
 
   it('has a valid default city', () => {
-    expect(CITY_BY_ID.has(DEFAULT_CITY_ID)).toBeTrue();
+    expect(CITY_BY_ID.has(DEFAULT_CITY_ID)).toBe(true);
   });
 
   it('describes where a city is', () => {

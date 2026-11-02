@@ -28,7 +28,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # karma.conf.js launches ChromeHeadlessCI (--no-sandbox); ubuntu-latest
-      # ships Google Chrome, so no browser download is needed.
+      # Vitest runs the specs in a real Chromium (the map and chart specs
+      # measure layout, which jsdom can't). Playwright's Chromium has to match
+      # the playwright version in the lockfile, so install that one.
+      - name: Install Chromium for Playwright
+        run: npx playwright install --with-deps chromium
+
       - name: Run unit tests
         run: npx ng test --no-watch --no-progress
