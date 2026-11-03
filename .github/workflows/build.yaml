@@ -28,6 +28,9 @@ jobs:
 
       # Use the CLI pinned in package.json via npx rather than installing an
       # unpinned `@angular/cli` globally.
+      - name: Install Chromium for Playwright
+        run: npx playwright install --with-deps chromium
+
       - name: Run tests
         run: npx ng test --no-watch --no-progress
 

@@ -110,13 +110,13 @@ describe('translations', () => {
 
       it('gives advice for every AQI band', () => {
         for (const cat of Object.keys(en.categories) as (keyof Messages['categories'])[]) {
-          expect(m.categories[cat].advice.length).withContext(cat).toBeGreaterThan(10);
+          expect(m.categories[cat].advice.length, cat).toBeGreaterThan(10);
         }
       });
 
       it('only names real cities and areas', () => {
-        for (const cityId of Object.keys(m.cityNames)) expect(CITY_BY_ID.has(cityId)).withContext(cityId).toBeTrue();
-        for (const area of Object.keys(m.areas)) expect(areas.has(area)).withContext(area).toBeTrue();
+        for (const cityId of Object.keys(m.cityNames)) expect(CITY_BY_ID.has(cityId), cityId).toBe(true);
+        for (const area of Object.keys(m.areas)) expect(areas.has(area), area).toBe(true);
       });
     });
   }
