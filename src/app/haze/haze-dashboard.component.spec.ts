@@ -1,3 +1,4 @@
+import type { MockInstance } from 'vitest';
 import { Location } from '@angular/common';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, TestRequest, provideHttpClientTesting } from '@angular/common/http/testing';
@@ -219,7 +220,7 @@ describe('HazeDashboardComponent', () => {
     await fixture.whenStable();
     const first = currentRequests();
     first.air.error(new ProgressEvent('error'), { status: 0 });
-    expect(first.wind.cancelled).toBeTrue();
+    expect(first.wind.cancelled).toBe(true);
     outlookRequest(city('singapore')).flush(hourly(164));
     await fixture.whenStable();
 
@@ -270,12 +271,12 @@ describe('HazeDashboardComponent', () => {
     await fixture.whenStable();
 
     const i18n = TestBed.inject(I18n);
-    const use = spyOn(i18n, 'use').and.callThrough();
+    const use = vi.spyOn(i18n, 'use');
     const picker = el.querySelector<HTMLSelectElement>('#language')!;
     picker.value = 'zh';
     picker.dispatchEvent(new Event('change'));
     expect(use).toHaveBeenCalledWith('zh');
-    await use.calls.mostRecent().returnValue;
+    await use.mock.results.at(-1)?.value;
     await fixture.whenStable();
 
     try {
@@ -294,9 +295,9 @@ describe('HazeDashboardComponent', () => {
     const HOUR = 3600 * 1000;
     const dataHour = NOW_S * 1000;
     const nextHour = dataHour + HOUR;
-    let clock: jasmine.Spy<() => number>;
+    let clock: MockInstance<() => number>;
 
-    beforeEach(() => (clock = spyOn(Date, 'now').and.returnValue(dataHour + 10 * 60 * 1000)));
+    beforeEach(() => (clock = vi.spyOn(Date, 'now').mockReturnValue(dataHour + 10 * 60 * 1000)));
 
     async function tick(): Promise<void> {
       document.dispatchEvent(new Event('visibilitychange'));
@@ -311,11 +312,11 @@ describe('HazeDashboardComponent', () => {
       await loadAll();
       outlookRequest(city('singapore')).flush(hourly(164));
 
-      clock.and.returnValue(nextHour - 60 * 1000);
+      clock.mockReturnValue(nextHour - 60 * 1000);
       await tick();
       expect(pendingCurrent()).toBe(0);
 
-      clock.and.returnValue(nextHour + 4 * 60 * 1000);
+      clock.mockReturnValue(nextHour + 4 * 60 * 1000);
       await tick();
       const { air, wind } = currentRequests();
       air.flush(currentAir(CITIES));
@@ -331,7 +332,7 @@ describe('HazeDashboardComponent', () => {
       await fixture.whenStable();
 
       // 30 s later: still inside the 1-minute backoff.
-      clock.and.returnValue(dataHour + 10 * 60 * 1000 + 30 * 1000);
+      clock.mockReturnValue(dataHour + 10 * 60 * 1000 + 30 * 1000);
       await tick();
       expect(pendingCurrent()).toBe(0);
 

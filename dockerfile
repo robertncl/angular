@@ -9,8 +9,6 @@ WORKDIR /app
 # Install from the lockfile only, so the image can't drift from the pinned
 # versions. Copied separately from the sources to keep this layer cacheable.
 COPY package.json package-lock.json ./
-# The build never launches a browser; karma's Chrome download is dead weight.
-ENV PUPPETEER_SKIP_DOWNLOAD=true
 RUN npm ci
 
 COPY . .

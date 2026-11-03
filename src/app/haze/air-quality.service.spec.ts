@@ -139,7 +139,7 @@ describe('AirQualityService', () => {
 
       expect(error?.code).toBe('offline');
       // forkJoin drops the still-pending wind request once air quality fails.
-      expect(wind.cancelled).toBeTrue();
+      expect(wind.cancelled).toBe(true);
     });
 
     it('explains rate limiting', () => {
@@ -148,7 +148,7 @@ describe('AirQualityService', () => {
 
       const wind = windRequest();
       airRequest().flush({ error: true, reason: 'Too many requests' }, { status: 429, statusText: 'Too Many Requests' });
-      expect(wind.cancelled).toBeTrue();
+      expect(wind.cancelled).toBe(true);
 
       expect(error?.code).toBe('rate-limited');
     });
@@ -159,7 +159,7 @@ describe('AirQualityService', () => {
 
       const wind = windRequest();
       airRequest().flush({ error: true, reason: 'Latitude must be in range' }, { status: 400, statusText: 'Bad Request' });
-      expect(wind.cancelled).toBeTrue();
+      expect(wind.cancelled).toBe(true);
 
       expect(error?.code).toBe('api');
       expect(error?.detail).toBe('Latitude must be in range');
@@ -174,7 +174,7 @@ describe('AirQualityService', () => {
 
       expect(error?.code).toBe('unexpected');
       expect(error?.message).toContain('Unexpected response');
-      expect(wind.cancelled).toBeTrue();
+      expect(wind.cancelled).toBe(true);
     });
 
     it('shows air quality without waiting for wind, then fills wind in', () => {
@@ -253,30 +253,30 @@ describe('AirQualityService', () => {
     });
 
     describe('cache expiry', () => {
-      afterEach(() => jasmine.clock().uninstall());
+      afterEach(() => vi.useRealTimers());
 
       it('drops a cached outlook when the hour turns, even within 15 minutes', () => {
-        jasmine.clock().install();
-        jasmine.clock().mockDate(new Date(Date.UTC(2026, 9, 26, 12, 58)));
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date(Date.UTC(2026, 9, 26, 12, 58)));
         service.getOutlook(pekanbaru).subscribe();
         outlookRequest(pekanbaru).flush(hourly);
 
-        jasmine.clock().mockDate(new Date(Date.UTC(2026, 9, 26, 12, 59, 59)));
+        vi.setSystemTime(new Date(Date.UTC(2026, 9, 26, 12, 59, 59)));
         service.getOutlook(pekanbaru).subscribe();
         http.expectNone(req => req.params.has('hourly'));
 
-        jasmine.clock().mockDate(new Date(Date.UTC(2026, 9, 26, 13, 0, 1)));
+        vi.setSystemTime(new Date(Date.UTC(2026, 9, 26, 13, 0, 1)));
         service.getOutlook(pekanbaru).subscribe();
         outlookRequest(pekanbaru).flush(hourly);
       });
 
       it('still expires after 15 minutes within one hour', () => {
-        jasmine.clock().install();
-        jasmine.clock().mockDate(new Date(Date.UTC(2026, 9, 26, 12, 5)));
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date(Date.UTC(2026, 9, 26, 12, 5)));
         service.getOutlook(pekanbaru).subscribe();
         outlookRequest(pekanbaru).flush(hourly);
 
-        jasmine.clock().mockDate(new Date(Date.UTC(2026, 9, 26, 12, 21)));
+        vi.setSystemTime(new Date(Date.UTC(2026, 9, 26, 12, 21)));
         service.getOutlook(pekanbaru).subscribe();
         outlookRequest(pekanbaru).flush(hourly);
       });

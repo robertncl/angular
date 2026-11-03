@@ -83,7 +83,7 @@ Helvetica and Arial.
 npm ci
 npm start          # http://localhost:4200
 npm run build      # dist/angular/browser
-npm test           # Karma + headless Chrome (set CHROME_BIN if Chrome isn't on PATH)
+npm test           # Vitest in Chromium (first time: npx playwright install chromium)
 ```
 
 ### Docker (production web)
