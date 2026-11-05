@@ -5,7 +5,7 @@ import { en, type Messages } from './messages/en';
 
 export type { Messages } from './messages/en';
 
-export type LangCode = 'en' | 'zh' | 'id' | 'ms' | 'th' | 'vi' | 'fil';
+export type LangCode = 'en' | 'zh' | 'zh-Hant' | 'id' | 'ms' | 'th' | 'vi' | 'fil';
 
 export interface Language {
   code: LangCode;
@@ -20,6 +20,7 @@ export interface Language {
 export const LANGUAGES: readonly Language[] = [
   { code: 'en', nativeName: 'English', htmlLang: 'en', locale: 'en-GB' },
   { code: 'zh', nativeName: '简体中文', htmlLang: 'zh-Hans', locale: 'zh-CN' },
+  { code: 'zh-Hant', nativeName: '繁體中文', htmlLang: 'zh-Hant', locale: 'zh-TW' },
   { code: 'id', nativeName: 'Bahasa Indonesia', htmlLang: 'id', locale: 'id-ID' },
   { code: 'ms', nativeName: 'Bahasa Melayu', htmlLang: 'ms', locale: 'ms-MY' },
   { code: 'th', nativeName: 'ไทย', htmlLang: 'th', locale: 'th-TH' },
@@ -32,6 +33,7 @@ const BY_CODE = new Map(LANGUAGES.map(l => [l.code, l]));
 /** English ships in the main bundle; every other language is its own lazy chunk. */
 const LOADERS: Record<Exclude<LangCode, 'en'>, () => Promise<Messages>> = {
   zh: () => import('./messages/zh').then(m => m.zh),
+  'zh-Hant': () => import('./messages/zh-hant').then(m => m.zhHant),
   id: () => import('./messages/id').then(m => m.id),
   ms: () => import('./messages/ms').then(m => m.ms),
   th: () => import('./messages/th').then(m => m.th),
@@ -44,11 +46,17 @@ const STORAGE_KEY = 'hazewatch.lang';
 /**
  * Best match for the browser's preferred languages, by primary subtag.
  * `in` and `tl` are the legacy/alternate codes for Indonesian and Tagalog.
+ * Chinese splits by script: an explicit `Hant`, or Taiwan, Hong Kong or
+ * Macau, gets Traditional; any other Chinese tag gets Simplified.
  */
 export function detectLanguage(preferred: readonly string[]): LangCode {
   const aliases: Record<string, LangCode> = { in: 'id', tl: 'fil' };
   for (const tag of preferred) {
-    const primary = tag.toLowerCase().split('-')[0];
+    const [primary, ...rest] = tag.toLowerCase().split('-');
+    if (primary === 'zh') {
+      if (rest.includes('hans')) return 'zh';
+      return rest.some(s => s === 'hant' || s === 'tw' || s === 'hk' || s === 'mo') ? 'zh-Hant' : 'zh';
+    }
     const code = aliases[primary] ?? primary;
     if (BY_CODE.has(code as LangCode)) return code as LangCode;
   }

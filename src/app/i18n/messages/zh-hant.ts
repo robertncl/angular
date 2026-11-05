@@ -1,0 +1,225 @@
+import type { Messages } from './en';
+
+/**
+ * 繁體中文, in Taiwan usage. AQI band names follow the Ministry of
+ * Environment's own Chinese terms rather than translating the English.
+ */
+export const zhHant: Messages = {
+  appName: '煙霾觀察',
+  tagline: '東南亞空氣品質',
+  pageTitle: '煙霾觀察 · 東南亞空氣品質',
+  cityPageTitle: (city, aqi, category) => `${city}：美國 AQI ${aqi}（${category}）· 煙霾觀察`,
+  skipToContent: '跳至主要內容',
+  language: '語言',
+  refresh: '重新整理',
+  dataFor: '資料時間',
+  checked: time => `${time} 已更新`,
+  loadingReadings: '正在載入讀數…',
+  tryAgain: '再試一次',
+  noData: '無資料',
+
+  loadErrorTitle: '無法載入最新讀數',
+  showingReadingsFor: time => `目前顯示 ${time} 的讀數。`,
+  errors: {
+    offline: '無法連線至空氣品質服務。請檢查網路連線後再試一次。',
+    rateLimited: '空氣品質服務的請求過於頻繁，請過幾分鐘再試。',
+    api: detail => `空氣品質服務傳回錯誤：${detail}`,
+    unexpected: '載入空氣品質資料時發生錯誤。'
+  },
+
+  overviewLabel: '區域概況',
+  overviewMeta: cities => `${cities} 個城市 · 美國 AQI`,
+  worstRightNow: '目前最差：',
+  loadingOverview: cities => `正在載入 ${cities} 個城市的最新讀數…`,
+  readingsUnavailable: '暫時無法取得空氣品質讀數',
+  headlineNone: '目前沒有可用的讀數',
+  headlineUnhealthy: (n, total) => `${total} 個城市中有 ${n} 個空氣不健康`,
+  headlineSensitive: (n, total) => `${total} 個城市中有 ${n} 個對敏感族群不健康`,
+  headlineClear: total => `全部 ${total} 個城市空氣良好或普通`,
+  legendLabel: '各美國 AQI 等級的城市數量',
+  cityCount: () => ' 個城市',
+
+  mapTitle: '地圖 · 各城市美國 AQI',
+  mapLabel: '各城市美國 AQI 地圖',
+  mapLoading: '正在載入地圖…',
+  mapHint: '標記顯示美國 AQI。選擇標記或清單中的城市，即可查看詳細資訊與 4 天預報。',
+  mapAttribution: '底圖',
+
+  selectedCity: '所選城市',
+  modelEstimate: time => `${time} 的模型估計值。AQI 取過去 24 小時懸浮微粒的平均值，因此空氣好轉後仍可能偏高一段時間。`,
+  healthAdvice: '健康建議',
+  pm25ThisHour: '本小時 PM2.5',
+  whoGuideline: value => `世界衛生組織 24 小時指引值：${value}`,
+  haze: '煙霾',
+  aerosolOpticalDepth: value => `氣膠光學厚度 ${value}`,
+  wind: '風',
+  windNote: '箭頭表示煙霧飄散的方向',
+  windUnavailable: '無資料',
+  windCalm: '無風',
+  windFrom: (kmh, direction) => `${direction}風 ${kmh} 公里/小時`,
+  ozone: '臭氧',
+  carbonMonoxide: '一氧化碳',
+  noReading: '這個城市目前沒有可用的讀數。',
+
+  dailyOutlook: '每日展望',
+  localTimeIn: city => `${city}當地時間`,
+  day: '日期',
+  peakUsAqi: '美國 AQI 峰值',
+  peakPm25: 'PM2.5 峰值',
+  today: '今天',
+  tomorrow: '明天',
+  forecastError: '無法載入預報',
+
+  chartTitle: '每小時美國 AQI',
+  chartRange: '過去 2 天及未來 4 天預報。',
+  chartAriaTitle: '每小時美國 AQI 圖表。',
+  chartNow: reading => `目前 ${reading}。`,
+  chartForecastPeak: (reading, when) => `預報峰值 ${reading}，出現在 ${when}。`,
+  chartNowLabel: '現在',
+  chartPeakLabel: (aqi, when) => `峰值 ${aqi} · ${when}`,
+  chartHint: '將指標移到圖表上，即可查看每小時的數值。',
+  chartKeyHistory: '模型歷史值',
+  chartKeyForecast: '預報',
+  chartKeyPeak: '預報峰值',
+  chartEmpty: '這個城市的每小時資料不足，無法繪製圖表。',
+
+  citiesHeading: '城市',
+  country: '國家',
+  allCountries: '所有國家',
+  sort: '排序',
+  sortWorst: '空氣最差優先',
+  sortBest: '空氣最好優先',
+  sortName: '名稱',
+  listSummary: (n, country, order) =>
+    `${country ? `${country} ${n} 個城市` : `${n} 個城市`}，${{ worst: '空氣最差優先', best: '空氣最好優先', name: '依名稱' }[order]}`,
+  noCitiesMatch: '沒有符合篩選條件的城市。',
+
+  showing: (city, aqi, category) => `正在顯示${city}：美國 AQI ${aqi}，${category}。`,
+  showingNoData: city => `正在顯示${city}。`,
+
+  aboutHeading: '關於這些資料',
+  aboutModelBefore: '讀數是由 Open-Meteo 提供的哥白尼大氣監測服務（CAMS）',
+  aboutModelStrong: '模型估計值',
+  aboutModelAfter:
+    '，網格約 45 公里。能較準確地反映區域煙霾，但可能與地面測站不同，尤其是在火點附近或人口稠密的市中心。頁面開啟期間，每個整點過後不久就會取得新數值。',
+  aboutIndex:
+    '數值採用美國環境保護署的空氣品質指標（AQI）。各國指標的計算方式不同，因此新加坡的 PSI、馬來西亞的 API 和印尼的 ISPU 與這些數字不會完全一致。',
+  sourcesHeading: '官方讀數與通告',
+  sources: {
+    sg: '新加坡：國家環境局煙霾通告',
+    my: '馬來西亞：空氣污染指數（APIMS）',
+    id: '印尼：空氣污染標準指數（ISPU）',
+    th: '泰國：Air4Thai',
+    asmc: '東協專業氣象中心：區域煙霾與熱點',
+    firms: 'NASA FIRMS：即時火點地圖'
+  },
+  footerDataBefore: '空氣品質與風資料來自 ',
+  footerDataAfter: '（CC BY 4.0），使用哥白尼大氣監測服務的資訊產生。地圖資料 © OpenStreetMap 貢獻者。',
+  footerDisclaimer: '本網站並非官方通告。請遵循當地主管機關的指引。',
+
+  categories: {
+    good: { label: '良好', short: '良好', advice: '空氣品質令人滿意，可照常進行戶外活動。' },
+    moderate: {
+      label: '普通',
+      short: '普通',
+      advice: '對大多數人而言可以接受。若您對空氣污染特別敏感，請考慮縮短戶外活動時間或降低強度。'
+    },
+    sensitive: {
+      label: '對敏感族群不健康',
+      short: '敏感族群',
+      advice: '兒童、長者、孕婦及患有心臟或肺部疾病者，應減少長時間或劇烈的戶外活動。'
+    },
+    unhealthy: {
+      label: '對所有族群不健康',
+      short: '不健康',
+      advice: '所有人都應減少長時間或劇烈的戶外活動，敏感族群應避免此類活動。若必須長時間待在戶外，請配戴密合良好的 N95 口罩。'
+    },
+    'very-unhealthy': {
+      label: '非常不健康',
+      short: '非常不健康',
+      advice: '所有人都應避免長時間或劇烈的戶外活動。敏感族群應留在室內、關閉門窗，並盡可能開啟空氣清淨機。'
+    },
+    hazardous: {
+      label: '危害',
+      short: '危害',
+      advice: '所有人都應避免一切戶外體能活動，留在室內並關閉門窗。請遵循當地衛生主管機關的建議。'
+    }
+  },
+  hazeLevels: { clear: '晴朗', light: '輕度煙霾', hazy: '有煙霾', thick: '濃煙霾' },
+  compass: { N: '北', NE: '東北', E: '東', SE: '東南', S: '南', SW: '西南', W: '西', NW: '西北' },
+  placeWithArea: (area, country) => `${country}${area}`,
+  cityState: '城市國家',
+  countries: {
+    BN: '汶萊',
+    KH: '柬埔寨',
+    ID: '印尼',
+    LA: '寮國',
+    MY: '馬來西亞',
+    MM: '緬甸',
+    PH: '菲律賓',
+    SG: '新加坡',
+    TH: '泰國',
+    TL: '東帝汶',
+    VN: '越南'
+  },
+  areas: {
+    Johor: '柔佛',
+    Perak: '霹靂',
+    Penang: '檳城',
+    Pahang: '彭亨',
+    Sarawak: '砂拉越',
+    Sabah: '沙巴',
+    'East Java': '東爪哇',
+    'North Sumatra': '北蘇門答臘',
+    Riau: '廖內',
+    'Riau Islands': '廖內群島',
+    Jambi: '占碑',
+    'South Sumatra': '南蘇門答臘',
+    'West Kalimantan': '西加里曼丹',
+    'Central Kalimantan': '中加里曼丹',
+    'South Kalimantan': '南加里曼丹',
+    'East Kalimantan': '東加里曼丹',
+    Songkhla: '宋卡'
+  },
+  cityNames: {
+    singapore: '新加坡',
+    'kuala-lumpur': '吉隆坡',
+    'johor-bahru': '新山',
+    melaka: '馬六甲',
+    ipoh: '怡保',
+    'george-town': '喬治市',
+    kuantan: '關丹',
+    kuching: '古晉',
+    miri: '美里',
+    'kota-kinabalu': '亞庇',
+    jakarta: '雅加達',
+    surabaya: '泗水',
+    medan: '棉蘭',
+    pekanbaru: '北干巴魯',
+    batam: '巴淡',
+    jambi: '占碑',
+    palembang: '巨港',
+    pontianak: '坤甸',
+    'palangka-raya': '帕朗卡拉亞',
+    banjarmasin: '馬辰',
+    samarinda: '三馬林達',
+    bangkok: '曼谷',
+    'chiang-mai': '清邁',
+    'chiang-rai': '清萊',
+    'khon-kaen': '孔敬',
+    'hat-yai': '合艾',
+    'bandar-seri-begawan': '斯里巴卡旺市',
+    'phnom-penh': '金邊',
+    'siem-reap': '暹粒',
+    vientiane: '永珍',
+    'luang-prabang': '龍坡邦',
+    yangon: '仰光',
+    mandalay: '曼德勒',
+    hanoi: '河內',
+    'ho-chi-minh-city': '胡志明市',
+    manila: '馬尼拉',
+    cebu: '宿霧市',
+    davao: '達沃市',
+    dili: '帝力'
+  }
+};
