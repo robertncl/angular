@@ -10,8 +10,9 @@ import { ms } from './messages/ms';
 import { th } from './messages/th';
 import { vi } from './messages/vi';
 import { zh } from './messages/zh';
+import { zhHant } from './messages/zh-hant';
 
-const TRANSLATIONS: Record<string, Messages> = { zh, id, ms, th, vi, fil };
+const TRANSLATIONS: Record<string, Messages> = { zh, 'zh-Hant': zhHant, id, ms, th, vi, fil };
 
 describe('detectLanguage', () => {
   it('matches browser preferences by primary subtag, in order', () => {
@@ -19,6 +20,20 @@ describe('detectLanguage', () => {
     expect(detectLanguage(['ms-MY'])).toBe('ms');
     expect(detectLanguage(['fr-FR', 'th-TH'])).toBe('th');
     expect(detectLanguage(['vi'])).toBe('vi');
+  });
+
+  it('picks Traditional Chinese for Hant, Taiwan, Hong Kong and Macau', () => {
+    expect(detectLanguage(['zh-TW'])).toBe('zh-Hant');
+    expect(detectLanguage(['zh-HK', 'en'])).toBe('zh-Hant');
+    expect(detectLanguage(['zh-MO'])).toBe('zh-Hant');
+    expect(detectLanguage(['zh-Hant-SG'])).toBe('zh-Hant');
+  });
+
+  it('keeps Simplified Chinese for other Chinese tags', () => {
+    expect(detectLanguage(['zh'])).toBe('zh');
+    expect(detectLanguage(['zh-CN'])).toBe('zh');
+    expect(detectLanguage(['zh-SG'])).toBe('zh');
+    expect(detectLanguage(['zh-Hans-HK'])).toBe('zh');
   });
 
   it('accepts the legacy codes for Indonesian and Tagalog', () => {
@@ -59,6 +74,15 @@ describe('I18n', () => {
     expect(i18n.locale()).toBe('zh-CN');
     expect(document.documentElement.lang).toBe('zh-Hans');
     expect(localStorage.getItem('hazewatch.lang')).toBe('zh');
+  });
+
+  it('loads Traditional Chinese with its own script tag and locale', async () => {
+    await i18n.use('zh-Hant');
+
+    expect(i18n.t().refresh).toBe('重新整理');
+    expect(i18n.t().categories.moderate.label).toBe('普通');
+    expect(i18n.locale()).toBe('zh-TW');
+    expect(document.documentElement.lang).toBe('zh-Hant');
   });
 
   it('prefers a remembered choice over the browser language', async () => {

@@ -375,9 +375,14 @@ select {
 /* --- Other scripts ------------------------------------------------------ */
 
 /* Archivo has no Chinese or Thai glyphs. Name system faces that do, so
-   Chinese gets Simplified (not Japanese) forms and Thai a face drawn for it. */
+   each Chinese script gets its own forms (not Japanese ones) and Thai a face
+   drawn for it. :lang(zh) also matches zh-Hant, so that rule comes after. */
 :root:lang(zh) {
   --font-sans: "Archivo", "PingFang SC", "Noto Sans SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+}
+
+:root:lang(zh-Hant) {
+  --font-sans: "Archivo", "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", "Helvetica Neue", Arial, sans-serif;
 }
 
 :root:lang(th) {
