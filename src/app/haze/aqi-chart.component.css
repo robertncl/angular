@@ -2,11 +2,11 @@
   display: block;
 }
 
-/* Opens on a 1px ink rule inside the detail panel. */
+/* Opens on a hairline inside the detail card. */
 .chart {
   margin: 0;
-  padding-block-start: 16px;
-  border-block-start: 1px solid var(--ink);
+  padding-block-start: var(--acme-space-5);
+  border-block-start: 1px solid var(--acme-color-border);
 }
 
 .chart__caption {
@@ -16,14 +16,15 @@
 }
 
 .chart__title {
-  font-size: 1.125rem;
-  font-weight: 700;
-  line-height: 1.25;
+  font-size: var(--acme-text-md);
+  font-weight: 600;
+  line-height: var(--acme-leading-snug);
+  letter-spacing: var(--acme-tracking-snug);
 }
 
 .chart__summary {
-  color: var(--ink-2);
-  font-size: 0.875rem;
+  color: var(--acme-color-text-muted);
+  font-size: var(--acme-text-sm);
 }
 
 .chart__frame {
@@ -45,12 +46,12 @@
 
 .grid__y,
 .grid__x {
-  stroke: var(--rule);
+  stroke: var(--acme-color-border);
   stroke-width: 1;
 }
 
 .tick {
-  fill: var(--ink-3);
+  fill: var(--acme-color-text-subtle);
   font-size: 12px;
   font-variant-numeric: tabular-nums;
 }
@@ -62,66 +63,62 @@
 
 .line {
   fill: none;
-  stroke: var(--data-line);
+  stroke: var(--acme-color-text);
   stroke-width: 2;
-  stroke-linejoin: miter;
-  stroke-linecap: square;
+  stroke-linejoin: round;
+  stroke-linecap: round;
 }
 
-/* Square caps would close up a short dash pattern, so dashes stay butt. */
 .line--forecast {
-  stroke-dasharray: 6 4;
-  stroke-linecap: butt;
+  stroke-dasharray: 5 4;
 }
 
 .now {
-  stroke: var(--ink-2);
+  stroke: var(--acme-color-text-muted);
   stroke-width: 1;
   stroke-dasharray: 4 3;
 }
 
 .now__label {
-  fill: var(--ink-2);
+  fill: var(--acme-color-text-muted);
   font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-weight: 500;
 }
 
-/* The one takeaway: a 12px blue dot with a paper ring, labelled directly. */
+/* The one takeaway: a 12px Blue dot with a white ring, labelled directly. */
 .peak {
-  fill: var(--data-highlight);
-  stroke: var(--paper);
+  fill: var(--acme-color-data-highlight);
+  stroke: var(--acme-color-canvas);
   stroke-width: 2;
 }
 
 .peak__label {
-  fill: var(--data-highlight);
+  fill: var(--acme-color-data-highlight);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
-  /* A paper halo keeps the label legible over the line and bands. */
+  /* A white halo keeps the label legible over the line and bands. */
   paint-order: stroke;
-  stroke: var(--paper);
+  stroke: var(--acme-color-canvas);
   stroke-width: 4px;
-  stroke-linejoin: miter;
+  stroke-linejoin: round;
 }
 
 .cursor {
-  stroke: var(--ink);
+  stroke: var(--acme-color-text-muted);
   stroke-width: 1;
 }
 
 .cursor__dot {
-  fill: var(--paper);
-  stroke: var(--ink);
+  fill: var(--acme-color-canvas);
+  stroke: var(--acme-color-text);
   stroke-width: 2;
 }
 
 .chart__readout {
   min-block-size: 1.5em;
   margin-block: 8px 2px;
-  color: var(--ink-2);
+  color: var(--acme-color-text-muted);
   font-size: 0.75rem;
   font-variant-numeric: tabular-nums;
 }
@@ -131,7 +128,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 4px 8px;
-  color: var(--ink-2);
+  color: var(--acme-color-text-muted);
   font-size: 0.75rem;
 }
 
@@ -139,7 +136,7 @@
   display: inline-block;
   inline-size: 20px;
   block-size: 0;
-  border-block-start: 2px solid var(--data-line);
+  border-block-start: 2px solid var(--acme-color-text);
 }
 
 .key--forecast,
@@ -152,15 +149,15 @@
 }
 
 .key--peak {
-  inline-size: 10px;
-  block-size: 10px;
+  inline-size: 12px;
+  block-size: 12px;
   border: 0;
-  border-radius: var(--radius-circle);
-  background: var(--data-highlight);
+  border-radius: 50%;
+  background: var(--acme-color-data-highlight);
 }
 
 .chart__empty {
-  color: var(--ink-2);
+  color: var(--acme-color-text-muted);
   padding-block: 24px;
 }
 

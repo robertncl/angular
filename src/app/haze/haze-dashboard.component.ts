@@ -1,4 +1,4 @@
-import { Location } from '@angular/common';
+import { Location, NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -38,7 +38,7 @@ import { I18n, LANGUAGES, type LangCode } from '../i18n/i18n';
 
 export type SortOrder = 'worst' | 'best' | 'name';
 
-/** Alert tones by band. Only danger looks different: a red rule and title. */
+/** Health-advice alert variant by band: Good success, Moderate info, Sensitive/Unhealthy warning, worse danger. */
 export type AlertTone = 'success' | 'info' | 'warning' | 'danger';
 
 const ADVICE_TONE: Record<AqiCategoryId, AlertTone> = {
@@ -73,7 +73,7 @@ type OutlookState =
 
 @Component({
   selector: 'app-haze-dashboard',
-  imports: [AqiChartComponent, HazeMapComponent],
+  imports: [AqiChartComponent, HazeMapComponent, NgTemplateOutlet],
   templateUrl: './haze-dashboard.component.html',
   styleUrl: './haze-dashboard.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush

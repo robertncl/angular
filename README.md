@@ -64,20 +64,24 @@ relying on it.
 
 ## Design
 
-The UI follows the Modernist design system: Swiss layout on a flush-left 12-column grid (max 1280px, 24px
-gutters), black on white, and rules instead of boxes. Sections open on a 2px ink rule and rows are separated by 1px
-hairlines. There are no cards, shadows or rounded corners. Colour has two jobs: blue (`--blue`) means act or "you are
-here" (links, focus, the selected city), and the data ramp (`--data-1` to `--data-6`) means severity. Red (`--red`)
-is for errors only. The page is light-only. The tokens are custom properties at the top of `src/styles.css`, which
-also holds the shared controls (`.button`, `.field`, `.alert`, `.link-button`, `.label`).
+The UI follows **ACME design system v5** (Graphite base, ink primary, Blue interaction), from
+[robertncl/DLS](https://github.com/robertncl/DLS) at `d1665db`. The tokens are custom properties in
+`src/acme/tokens.css`, the app's single token source; `src/styles.css` holds the base styles and shared controls
+(`.button`, `.field`, `.alert`, `.card`, `.link-button`, `.label`). Components use semantic tokens
+(`--acme-color-*`), never raw hex. The page is light-only.
 
-US AQI bands map onto the data ramp, Good (`--data-1`, white) to Hazardous (`--data-6`, ink). Lightness falls at
-every step, so neighbouring bands differ in lightness, not just hue. Every AQI fill has a 1px ink edge, because Good
-is the same white as the page, and every fill also prints its number and label.
+Every colour has one job. Ink (`--acme-color-primary`) fills the one primary button per view; Blue means interactive
+(links, the focus ring, the selected city, the chart's forecast peak); Green, Amber, Red and Blue report status in
+alerts; Signal Red signs the ACME wordmark. Everything else is Graphite. Cards are bordered with a soft shadow and
+never nested; recessed bands (table headers, card footers, metric tiles) use `--acme-color-surface`.
 
-Type is Archivo, with JetBrains Mono for codes, loaded from Google Fonts in `src/index.html`. Production builds
-inline the font stylesheet. Offline (for example in the Android app with no connection) the stacks fall back to
-Helvetica and Arial.
+US AQI bands use a data-colour extension, `--acme-color-aqi-<band>` with `-ink` pairs: a lightness ramp from Good
+(green-50) through amber and red to Hazardous (graphite-950). Every AQI fill has a 1px `--acme-color-border-strong`
+edge, because Good is nearly white, and every fill also prints its number and label. Map markers and city tiles are
+clickable and can be red: that red is data, not a control style. Selection is always the Blue ring or tint.
+
+Type is Inter (400/500/600/700), self-hosted from `src/acme/fonts/` (SIL OFL), with Fontsource's Vietnamese subset
+loaded only for Vietnamese text. Chinese and Thai fall back to system faces.
 
 ## Development
 
@@ -110,5 +114,5 @@ cd android && ./gradlew assembleDebug    # needs JDK 21 and the Android SDK
 The policy lives in two places that must stay in sync: the `<meta>` tag in `src/index.html` (used by the Capacitor
 WebView and any static host) and `security-headers.conf` (nginx, which adds `frame-ancestors`). The page has no inline
 scripts. For the same reason critical-CSS inlining is turned off in `angular.json`: it injects an inline script to load
-the stylesheet, and `script-src 'self'` blocks it. Google Fonts needs `https://fonts.googleapis.com` in
-`style-src` and `https://fonts.gstatic.com` in `font-src`. If you add a third-party origin, add it to both policies.
+the stylesheet, and `script-src 'self'` blocks it. Fonts are self-hosted, so `font-src` is `'self'`. If you add a
+third-party origin, add it to both policies.

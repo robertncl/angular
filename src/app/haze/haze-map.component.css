@@ -17,13 +17,13 @@
 
 /* Compound selectors so these beat leaflet.css regardless of load order. */
 .haze-map.leaflet-container {
-  background: var(--paper-2);
+  background: var(--acme-color-surface);
   font: inherit;
-  font-size: 0.875rem;
+  font-size: var(--acme-text-sm);
 }
 
 .haze-map.leaflet-container a {
-  color: var(--blue);
+  color: var(--acme-color-link);
 }
 
 /* --- Markers ----------------------------------------------------------- */
@@ -34,46 +34,50 @@
   border: 0;
 }
 
-/* Square AQI markers: the category fill, a 1px ink edge (Good is white like
-   the paper chip), the number in tabular figures. */
+/* AQI markers: the band fill and ink, a 1px border-strong edge (Good is
+   nearly white), the number in tabular figures.
+   Known exception to "red on a control means destructive": markers are
+   clickable and the worse bands fill them red. That red is data (the AQI
+   ramp), not a button style; selection is the Blue ring, never red. */
 .haze-map .haze-marker {
   position: absolute;
   translate: -50% -50%;
   display: grid;
   place-items: center;
-  min-inline-size: 30px;
-  block-size: 22px;
-  padding-inline: 5px;
-  border: 1px solid var(--ink);
-  border-radius: 0;
+  min-inline-size: 32px;
+  min-block-size: 24px;
+  padding-inline: 6px;
+  border: 1px solid var(--acme-color-border-strong);
+  border-radius: var(--acme-radius-sm);
   background: var(--cat);
+  box-shadow: var(--acme-shadow-sm);
   color: var(--cat-ink);
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-size: var(--acme-text-xs);
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
   line-height: 1;
   cursor: pointer;
+  transition: box-shadow var(--acme-duration-base) var(--acme-ease-out);
 }
 
 .haze-map .haze-marker:hover {
-  outline: 2px solid var(--ink);
-  outline-offset: 0;
+  box-shadow: var(--acme-shadow-md);
 }
 
-/* Selection is "you are here": blue, as on the selected list row. */
+/* Selection is interaction: the Blue ring, as on the selected list row. */
 .haze-map .haze-marker.is-selected {
-  outline: 3px solid var(--blue);
+  outline: 2px solid var(--acme-color-selected);
   outline-offset: 2px;
 }
 
-/* Zoomed out, numbered markers would pile up: show true dots, and keep the
-   number only on the selected city. Hover tooltips still carry the value. */
+/* Zoomed out, numbered markers would pile up: show small swatches, and keep
+   the number only on the selected city. Hover tooltips still carry the value. */
 .haze-map.is-compact .haze-marker:not(.is-selected) {
   min-inline-size: 0;
+  min-block-size: 0;
   inline-size: 14px;
   block-size: 14px;
   padding: 0;
-  border-radius: var(--radius-circle);
   font-size: 0;
 }
 
@@ -99,52 +103,59 @@
 
 .haze-map .haze-tooltip {
   padding: 8px 12px;
-  border: 1px solid var(--ink);
-  border-radius: 0;
-  background: var(--paper);
-  box-shadow: none;
-  color: var(--ink);
-  font-size: 0.875rem;
+  border: 1px solid var(--acme-color-border);
+  border-radius: var(--acme-radius-md);
+  background: var(--acme-color-surface-raised);
+  box-shadow: var(--acme-shadow-md);
+  color: var(--acme-color-text);
+  font-size: var(--acme-text-sm);
   line-height: 1.4;
   font-variant-numeric: tabular-nums;
 }
 
-.haze-map .haze-tooltip.leaflet-tooltip-top::before {
-  border-top-color: var(--ink);
+.haze-map .haze-tooltip strong {
+  font-weight: 600;
 }
 
+.haze-map .haze-tooltip.leaflet-tooltip-top::before {
+  border-top-color: var(--acme-color-border);
+}
+
+/* Zoom buttons as a secondary button pair. */
 .haze-map .leaflet-bar {
   overflow: hidden;
-  border: 2px solid var(--ink);
-  border-radius: 0;
-  box-shadow: none;
+  border: 1px solid var(--acme-color-border-control);
+  border-radius: var(--acme-radius-md);
+  box-shadow: var(--acme-shadow-sm);
 }
 
 .haze-map .leaflet-bar a,
 .haze-map .leaflet-bar a:hover {
   border-radius: 0;
-  border-bottom-color: var(--ink);
-  background: var(--paper);
-  color: var(--ink);
+  border-bottom-color: var(--acme-color-border);
+  background: var(--acme-color-surface-raised);
+  color: var(--acme-color-text);
+  transition: background-color var(--acme-duration-base) var(--acme-ease-out);
 }
 
 .haze-map .leaflet-bar a:hover {
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--acme-color-surface);
 }
 
 .haze-map .leaflet-bar a.leaflet-disabled {
-  background: var(--paper-2);
-  color: var(--ink-3);
+  background: var(--acme-color-surface);
+  color: var(--acme-color-text-subtle);
 }
 
-/* The base-map credit: a paper chip, bottom right. */
+/* The base-map credit: a small white chip, bottom right. */
 .haze-map .leaflet-control-attribution {
-  margin: 0 8px 6px 0;
-  padding: 0 4px;
-  background: var(--paper);
-  color: var(--ink-3);
-  font-size: 0.75rem;
+  margin: 0 8px 8px 0;
+  padding: 2px 6px;
+  border: 1px solid var(--acme-color-border);
+  border-radius: var(--acme-radius-sm);
+  background: var(--acme-color-surface-raised);
+  color: var(--acme-color-text-muted);
+  font-size: var(--acme-text-xs);
 }
 
 @media (pointer: coarse) {
