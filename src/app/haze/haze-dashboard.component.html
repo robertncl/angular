@@ -1,10 +1,42 @@
 <a class="skip-link visually-hidden" href="#content" (click)="skipToContent($event)">{{ t().skipToContent }}</a>
 
+<!-- Status icons for alerts: 24px grid, 2px round stroke, currentColor. The
+     shape (info circle, check, triangle, x-circle) carries the status without colour. -->
+<ng-template #alertIcon let-tone>
+  <svg class="icon alert__icon" viewBox="0 0 24 24" aria-hidden="true">
+    @switch (tone) {
+      @case ('success') {
+        <circle cx="12" cy="12" r="9" />
+        <path d="m8.5 12.5 2.5 2.5 4.5-5" />
+      }
+      @case ('warning') {
+        <path d="M10.3 4.2 2.8 17.3A2 2 0 0 0 4.5 20.3h15a2 2 0 0 0 1.7-3L13.7 4.2a2 2 0 0 0-3.4 0Z" />
+        <path d="M12 9.5v4" />
+        <path d="M12 17h.01" />
+      }
+      @case ('danger') {
+        <circle cx="12" cy="12" r="9" />
+        <path d="m15 9-6 6" />
+        <path d="m9 9 6 6" />
+      }
+      @default {
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 11v5" />
+        <path d="M12 8h.01" />
+      }
+    }
+  </svg>
+</ng-template>
+
 <header class="topbar" #topbar>
   <div class="topbar__inner">
     <div class="brand">
-      <h1 class="brand__name">{{ t().appName }}</h1>
-      <p class="brand__tag label">{{ t().tagline }}</p>
+      <span class="wordmark"><span class="wordmark__mark" aria-hidden="true">A</span>ACME</span>
+      <span class="brand__divider" aria-hidden="true"></span>
+      <div class="brand__title">
+        <h1 class="brand__name">{{ t().appName }}</h1>
+        <p class="brand__tag">{{ t().tagline }}</p>
+      </div>
     </div>
 
     <div class="topbar__actions">
@@ -12,7 +44,7 @@
         @if (dataTime(); as data) {
           {{ t().dataFor }} <time>{{ localTime(data) }}</time>
           @if (updatedAt(); as at) {
-            <span class="updated__checked">· {{ t().checked(localTime(at)) }}</span>
+            <span class="updated__checked"> · {{ t().checked(localTime(at)) }}</span>
           }
         } @else if (loading()) {
           {{ t().loadingReadings }}
@@ -26,7 +58,7 @@
           }
         </select>
       </div>
-      <button type="button" class="button" (click)="refresh()" [attr.aria-busy]="loading()">
+      <button type="button" class="button button--secondary" (click)="refresh()" [attr.aria-busy]="loading()">
         <svg class="icon refresh-icon" [class.is-spinning]="loading()" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M20 12a8 8 0 1 1-2.34-5.66" />
           <path d="M20 4v5h-5" />
@@ -40,72 +72,68 @@
 <main id="content" class="page" tabindex="-1">
   @if (loadError(); as error) {
     <div class="alert banner" data-tone="danger" role="alert">
-      <p class="alert__title">{{ t().loadErrorTitle }}</p>
-      <p class="alert__body">
-        {{ errorText(error) }}
-        @if (dataTime(); as data) {
-          {{ t().showingReadingsFor(localTime(data)) }}
-        }
-      </p>
-      <div class="alert__actions">
-        <button type="button" class="button" (click)="refresh()">{{ t().tryAgain }}</button>
+      <ng-container *ngTemplateOutlet="alertIcon; context: { $implicit: 'danger' }" />
+      <div class="alert__content">
+        <p class="alert__title">{{ t().loadErrorTitle }}</p>
+        <p class="alert__body">
+          {{ errorText(error) }}
+          @if (dataTime(); as data) {
+            {{ t().showingReadingsFor(localTime(data)) }}
+          }
+        </p>
+        <div class="alert__actions">
+          <button type="button" class="button button--secondary" (click)="refresh()">{{ t().tryAgain }}</button>
+        </div>
       </div>
     </div>
   }
 
-  <section class="section overview" aria-labelledby="overview-title">
-    <div class="overview__intro">
-      <p class="label">{{ t().overviewLabel }}</p>
-      <p class="overview__meta">{{ t().overviewMeta(cityCount) }}</p>
-    </div>
+  <section class="overview" aria-labelledby="overview-title">
+    <p class="label overview__kicker">{{ t().overviewLabel }} · {{ t().overviewMeta(cityCount) }}</p>
 
-    <div class="overview__main">
-      @if (readings().length) {
-        <h2 id="overview-title" class="overview__headline">{{ overview().headline }}</h2>
-        @if (overview().worst; as w) {
-          <p class="overview__worst">
-            {{ t().worstRightNow }}
-            <button type="button" class="link-button" (click)="select(w.city.id)">{{ cityName(w.city) }}, {{ country(w.city) }}</button>
-            — US AQI {{ aqi(w.usAqi) }}
-            @if (overview().worstCategory; as wc) {
-              ({{ t().categories[wc.id].label }})
-            }
-          </p>
-        }
-        <!-- The legend below carries the same counts as text. -->
-        <div class="distribution" aria-hidden="true">
-          @for (c of categories; track c.id) {
-            @if (overview().counts.get(c.id); as n) {
-              <span class="distribution__part" [attr.data-cat]="c.id" [style.flex-grow]="n"></span>
-            }
+    @if (readings().length) {
+      <h2 id="overview-title" class="overview__headline">{{ overview().headline }}</h2>
+      @if (overview().worst; as w) {
+        <p class="overview__worst">
+          {{ t().worstRightNow }}
+          <button type="button" class="link-button" (click)="select(w.city.id)">{{ cityName(w.city) }}, {{ country(w.city) }}</button>
+          — US AQI {{ aqi(w.usAqi) }}
+          @if (overview().worstCategory; as wc) {
+            ({{ t().categories[wc.id].label }})
           }
-        </div>
-      } @else if (loading()) {
-        <h2 id="overview-title" class="overview__headline">{{ t().loadingOverview(cityCount) }}</h2>
-      } @else {
-        <h2 id="overview-title" class="overview__headline">{{ t().readingsUnavailable }}</h2>
+        </p>
       }
-
-      <ul class="legend" role="list" [attr.aria-label]="t().legendLabel">
+      <!-- The legend below carries the same counts as text. -->
+      <div class="distribution" aria-hidden="true">
         @for (c of categories; track c.id) {
-          <li class="legend__item">
-            <span class="legend__top">
-              <span class="swatch" [attr.data-cat]="c.id" aria-hidden="true"></span>
-              @if (readings().length) {
-                <span class="legend__count">{{ overview().counts.get(c.id) }}<span class="visually-hidden">{{ t().cityCount(overview().counts.get(c.id) ?? 0) }}</span></span>
-              }
-            </span>
-            <span class="legend__label">{{ t().categories[c.id].label }}</span>
-            <span class="legend__range">{{ c.range }}</span>
-          </li>
+          @if (overview().counts.get(c.id); as n) {
+            <span class="distribution__part" [attr.data-cat]="c.id" [style.flex-grow]="n"></span>
+          }
         }
-      </ul>
-    </div>
+      </div>
+    } @else if (loading()) {
+      <h2 id="overview-title" class="overview__headline">{{ t().loadingOverview(cityCount) }}</h2>
+    } @else {
+      <h2 id="overview-title" class="overview__headline">{{ t().readingsUnavailable }}</h2>
+    }
+
+    <ul class="legend" role="list" [attr.aria-label]="t().legendLabel">
+      @for (c of categories; track c.id) {
+        <li class="legend__item">
+          <span class="swatch" [attr.data-cat]="c.id" aria-hidden="true"></span>
+          <span class="legend__label">{{ t().categories[c.id].label }}</span>
+          <span class="legend__range">{{ c.range }}</span>
+          @if (readings().length) {
+            <span class="legend__count">{{ overview().counts.get(c.id) }}<span class="visually-hidden">{{ t().cityCount(overview().counts.get(c.id) ?? 0) }}</span></span>
+          }
+        </li>
+      }
+    </ul>
   </section>
 
   <div class="layout">
-    <section class="section map-panel" aria-labelledby="map-title">
-      <h2 id="map-title" class="label">{{ t().mapTitle }}</h2>
+    <section class="card map-card" aria-labelledby="map-title">
+      <h2 id="map-title" class="card__title">{{ t().mapTitle }}</h2>
       <div class="map-frame">
         @defer (on viewport) {
           <app-haze-map [readings]="readings()" [selectedId]="selectedId()" (citySelected)="select($event)" />
@@ -113,14 +141,14 @@
           <div class="map-placeholder"><p>{{ t().mapLoading }}</p></div>
         }
       </div>
-      <p class="hint">{{ t().mapHint }}</p>
+      <p class="card__footer hint">{{ t().mapHint }}</p>
     </section>
 
-    <section class="section detail" #detailPanel>
+    <section class="card detail" #detailPanel>
       @if (selected(); as r) {
         @let cat = selectedCategory();
         <header class="detail__head">
-          <p class="label detail__kicker">{{ t().selectedCity }}</p>
+          <p class="label">{{ t().selectedCity }}</p>
           <h2 class="detail__city">{{ cityName(r.city) }}</h2>
           <p class="detail__place">{{ place(r.city) }}</p>
         </header>
@@ -128,7 +156,7 @@
         <div class="reading" [attr.data-cat]="cat?.id ?? 'none'">
           <p class="reading__value">
             <span class="reading__number">{{ aqi(r.usAqi) }}</span>
-            <span class="reading__unit label">US AQI</span>
+            <span class="reading__unit">US AQI</span>
           </p>
           <p class="reading__label">{{ cat ? t().categories[cat.id].label : t().noData }}</p>
         </div>
@@ -137,34 +165,41 @@
         </p>
 
         @if (cat) {
-          <div class="alert advice" [attr.data-tone]="adviceTone(cat)">
-            <p class="alert__title">{{ t().healthAdvice }}</p>
-            <p class="alert__body">{{ t().categories[cat.id].advice }}</p>
+          @let tone = adviceTone(cat);
+          <div class="alert advice" [attr.data-tone]="tone">
+            <ng-container *ngTemplateOutlet="alertIcon; context: { $implicit: tone }" />
+            <div class="alert__content">
+              <p class="alert__title">{{ t().healthAdvice }}</p>
+              <p class="alert__body">{{ t().categories[cat.id].advice }}</p>
+            </div>
           </div>
         }
 
         <dl class="metrics">
           <div class="metric">
-            <dt class="label">{{ t().pm25ThisHour }}</dt>
+            <dt>{{ t().pm25ThisHour }}</dt>
             <dd>
               <span><span class="metric__value">{{ concentration(r.pm25) }}</span> µg/m³</span>
               <span>{{ t().whoGuideline(whoPm25) }}</span>
             </dd>
           </div>
           <div class="metric">
-            <dt class="label">{{ t().haze }}</dt>
+            <dt>{{ t().haze }}</dt>
             <dd>
-              <span class="metric__value metric__value--word">{{ haze(r.aerosolOpticalDepth) }}</span>
+              <span class="metric__value">{{ haze(r.aerosolOpticalDepth) }}</span>
               <span>{{ t().aerosolOpticalDepth(decimal(r.aerosolOpticalDepth, 2)) }}</span>
             </dd>
           </div>
           <div class="metric">
-            <dt class="label">{{ t().wind }}</dt>
+            <dt>{{ t().wind }}</dt>
             <dd>
               <span class="metric__value metric__value--wind">
                 @if (r.windFrom != null && (r.windSpeed ?? 0) >= 1) {
-                  <svg class="wind-arrow" viewBox="0 0 24 24" aria-hidden="true">
-                    <path [attr.transform]="'rotate(' + windArrowRotation(r) + ' 12 12)'" d="M12 3l5 9h-3.5v9h-3v-9H7z" />
+                  <svg class="icon wind-arrow" viewBox="0 0 24 24" aria-hidden="true">
+                    <g [attr.transform]="'rotate(' + windArrowRotation(r) + ' 12 12)'">
+                      <path d="M12 19V5" />
+                      <path d="m6 11 6-6 6 6" />
+                    </g>
                   </svg>
                 }
                 {{ wind(r) }}
@@ -173,15 +208,15 @@
             </dd>
           </div>
           <div class="metric">
-            <dt class="label">PM10</dt>
+            <dt>PM10</dt>
             <dd><span><span class="metric__value">{{ concentration(r.pm10) }}</span> µg/m³</span></dd>
           </div>
           <div class="metric">
-            <dt class="label">{{ t().ozone }}</dt>
+            <dt>{{ t().ozone }}</dt>
             <dd><span><span class="metric__value">{{ concentration(r.ozone) }}</span> µg/m³</span></dd>
           </div>
           <div class="metric">
-            <dt class="label">{{ t().carbonMonoxide }}</dt>
+            <dt>{{ t().carbonMonoxide }}</dt>
             <dd><span><span class="metric__value">{{ concentration(r.carbonMonoxide) }}</span> µg/m³</span></dd>
           </div>
         </dl>
@@ -192,38 +227,47 @@
             <app-aqi-chart [points]="state.outlook.points" [timeZone]="state.outlook.timeZone" [now]="now()" />
 
             @if (daily().length) {
-              <table class="daily">
-                <caption>{{ t().dailyOutlook }} <span class="daily__zone">{{ t().localTimeIn(cityName(r.city)) }}</span></caption>
-                <thead>
-                  <tr>
-                    <th scope="col" class="label">{{ t().day }}</th>
-                    <th scope="col" class="label">{{ t().peakUsAqi }}</th>
-                    <th scope="col" class="label num">{{ t().peakPm25 }} <span class="unit">µg/m³</span></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (d of daily(); track d.date) {
-                    @let dayCat = categoryOf(d.peakAqi);
+              <div class="daily-block">
+                <div class="daily__head">
+                  <h3 class="daily__title">{{ t().dailyOutlook }}</h3>
+                  <p class="daily__zone">{{ t().localTimeIn(cityName(r.city)) }}</p>
+                </div>
+                <table class="table daily">
+                  <caption class="visually-hidden">{{ t().dailyOutlook }}, {{ t().localTimeIn(cityName(r.city)) }}</caption>
+                  <thead>
                     <tr>
-                      <th scope="row">{{ d.relative === 'today' ? t().today : d.relative === 'tomorrow' ? t().tomorrow : d.label }}</th>
-                      <td>
-                        <span class="badge" [attr.data-cat]="dayCat?.id ?? 'none'">
-                          <span class="badge__value">{{ aqi(d.peakAqi) }}</span>
-                          <span class="badge__label">{{ dayCat ? t().categories[dayCat.id].short : t().noData }}</span>
-                        </span>
-                      </td>
-                      <td class="num">{{ concentration(d.peakPm25) }}</td>
+                      <th scope="col">{{ t().day }}</th>
+                      <th scope="col">{{ t().peakUsAqi }}</th>
+                      <th scope="col" class="num">{{ t().peakPm25 }} <span class="unit">µg/m³</span></th>
                     </tr>
-                  }
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    @for (d of daily(); track d.date) {
+                      @let dayCat = categoryOf(d.peakAqi);
+                      <tr>
+                        <th scope="row">{{ d.relative === 'today' ? t().today : d.relative === 'tomorrow' ? t().tomorrow : d.label }}</th>
+                        <td>
+                          <span class="badge" [attr.data-cat]="dayCat?.id ?? 'none'">
+                            <span class="badge__value">{{ aqi(d.peakAqi) }}</span>
+                            <span class="badge__label">{{ dayCat ? t().categories[dayCat.id].short : t().noData }}</span>
+                          </span>
+                        </td>
+                        <td class="num">{{ concentration(d.peakPm25) }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
             }
           } @else if (state.status === 'error') {
             <div class="alert inline-error" data-tone="danger" role="alert">
-              <p class="alert__title">{{ t().forecastError }}</p>
-              <p class="alert__body">{{ errorText(state.error) }}</p>
-              <div class="alert__actions">
-                <button type="button" class="button" (click)="retryOutlook()">{{ t().tryAgain }}</button>
+              <ng-container *ngTemplateOutlet="alertIcon; context: { $implicit: 'danger' }" />
+              <div class="alert__content">
+                <p class="alert__title">{{ t().forecastError }}</p>
+                <p class="alert__body">{{ errorText(state.error) }}</p>
+                <div class="alert__actions">
+                  <button type="button" class="button button--secondary" (click)="retryOutlook()">{{ t().tryAgain }}</button>
+                </div>
               </div>
             </div>
           } @else {
@@ -232,22 +276,29 @@
         </div>
       } @else if (loading()) {
         <div class="detail__loading" aria-hidden="true">
+          <div class="skeleton skeleton--kicker"></div>
           <div class="skeleton skeleton--title"></div>
           <div class="skeleton skeleton--hero"></div>
-          <div class="skeleton skeleton--metrics"></div>
+          <div class="skeleton-metrics">
+            @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+              <div class="skeleton skeleton--metric"></div>
+            }
+          </div>
           <div class="skeleton skeleton--chart"></div>
         </div>
       } @else {
-        <p class="label detail__kicker">{{ t().selectedCity }}</p>
-        <h2 class="detail__city">{{ cityName(selectedCity()) }}</h2>
+        <header class="detail__head">
+          <p class="label">{{ t().selectedCity }}</p>
+          <h2 class="detail__city">{{ cityName(selectedCity()) }}</h2>
+        </header>
         <p class="detail__empty">{{ t().noReading }}</p>
       }
     </section>
 
-    <section class="section cities" aria-labelledby="cities-heading">
+    <section class="card cities" aria-labelledby="cities-heading">
       <div class="cities__head">
         <div class="cities__title">
-          <h2 id="cities-heading" class="heading-2">{{ t().citiesHeading }}</h2>
+          <h2 id="cities-heading" class="heading-section">{{ t().citiesHeading }}</h2>
           @if (readings().length) {
             <p class="cities__summary">{{ listSummary() }}</p>
           }
@@ -278,6 +329,9 @@
           @for (r of visibleReadings(); track r.city.id) {
             @let rowCat = categoryOf(r.usAqi);
             <li>
+              <!-- The AQI tile carries a red fill for the worse bands. That red
+                   is data, not a button style: the row itself stays white, and
+                   selection is the Blue edge and tint, never red. -->
               <button
                 type="button"
                 class="city-row"
@@ -292,7 +346,7 @@
                   <span class="city-row__place">{{ rowCat ? t().categories[rowCat.id].short : t().noData }} · {{ place(r.city) }}</span>
                 </span>
                 <span class="city-row__pm">
-                  <span class="city-row__pm-label label">PM2.5</span>
+                  <span class="city-row__pm-label">PM2.5</span>
                   {{ concentration(r.pm25) }}
                 </span>
               </button>
@@ -311,14 +365,14 @@
     </section>
   </div>
 
-  <section class="section about" aria-labelledby="about-heading">
+  <section class="about" aria-labelledby="about-heading">
     <div class="about__text">
-      <h2 id="about-heading" class="heading-2">{{ t().aboutHeading }}</h2>
+      <h2 id="about-heading" class="heading-section">{{ t().aboutHeading }}</h2>
       <p>{{ t().aboutModelBefore }}<strong>{{ t().aboutModelStrong }}</strong>{{ t().aboutModelAfter }}</p>
       <p>{{ t().aboutIndex }}</p>
     </div>
     <div class="about__sources">
-      <h3 class="label">{{ t().sourcesHeading }}</h3>
+      <h3 class="about__sources-title">{{ t().sourcesHeading }}</h3>
       <ul class="sources">
         <li><a href="https://www.haze.gov.sg/">{{ t().sources.sg }}</a></li>
         <li><a href="https://eqms.doe.gov.my/APIMS/main">{{ t().sources.my }}</a></li>

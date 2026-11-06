@@ -1,0 +1,187 @@
+/*
+ * ACME design system v5.0.0 tokens: the app's single token source.
+ * Source: github.com/robertncl/DLS @ d1665db, design-system/tokens/acme.css
+ * (section 1), plus the AQI data-colour extension at the end.
+ *
+ * Graphite base, ink primary, Blue interaction. Every colour has one job:
+ * ink fills the one primary button per view; Blue means interactive (links,
+ * focus, checked, selected, the chart takeaway); Green / Amber / Red / Blue
+ * report status; Signal Red signs the brand. Everything else is Graphite.
+ * Light theme only. Components use the semantic tokens, never raw hex.
+ */
+
+:root {
+  color-scheme: light;
+
+  /* Graphite */
+  --acme-gray-0: #FFFFFF;
+  --acme-gray-50: #F8F9FA;
+  --acme-gray-100: #F1F3F5;
+  --acme-gray-200: #E2E5E9;
+  --acme-gray-300: #C8CDD3;
+  --acme-gray-400: #838A94;
+  --acme-gray-500: #676E78;
+  --acme-gray-600: #525961;
+  --acme-gray-700: #3C424A;
+  --acme-gray-800: #272C32;
+  --acme-gray-900: #15181D;
+  --acme-gray-950: #0B0D10;
+
+  /* Signal Red: brand mark and danger only */
+  --acme-red-50: #FFF0EE;
+  --acme-red-100: #FFDEDB;
+  --acme-red-200: #FFBDB6;
+  --acme-red-300: #FB8D82;
+  --acme-red-400: #F2594D;
+  --acme-red-500: #E43227;
+  --acme-red-600: #C91C15;
+  --acme-red-700: #A91515;
+  --acme-red-800: #881415;
+  --acme-red-900: #641212;
+
+  /* Blue: interaction and info */
+  --acme-blue-50: #EEF4FF;
+  --acme-blue-100: #DCE7FF;
+  --acme-blue-200: #BCD0FB;
+  --acme-blue-300: #86ACFA;
+  --acme-blue-500: #2F6BE4;
+  --acme-blue-600: #1F57C9;
+  --acme-blue-700: #1A47A6;
+  --acme-blue-800: #163A85;
+
+  /* Green (success) and Amber (warning) */
+  --acme-green-50: #EBF7F0;
+  --acme-green-200: #B5E2C6;
+  --acme-green-600: #17784D;
+  --acme-green-700: #11643F;
+  --acme-green-800: #0D5034;
+  --acme-amber-50: #FEF6E6;
+  --acme-amber-200: #F6D8A0;
+  --acme-amber-600: #A05A06;
+  --acme-amber-700: #834808;
+  --acme-amber-800: #6A3A0B;
+
+  /* Semantic */
+  --acme-color-canvas: var(--acme-gray-0);
+  --acme-color-surface: var(--acme-gray-50);
+  --acme-color-surface-hover: var(--acme-gray-100);
+  --acme-color-surface-raised: var(--acme-gray-0);
+  --acme-color-border: var(--acme-gray-200);
+  --acme-color-border-control: var(--acme-gray-300);
+  --acme-color-border-strong: var(--acme-gray-400);
+  --acme-color-text: var(--acme-gray-900);
+  --acme-color-text-muted: var(--acme-gray-600);
+  --acme-color-text-subtle: var(--acme-gray-500);
+  --acme-color-primary: var(--acme-gray-900);
+  --acme-color-primary-hover: var(--acme-gray-700);
+  --acme-color-primary-active: var(--acme-gray-800);
+  --acme-color-on-primary: var(--acme-gray-0);
+  --acme-color-mark: var(--acme-red-600);
+  --acme-color-accent: var(--acme-red-700);
+  --acme-color-accent-soft: var(--acme-red-50);
+  --acme-color-selected: var(--acme-blue-600);
+  --acme-color-selected-soft: var(--acme-blue-50);
+  --acme-color-link: var(--acme-blue-700);
+  --acme-color-link-hover: var(--acme-blue-800);
+  --acme-color-focus: var(--acme-blue-600);
+  --acme-color-success: var(--acme-green-700);
+  --acme-color-success-soft: var(--acme-green-50);
+  --acme-color-success-soft-text: var(--acme-green-800);
+  --acme-color-success-border: var(--acme-green-200);
+  --acme-color-warning: var(--acme-amber-700);
+  --acme-color-warning-soft: var(--acme-amber-50);
+  --acme-color-warning-soft-text: var(--acme-amber-800);
+  --acme-color-warning-border: var(--acme-amber-200);
+  --acme-color-danger: var(--acme-red-700);
+  --acme-color-danger-emphasis: var(--acme-red-600);
+  --acme-color-danger-emphasis-hover: var(--acme-red-700);
+  --acme-color-danger-soft: var(--acme-red-50);
+  --acme-color-danger-soft-text: var(--acme-red-700);
+  --acme-color-danger-border: var(--acme-red-200);
+  --acme-color-info: var(--acme-blue-700);
+  --acme-color-info-soft: var(--acme-blue-50);
+  --acme-color-info-soft-text: var(--acme-blue-800);
+  --acme-color-info-border: var(--acme-blue-200);
+  --acme-color-data: var(--acme-gray-400);
+  --acme-color-data-highlight: var(--acme-blue-600);
+  --acme-color-scrim: #0B0D1073;
+  --acme-shadow-sm: 0 1px 2px #1018280D;
+  --acme-shadow-md: 0 4px 12px -2px #10182814;
+  --acme-shadow-lg: 0 16px 40px -8px #1018282E;
+
+  /* Space (4px grid) */
+  --acme-space-1: 0.25rem;
+  --acme-space-2: 0.5rem;
+  --acme-space-3: 0.75rem;
+  --acme-space-4: 1rem;
+  --acme-space-5: 1.25rem;
+  --acme-space-6: 1.5rem;
+  --acme-space-8: 2rem;
+  --acme-space-10: 2.5rem;
+  --acme-space-12: 3rem;
+  --acme-space-16: 4rem;
+  --acme-space-20: 5rem;
+  --acme-space-24: 6rem;
+
+  /* Radius: 4px badges/swatches/chips, 6px buttons/inputs/rows, 10px cards
+     and alerts, 12px modals; full only for switch tracks and tab counts. */
+  --acme-radius-sm: 4px;
+  --acme-radius-md: 6px;
+  --acme-radius-lg: 10px;
+  --acme-radius-xl: 12px;
+  --acme-radius-full: 999px;
+
+  /* Type: one family */
+  --acme-font-sans: "Inter", "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
+  --acme-font-display: var(--acme-font-sans);
+  --acme-font-mono: "JetBrains Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
+  --acme-text-xs: 0.75rem;
+  --acme-text-sm: 0.875rem;
+  --acme-text-md: 1rem;
+  --acme-text-lg: 1.125rem;
+  --acme-text-xl: 1.25rem;
+  --acme-text-2xl: 1.5rem;
+  --acme-text-3xl: 1.875rem;
+  --acme-leading-tight: 1.2;
+  --acme-leading-snug: 1.35;
+  --acme-leading-normal: 1.5;
+  --acme-tracking-tight: -0.02em;
+  --acme-tracking-snug: -0.011em;
+  --acme-tracking-caps: 0.06em;
+
+  /* Motion: colour, border and shadow only; nothing overshoots */
+  --acme-duration-fast: 100ms;
+  --acme-duration-base: 150ms;
+  --acme-duration-slow: 250ms;
+  --acme-ease-out: cubic-bezier(0.2, 0.8, 0.4, 1);
+
+  /* Checked controls take the interaction blue. */
+  accent-color: var(--acme-color-selected);
+
+  /*
+   * AQI data colour (proposed v5 extension). US AQI bands as a lightness
+   * ramp, aliased to the primitives above. These are data, not status or
+   * action: they fill chips, markers, tiles and chart bands. Good is nearly
+   * white, so every AQI fill carries a 1px --acme-color-border-strong edge.
+   *
+   *   band             fill        ink        L*   contrast
+   *   good             green-50    gray-900   96   16.2:1
+   *   moderate         amber-200   gray-900   88   12.9:1
+   *   sensitive        red-300     gray-900   70    7.8:1
+   *   unhealthy        red-600     gray-0     43    5.7:1
+   *   very-unhealthy   red-800     gray-0     29    9.7:1
+   *   hazardous        gray-950    gray-0      4   19.5:1
+   */
+  --acme-color-aqi-good: var(--acme-green-50);
+  --acme-color-aqi-good-ink: var(--acme-gray-900);
+  --acme-color-aqi-moderate: var(--acme-amber-200);
+  --acme-color-aqi-moderate-ink: var(--acme-gray-900);
+  --acme-color-aqi-sensitive: var(--acme-red-300);
+  --acme-color-aqi-sensitive-ink: var(--acme-gray-900);
+  --acme-color-aqi-unhealthy: var(--acme-red-600);
+  --acme-color-aqi-unhealthy-ink: var(--acme-gray-0);
+  --acme-color-aqi-very-unhealthy: var(--acme-red-800);
+  --acme-color-aqi-very-unhealthy-ink: var(--acme-gray-0);
+  --acme-color-aqi-hazardous: var(--acme-gray-950);
+  --acme-color-aqi-hazardous-ink: var(--acme-gray-0);
+}

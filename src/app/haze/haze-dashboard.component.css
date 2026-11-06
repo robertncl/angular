@@ -7,67 +7,119 @@
 
 /* --- Top bar ----------------------------------------------------------- */
 
-/* Sticky, opaque paper with an 8px ink bar on top and a 2px rule below.
-   Capacitor draws edge-to-edge on Android 15+, so the bar sits below the
-   status-bar inset rather than under it. */
+/* Part of the page frame: full width, opaque canvas, a hairline below, zero
+   elevation. Capacitor draws edge-to-edge on Android 15+, so the bar sits
+   below the status-bar inset rather than under it. */
 .topbar {
   position: sticky;
   inset-block-start: 0;
   z-index: 10;
   padding-block-start: var(--safe-top);
-  background: var(--paper);
-  border-block-end: 2px solid var(--ink);
-}
-
-.topbar::before {
-  content: '';
-  display: block;
-  block-size: 8px;
-  background: var(--ink);
+  border-block-end: 1px solid var(--acme-color-border);
+  background: var(--acme-color-canvas);
 }
 
 .topbar__inner {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px 32px;
-  max-inline-size: var(--grid-max);
+  gap: var(--acme-space-2) var(--acme-space-6);
+  min-block-size: 56px;
+  max-inline-size: var(--page-max);
   margin-inline: auto;
-  padding-block: 16px;
+  padding-block: var(--acme-space-2);
   padding-inline: calc(var(--safe-left) + var(--page-pad)) calc(var(--safe-right) + var(--page-pad));
 }
 
 .brand {
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 16px;
+  align-items: center;
+  gap: var(--acme-space-3);
+  min-inline-size: 0;
+}
+
+/* The ACME wordmark: a Signal Red rounded square (radius 0.3 × its height)
+   with an upright white "A", then ACME in Inter 700 at 12% tracking. */
+.wordmark {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 0.5em;
+  color: var(--acme-color-text);
+  font-size: var(--acme-text-sm);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.wordmark__mark {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 1.6em;
+  block-size: 1.6em;
+  border-radius: calc(1.6em * 0.3);
+  background: var(--acme-color-mark);
+  color: var(--acme-color-on-primary);
+  letter-spacing: 0;
+}
+
+.brand__divider {
+  flex: none;
+  inline-size: 1px;
+  block-size: 28px;
+  background: var(--acme-color-border);
+}
+
+.brand__title {
+  display: grid;
   min-inline-size: 0;
 }
 
 .brand__name {
-  font-size: 1.5rem;
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: -0.02em;
+  font-size: var(--acme-text-md);
+  line-height: 1.25;
+  letter-spacing: var(--acme-tracking-snug);
 }
 
 .brand__tag {
-  color: var(--ink-2);
+  color: var(--acme-color-text-muted);
+  font-size: var(--acme-text-xs);
+  line-height: var(--acme-leading-snug);
 }
 
 .topbar__actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 16px;
+  gap: var(--acme-space-2) var(--acme-space-3);
   margin-inline-start: auto;
 }
 
 .updated {
-  color: var(--ink-2);
-  font-size: 0.875rem;
+  color: var(--acme-color-text-muted);
+  font-size: var(--acme-text-sm);
 }
 
+/* The fetch time is secondary to the data hour; drop it when the bar is tight. */
+.updated__checked {
+  color: var(--acme-color-text-subtle);
+}
+
+@media (max-width: 480px) {
+  .updated__checked {
+    display: none;
+  }
+}
+
+/* The language picker sits beside Refresh, labelled for screen readers only.
+   Sized to the chosen language, so the actions fit one row on a phone. */
+.language select {
+  min-inline-size: 0;
+  field-sizing: content;
+}
+
+/* The one loop in the system: the refresh icon while a fetch is in flight. */
 .refresh-icon.is-spinning {
   animation: spin 900ms linear infinite;
 }
@@ -88,10 +140,10 @@
 
 .page {
   display: grid;
-  gap: 48px;
-  max-inline-size: var(--grid-max);
+  gap: var(--acme-space-6);
+  max-inline-size: var(--page-max);
   margin-inline: auto;
-  padding-block: 48px 64px;
+  padding-block: var(--acme-space-8) var(--acme-space-12);
   padding-inline: calc(var(--safe-left) + var(--page-pad)) calc(var(--safe-right) + var(--page-pad));
 }
 
@@ -99,126 +151,76 @@
   outline: none;
 }
 
-/* Rules, not boxes: every section opens on a 2px ink rule. */
-.section {
-  min-inline-size: 0;
-  padding-block-start: 16px;
-  border-block-start: 2px solid var(--ink);
-}
-
-/* --- Regional overview ------------------------------------------------- */
+/* --- Regional overview (no card) --------------------------------------- */
 
 .overview {
   display: grid;
-  gap: 16px 24px;
-  grid-template-columns: minmax(0, 1fr);
-}
-
-@container (min-width: 900px) {
-  .overview {
-    grid-template-columns: minmax(0, 3fr) minmax(0, 9fr);
-  }
-}
-
-.overview__intro {
-  display: grid;
-  gap: 8px;
-  align-content: start;
-}
-
-.overview__meta {
-  color: var(--ink-2);
-  font-size: 0.875rem;
-}
-
-.overview__main {
-  display: grid;
-  gap: 24px;
+  gap: var(--acme-space-3);
   min-inline-size: 0;
 }
 
 .overview__headline {
-  max-inline-size: 16ch;
-  font-size: clamp(40px, 6cqi, 72px);
-  font-weight: 800;
-  line-height: 0.95;
-  letter-spacing: -0.03em;
+  max-inline-size: 28ch;
+  font-size: clamp(30px, 3.4cqi, 48px);
+  line-height: 1.12;
+  letter-spacing: var(--acme-tracking-tight);
 }
 
 .overview__worst {
-  color: var(--ink-2);
-  font-size: 1.125rem;
+  color: var(--acme-color-text-muted);
 }
 
-/* Share of cities in each band, worst to the right. The ink ground shows
-   through the 2px gaps. */
+/* Share of cities in each band, worst to the right. */
 .distribution {
   display: flex;
   gap: 2px;
-  block-size: 32px;
-  border: 2px solid var(--ink);
-  background: var(--ink);
+  block-size: 12px;
+  margin-block-start: var(--acme-space-2);
 }
 
 .distribution__part {
   flex: 0 1 0;
+  border-radius: var(--acme-radius-sm);
   background: var(--cat);
+  box-shadow: inset 0 0 0 1px var(--acme-color-border-control);
 }
 
 .legend {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr));
-  gap: 16px 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--acme-space-2) var(--acme-space-5);
   list-style: none;
+  font-size: var(--acme-text-sm);
 }
 
 .legend__item {
-  display: grid;
-  gap: 6px;
-  align-content: start;
-  padding-block-start: 8px;
-  border-block-start: 1px solid var(--ink);
-}
-
-.legend__top {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  min-block-size: 32px;
-}
-
-.legend__count {
-  font-size: 2rem;
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: -0.02em;
-}
-
-.legend__label {
-  font-size: 0.875rem;
-  font-weight: 600;
-  line-height: 1.25;
-}
-
-.legend__range {
-  color: var(--ink-3);
-  font-size: 0.75rem;
+  gap: var(--acme-space-2);
 }
 
 .swatch {
   flex: none;
-  inline-size: 16px;
-  block-size: 16px;
-  border: 1px solid var(--ink);
+  inline-size: 12px;
+  block-size: 12px;
+  border: 1px solid var(--acme-color-border-strong);
+  border-radius: var(--acme-radius-sm);
   background: var(--cat);
+}
+
+.legend__range {
+  color: var(--acme-color-text-subtle);
+}
+
+.legend__count {
+  font-weight: 600;
 }
 
 /* --- Layout ------------------------------------------------------------ */
 
 .layout {
   display: grid;
-  gap: 48px 24px;
+  gap: var(--acme-space-6);
   grid-template-columns: minmax(0, 1fr);
   grid-template-areas:
     'map'
@@ -227,7 +229,7 @@
   align-items: start;
 }
 
-.map-panel {
+.map-card {
   grid-area: map;
 }
 
@@ -241,30 +243,35 @@
 
 @container (min-width: 1040px) {
   .layout {
-    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    grid-template-columns: minmax(0, 1.3fr) minmax(380px, 1fr);
     grid-template-areas:
       'map detail'
       'cities detail';
   }
 
-  /* Clears the sticky top bar (--topbar-h is measured; 80px until then) by
-     24px. The panel scrolls on its own when it's taller than the window, so
-     its forecast table is never out of reach. */
+  /* 24px below the sticky top bar (80px with the 56px bar; --topbar-h is
+     measured). The card scrolls on its own when it's taller than the
+     window, so its forecast table is never out of reach. */
   .detail {
     position: sticky;
-    top: calc(var(--topbar-h, 80px) + 24px);
-    max-block-size: calc(100dvh - var(--topbar-h, 80px) - 48px);
+    top: calc(var(--topbar-h, 56px) + 24px);
+    max-block-size: calc(100dvh - var(--topbar-h, 56px) - 48px);
     overflow-y: auto;
     overscroll-behavior: contain;
   }
-
 }
 
-/* --- Map --------------------------------------------------------------- */
+/* --- Map card ---------------------------------------------------------- */
 
-.map-panel {
+.map-card {
   display: grid;
-  gap: 12px;
+  overflow: hidden;
+}
+
+.card__title {
+  padding: var(--acme-space-4) var(--acme-space-5);
+  font-size: var(--acme-text-md);
+  letter-spacing: var(--acme-tracking-snug);
 }
 
 /* A square well: the region (95–127°E, 9.5°S–23°N) is about as tall as it
@@ -278,8 +285,8 @@
   aspect-ratio: 1;
   max-block-size: min(70svh, 720px);
   overflow: hidden;
-  border: 1px solid var(--ink);
-  background: var(--paper-2);
+  border-block: 1px solid var(--acme-color-border);
+  background: var(--acme-color-surface);
 }
 
 @container (min-width: 1040px) {
@@ -290,213 +297,228 @@
 
 .map-placeholder {
   block-size: 100%;
-  padding: 16px;
-  color: var(--ink-2);
+  padding: var(--acme-space-4);
+  color: var(--acme-color-text-muted);
 }
 
-.hint {
-  color: var(--ink-2);
-  font-size: 0.875rem;
+/* Recessed footer band. */
+.card__footer {
+  padding: var(--acme-space-3) var(--acme-space-5);
+  background: var(--acme-color-surface);
+  color: var(--acme-color-text-muted);
+  font-size: var(--acme-text-sm);
 }
 
-/* --- Detail ------------------------------------------------------------ */
+/* --- Detail card ------------------------------------------------------- */
 
 .detail {
   display: grid;
-  gap: 24px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--acme-space-5);
   align-content: start;
+  padding: var(--acme-space-6);
 }
 
 .detail__head {
   display: grid;
-  gap: 8px;
-}
-
-.detail__kicker {
-  color: var(--ink-2);
+  gap: var(--acme-space-1);
 }
 
 .detail__city {
-  font-size: 2.75rem;
-  line-height: 1;
-  letter-spacing: -0.02em;
+  font-size: var(--acme-text-3xl);
+  letter-spacing: var(--acme-tracking-tight);
 }
 
 .detail__place,
-.detail__time {
-  color: var(--ink-2);
-  font-size: 0.875rem;
+.detail__time,
+.detail__empty {
+  color: var(--acme-color-text-muted);
+  font-size: var(--acme-text-sm);
 }
 
+/* The reading: the AQI fill with its edge, number left, band name right. */
 .reading {
-  display: grid;
-  gap: 16px;
-  padding: 20px;
-  border: 1px solid var(--ink);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--acme-space-2) var(--acme-space-4);
+  padding: var(--acme-space-5);
+  border: 1px solid var(--acme-color-border-strong);
+  border-radius: var(--acme-radius-lg);
   background: var(--cat);
   color: var(--cat-ink);
 }
 
 .reading__value {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px;
+  align-items: baseline;
+  gap: var(--acme-space-2);
 }
 
 .reading__number {
-  font-size: 6rem;
-  font-weight: 700;
-  line-height: 0.85;
-  letter-spacing: -0.04em;
+  font-size: 56px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: var(--acme-tracking-tight);
+}
+
+.reading__unit {
+  font-size: var(--acme-text-sm);
+  font-weight: 500;
 }
 
 .reading__label {
-  font-size: 1.25rem;
-  font-weight: 700;
-  line-height: 1.2;
+  font-size: var(--acme-text-lg);
+  font-weight: 600;
+  line-height: var(--acme-leading-snug);
+  letter-spacing: var(--acme-tracking-snug);
+  text-align: end;
 }
 
 .metrics {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 140px), 1fr));
-  gap: 0 24px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr));
+  gap: var(--acme-space-2);
 }
 
 .metric {
   display: grid;
-  gap: 4px;
+  gap: var(--acme-space-1);
   align-content: start;
-  padding-block: 12px;
-  border-block-start: 1px solid var(--rule);
+  padding: var(--acme-space-3) var(--acme-space-4);
+  border-radius: var(--acme-radius-md);
+  background: var(--acme-color-surface);
 }
 
 .metric dt {
-  color: var(--ink-2);
+  color: var(--acme-color-text-muted);
+  font-size: var(--acme-text-xs);
+  font-weight: 500;
 }
 
 .metric dd {
   display: grid;
   gap: 2px;
-  color: var(--ink-3);
-  font-size: 0.75rem;
+  color: var(--acme-color-text-subtle);
+  font-size: var(--acme-text-xs);
 }
 
 .metric__value {
-  color: var(--ink);
-  font-size: 1.75rem;
-  font-weight: 700;
-  line-height: 1.1;
-  letter-spacing: -0.01em;
+  color: var(--acme-color-text);
+  font-size: var(--acme-text-xl);
+  font-weight: 600;
+  line-height: var(--acme-leading-tight);
+  letter-spacing: var(--acme-tracking-snug);
 }
 
-.metric__value--word {
-  font-size: 1.375rem;
-  line-height: 1.2;
-  letter-spacing: 0;
-}
-
-/* "12 km/h from the SW" is a phrase; 18px keeps it to two lines in a cell. */
 .metric__value--wind {
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 1.125rem;
-  line-height: 1.2;
-  letter-spacing: 0;
+  gap: var(--acme-space-1);
 }
 
 .wind-arrow {
-  flex: none;
-  inline-size: 20px;
-  block-size: 20px;
-  fill: currentColor;
+  inline-size: 18px;
+  block-size: 18px;
 }
 
 .outlook {
   display: grid;
-  gap: 24px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--acme-space-6);
 }
 
-.daily {
-  inline-size: 100%;
-  border-collapse: collapse;
-  font-size: 0.875rem;
+/* --- Daily outlook table ------------------------------------------------ */
+
+.daily-block {
+  display: grid;
+  gap: var(--acme-space-3);
 }
 
-.daily caption {
-  padding-block-end: 8px;
-  font-size: 1.125rem;
-  font-weight: 700;
-  line-height: 1.25;
-  text-align: start;
+.daily__title {
+  font-size: var(--acme-text-md);
+  letter-spacing: var(--acme-tracking-snug);
 }
 
 .daily__zone {
-  display: block;
-  color: var(--ink-3);
-  font-size: 0.75rem;
-  font-weight: 400;
+  color: var(--acme-color-text-subtle);
+  font-size: var(--acme-text-xs);
 }
 
-.daily th,
-.daily td {
-  padding: 10px 8px 10px 0;
-  border-block-end: 1px solid var(--rule);
+.table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-size: var(--acme-text-sm);
+}
+
+.table thead th {
+  padding: var(--acme-space-2) var(--acme-space-3);
+  border-block: 1px solid var(--acme-color-border);
+  background: var(--acme-color-surface);
+  color: var(--acme-color-text-muted);
+  font-size: var(--acme-text-xs);
+  font-weight: 500;
+  text-align: start;
+  vertical-align: bottom;
+}
+
+.table tbody :is(th, td) {
+  padding: 10px var(--acme-space-3);
+  border-block-end: 1px solid var(--acme-color-border);
   text-align: start;
   vertical-align: middle;
 }
 
-.daily thead th {
-  border-block-end: 2px solid var(--ink);
-  color: var(--ink-2);
+.table tbody th {
+  font-weight: 500;
 }
 
-.daily tbody th {
-  font-weight: 600;
+.table tbody tr {
+  transition: background-color var(--acme-duration-fast) var(--acme-ease-out);
 }
 
-.daily .num {
-  padding-inline-end: 0;
+.table tbody tr:hover {
+  background: var(--acme-color-surface);
+}
+
+/* Numbers right-aligned in both header and body (outranks the rules above). */
+.table :is(thead, tbody) .num {
   text-align: end;
 }
 
 .unit {
   font-weight: 400;
-  letter-spacing: 0;
-  text-transform: none;
 }
 
-.detail__empty {
-  color: var(--ink-2);
-}
-
-/* Square AQI chip: number, then the short band name. */
+/* AQI chip: number, then the short band name. */
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 2px 8px;
-  border: 1px solid var(--ink);
+  gap: var(--acme-space-2);
+  padding: 1px var(--acme-space-2);
+  border: 1px solid var(--acme-color-border-strong);
+  border-radius: var(--acme-radius-sm);
   background: var(--cat);
   color: var(--cat-ink);
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--acme-text-xs);
+  font-weight: 500;
   line-height: 20px;
   white-space: nowrap;
 }
 
 .badge__value {
   min-inline-size: 3ch;
-  font-size: 0.875rem;
-  font-weight: 700;
+  font-size: var(--acme-text-sm);
+  font-weight: 600;
 }
 
-/* --- City list --------------------------------------------------------- */
+/* --- Cities card ------------------------------------------------------- */
 
 .cities {
   display: grid;
-  gap: 24px;
+  gap: var(--acme-space-5);
+  padding: var(--acme-space-5);
 }
 
 .cities__head {
@@ -504,30 +526,39 @@
   flex-wrap: wrap;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 16px 24px;
+  gap: var(--acme-space-4);
 }
 
 .cities__title {
   display: grid;
-  gap: 4px;
+  gap: var(--acme-space-1);
 }
 
 .cities__summary {
-  color: var(--ink-2);
-  font-size: 0.875rem;
+  color: var(--acme-color-text-muted);
+  font-size: var(--acme-text-sm);
 }
 
 .filters {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: var(--acme-space-3);
 }
 
-.city-list {
+.filters .field {
+  flex: 1 1 160px;
+}
+
+.filters select {
+  inline-size: 100%;
+  min-inline-size: 160px;
+}
+
+.city-list,
+.skeleton-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
-  column-gap: 24px;
-  border-block-start: 1px solid var(--rule);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  gap: var(--acme-space-2);
   list-style: none;
 }
 
@@ -535,48 +566,53 @@
   display: flex;
 }
 
+/* Each row is a white button with a hairline edge. The AQI tile inside may
+   be red: that is data, not a control style (see the template). */
 .city-row {
   display: grid;
   grid-template-columns: 48px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 16px;
+  gap: var(--acme-space-3);
   inline-size: 100%;
-  min-block-size: 56px;
-  padding: 6px 8px 6px 0;
-  border: 0;
-  border-block-end: 1px solid var(--rule);
-  border-radius: 0;
-  background: transparent;
-  color: var(--ink);
+  min-block-size: 60px;
+  padding: var(--acme-space-2) var(--acme-space-3) var(--acme-space-2) var(--acme-space-2);
+  border: 1px solid var(--acme-color-border);
+  border-radius: var(--acme-radius-md);
+  background: var(--acme-color-surface-raised);
+  color: var(--acme-color-text);
   font: inherit;
   text-align: start;
   cursor: pointer;
+  transition:
+    background-color var(--acme-duration-base) var(--acme-ease-out),
+    border-color var(--acme-duration-base) var(--acme-ease-out),
+    box-shadow var(--acme-duration-base) var(--acme-ease-out);
 }
 
 .city-row:hover {
-  background: var(--paper-2);
+  border-color: var(--acme-color-border-control);
+  background: var(--acme-color-surface);
 }
 
-/* Selection is orientation, so it's blue. */
+/* Selection is interaction, so it's Blue; the text stays ink. */
 .city-row[aria-current='true'],
 .city-row[aria-current='true']:hover {
-  background: var(--blue-soft);
-}
-
-.city-row[aria-current='true'] .city-row__name {
-  color: var(--blue);
+  border-color: var(--acme-color-selected);
+  background: var(--acme-color-selected-soft);
+  box-shadow: inset 0 0 0 1px var(--acme-color-selected);
 }
 
 .city-row__aqi {
   display: grid;
   place-items: center;
   inline-size: 48px;
-  block-size: 40px;
-  border: 1px solid var(--ink);
+  block-size: 44px;
+  border: 1px solid var(--acme-color-border-strong);
+  border-radius: var(--acme-radius-md);
   background: var(--cat);
   color: var(--cat-ink);
-  font-size: 0.9375rem;
-  font-weight: 700;
+  font-size: var(--acme-text-md);
+  font-weight: 600;
   line-height: 1;
 }
 
@@ -593,29 +629,33 @@
 }
 
 .city-row__name {
-  font-weight: 600;
+  font-weight: 500;
+  line-height: var(--acme-leading-snug);
 }
 
 .city-row__place {
-  color: var(--ink-2);
-  font-size: 0.75rem;
+  color: var(--acme-color-text-muted);
+  font-size: var(--acme-text-xs);
 }
 
 .city-row__pm {
   display: grid;
   justify-items: end;
-  font-size: 0.875rem;
-  font-weight: 700;
-  line-height: 1.3;
+  font-size: var(--acme-text-sm);
+  font-weight: 600;
+  line-height: var(--acme-leading-snug);
 }
 
 .city-row__pm-label {
-  color: var(--ink-3);
+  color: var(--acme-color-text-subtle);
+  font-size: var(--acme-text-xs);
+  font-weight: 500;
 }
 
 .city-list__empty {
-  padding-block: 12px;
-  color: var(--ink-2);
+  grid-column: 1 / -1;
+  padding-block: var(--acme-space-3);
+  color: var(--acme-color-text-muted);
 }
 
 /* --- About & footer ----------------------------------------------------- */
@@ -623,27 +663,32 @@
 .about {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
-  gap: 16px 24px;
+  gap: var(--acme-space-6);
+  padding-block-start: var(--acme-space-8);
+  border-block-start: 1px solid var(--acme-color-border);
 }
 
 .about__text,
 .about__sources {
   display: grid;
-  gap: 12px;
+  gap: var(--acme-space-3);
   align-content: start;
 }
 
 .about p {
   max-inline-size: 65ch;
-  color: var(--ink-2);
+  color: var(--acme-color-text-muted);
 }
 
 .about strong {
-  color: var(--ink);
+  color: var(--acme-color-text);
+  font-weight: 600;
 }
 
-.about__sources .label {
-  color: var(--ink-2);
+.about__sources-title {
+  color: var(--acme-color-text-muted);
+  font-size: var(--acme-text-sm);
+  font-weight: 500;
 }
 
 .sources {
@@ -653,7 +698,7 @@
 }
 
 .site-footer {
-  border-block-start: 1px solid var(--rule);
+  border-block-start: 1px solid var(--acme-color-border);
 }
 
 .site-footer__inner {
@@ -661,31 +706,52 @@
   flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
-  gap: 8px 24px;
-  max-inline-size: var(--grid-max);
+  gap: var(--acme-space-2) var(--acme-space-6);
+  max-inline-size: var(--page-max);
   margin-inline: auto;
-  padding-block: 24px calc(var(--safe-bottom) + 40px);
+  padding-block: var(--acme-space-6) calc(var(--safe-bottom) + 40px);
   padding-inline: calc(var(--safe-left) + var(--page-pad)) calc(var(--safe-right) + var(--page-pad));
-  color: var(--ink-3);
-  font-size: 0.75rem;
+  color: var(--acme-color-text-subtle);
+  font-size: var(--acme-text-xs);
 }
 
 .site-footer__inner p:first-child {
   max-inline-size: 80ch;
 }
 
-/* --- Loading skeletons -------------------------------------------------- */
+/* --- Loading ------------------------------------------------------------ */
+
+.detail__loading {
+  display: grid;
+  gap: var(--acme-space-4);
+}
+
+.skeleton--kicker {
+  block-size: 12px;
+  inline-size: 30%;
+}
 
 .skeleton--title {
-  block-size: 44px;
+  block-size: 36px;
   inline-size: 55%;
 }
 
-.skeleton--hero {
-  block-size: 140px;
+.skeleton--hero,
+.skeleton--chart {
+  border-radius: var(--acme-radius-lg);
 }
 
-.skeleton--metrics {
+.skeleton--hero {
+  block-size: 108px;
+}
+
+.skeleton-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr));
+  gap: var(--acme-space-2);
+}
+
+.skeleton--metric {
   block-size: 72px;
 }
 
@@ -694,46 +760,15 @@
 }
 
 .skeleton--row {
-  block-size: 56px;
-}
-
-.detail__loading {
-  display: grid;
-  gap: 16px;
-}
-
-.skeleton-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
-  gap: 8px 24px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .skeleton {
-    animation: none;
-  }
+  block-size: 60px;
 }
 
 @media (forced-colors: active) {
+  .city-row {
+    border-color: CanvasText;
+  }
+
   .city-row[aria-current='true'] {
     outline: 2px solid Highlight;
   }
-}
-
-/* The fetch time is secondary to the data hour; drop it when the bar is tight. */
-.updated__checked {
-  color: var(--ink-3);
-}
-
-@media (max-width: 480px) {
-  .updated__checked {
-    display: none;
-  }
-}
-
-/* The language picker sits in the bar beside Refresh: narrower than the
-   filter selects, and labelled for screen readers only. */
-.language select {
-  min-inline-size: 0;
-  min-block-size: 40px;
 }

@@ -46,7 +46,7 @@
 
         <!-- The one takeaway, labelled directly on the line. -->
         @if (peakMark(); as pk) {
-          <svg:circle class="peak" [attr.cx]="pk.x" [attr.cy]="pk.y" r="5" />
+          <svg:circle class="peak" [attr.cx]="pk.x" [attr.cy]="pk.y" r="6" />
           <svg:text class="peak__label" [attr.x]="pk.x" [attr.y]="pk.labelY" [attr.text-anchor]="pk.anchor">{{ pk.label }}</svg:text>
         }
 

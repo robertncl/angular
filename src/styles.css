@@ -1,68 +1,18 @@
 /*
- * Global tokens and base styles, in the Modernist design system: Swiss,
- * black on white, rules instead of boxes. Colour has two jobs only — blue
- * means act or "you are here", the data ramp means severity — and red is for
- * errors, always with a word. Light theme only.
- *
- * Text contrast on --paper: ink 18.9:1, ink-2 9.6:1, ink-3 5.4:1 (4.8:1 on
- * paper-2). Components use these tokens, never raw hex.
- *
- * Archivo and JetBrains Mono load from Google Fonts in index.html; the stacks
- * fall back to Helvetica/Arial when offline.
+ * Global base styles and shared controls, in ACME design system v5
+ * (Graphite + ink primary + Blue interaction). Tokens live in
+ * acme/tokens.css; components use the semantic tokens, never raw hex.
+ * Light theme only.
  */
 
+@import './acme/fonts.css';
+@import './acme/tokens.css';
+
 :root {
-  color-scheme: light;
-
-  --paper: #ffffff;        /* page ground and every panel */
-  --paper-2: #f1f1ef;      /* recessed wells: map, skeletons, row hover */
-  --rule: #cfcfcb;         /* 1px hairlines between rows (decorative) */
-  --rule-strong: var(--ink); /* 2px section rules, control borders */
-  --ink: #111111;          /* text: 18.9:1 on paper */
-  --ink-2: #454542;        /* secondary text: 9.6:1 */
-  --ink-3: #6a6a66;        /* captions, axis labels: 5.4:1 on paper, 4.8:1 on paper-2 */
-  --blue: #1e40d8;         /* the ONLY action/orientation colour: links, primary button, focus, selected */
-  --blue-hover: #1631a8;
-  --blue-soft: #e6ebfc;    /* selected row background */
-  --on-blue: var(--paper);
-  --red: #b3170d;          /* danger/errors only, always with a word */
-  /* Severity ramp: lightness falls every step (L* 100, 85, 68, 48, 29, 5) */
-  --data-1: var(--paper);  --data-1-ink: var(--ink);
-  --data-2: #f6d21c;       --data-2-ink: var(--ink);
-  --data-3: #f08c1e;       --data-3-ink: var(--ink);
-  --data-4: #dc2a1e;       --data-4-ink: var(--paper); /* 4.8:1, bold 14px+ only */
-  --data-5: #8a1410;       --data-5-ink: var(--paper);
-  --data-6: var(--ink);    --data-6-ink: var(--paper);
-  --data-line: var(--ink);
-  --data-highlight: var(--blue);
-  --space-1: 4px; --space-2: 8px; --space-3: 16px; --space-4: 24px;
-  --space-5: 32px; --space-6: 48px; --space-7: 64px; --space-8: 96px;
-  --radius-none: 0px; --radius-hair: 2px; --radius-circle: 50%;
-  --stroke-hair: 1px; --stroke-rule: 2px; --stroke-alert: 4px; --stroke-bar: 8px;
-  --grid-max: 1280px; --grid-gutter: 24px;
-  --font-sans: "Archivo", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
-
   /* Page side padding; cqi resolves against the dashboard's container. */
-  --page-pad: clamp(16px, 4cqi, 32px);
+  --page-pad: clamp(16px, 4cqi, 24px);
+  --page-max: 1200px;
   --chart-band-opacity: 0.32;
-
-  /*
-   * US AQI bands on the Modernist ramp, data-1 (Good) to data-6 (Hazardous).
-   * Good is white like the page, so every AQI fill carries a 1px ink edge.
-   */
-  --aqi-good: var(--data-1);
-  --aqi-good-ink: var(--data-1-ink);
-  --aqi-moderate: var(--data-2);
-  --aqi-moderate-ink: var(--data-2-ink);
-  --aqi-sensitive: var(--data-3);
-  --aqi-sensitive-ink: var(--data-3-ink);
-  --aqi-unhealthy: var(--data-4);
-  --aqi-unhealthy-ink: var(--data-4-ink);
-  --aqi-very-unhealthy: var(--data-5);
-  --aqi-very-unhealthy-ink: var(--data-5-ink);
-  --aqi-hazardous: var(--data-6);
-  --aqi-hazardous-ink: var(--data-6-ink);
 
   /* Capacitor's SystemBars plugin injects --safe-area-inset-* on Android;
      browsers (and newer WebViews) report env(). */
@@ -72,34 +22,35 @@
   --safe-left: var(--safe-area-inset-left, env(safe-area-inset-left, 0px));
 }
 
-/* Any element tagged with an AQI category exposes --cat / --cat-ink. */
+/* Any element tagged with an AQI category exposes --cat / --cat-ink.
+   Without a reading it falls back to a recessed graphite chip. */
 [data-cat] {
-  --cat: var(--paper-2);
-  --cat-ink: var(--ink-2);
+  --cat: var(--acme-color-surface);
+  --cat-ink: var(--acme-color-text-muted);
 }
 [data-cat='good'] {
-  --cat: var(--aqi-good);
-  --cat-ink: var(--aqi-good-ink);
+  --cat: var(--acme-color-aqi-good);
+  --cat-ink: var(--acme-color-aqi-good-ink);
 }
 [data-cat='moderate'] {
-  --cat: var(--aqi-moderate);
-  --cat-ink: var(--aqi-moderate-ink);
+  --cat: var(--acme-color-aqi-moderate);
+  --cat-ink: var(--acme-color-aqi-moderate-ink);
 }
 [data-cat='sensitive'] {
-  --cat: var(--aqi-sensitive);
-  --cat-ink: var(--aqi-sensitive-ink);
+  --cat: var(--acme-color-aqi-sensitive);
+  --cat-ink: var(--acme-color-aqi-sensitive-ink);
 }
 [data-cat='unhealthy'] {
-  --cat: var(--aqi-unhealthy);
-  --cat-ink: var(--aqi-unhealthy-ink);
+  --cat: var(--acme-color-aqi-unhealthy);
+  --cat-ink: var(--acme-color-aqi-unhealthy-ink);
 }
 [data-cat='very-unhealthy'] {
-  --cat: var(--aqi-very-unhealthy);
-  --cat-ink: var(--aqi-very-unhealthy-ink);
+  --cat: var(--acme-color-aqi-very-unhealthy);
+  --cat-ink: var(--acme-color-aqi-very-unhealthy-ink);
 }
 [data-cat='hazardous'] {
-  --cat: var(--aqi-hazardous);
-  --cat-ink: var(--aqi-hazardous-ink);
+  --cat: var(--acme-color-aqi-hazardous);
+  --cat-ink: var(--acme-color-aqi-hazardous-ink);
 }
 
 *,
@@ -122,21 +73,25 @@ html {
 
 body {
   min-block-size: 100dvh;
-  background: var(--paper);
-  color: var(--ink);
-  font-family: var(--font-sans);
-  font-size: 1rem;
-  line-height: 1.5;
+  background: var(--acme-color-canvas);
+  color: var(--acme-color-text);
+  font-family: var(--acme-font-sans);
+  font-size: var(--acme-text-md);
+  line-height: var(--acme-leading-normal);
   font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
-  scrollbar-color: var(--ink-3) transparent;
+  -moz-osx-font-smoothing: grayscale;
+  scrollbar-color: var(--acme-color-border-strong) transparent;
   scrollbar-width: thin;
 }
 
+/* Headings are 600: tight tracking at 24px+, snug at 16–20px (set per use). */
 h1,
 h2,
 h3 {
-  font-weight: 700;
+  font-family: var(--acme-font-display);
+  font-weight: 600;
+  line-height: var(--acme-leading-tight);
   text-wrap: balance;
 }
 
@@ -149,13 +104,14 @@ ul {
 }
 
 a {
-  color: var(--blue);
+  color: var(--acme-color-link);
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
+  transition: color var(--acme-duration-fast) var(--acme-ease-out);
 }
 
 a:hover {
-  color: var(--blue-hover);
+  color: var(--acme-color-link-hover);
 }
 
 button,
@@ -164,8 +120,9 @@ select {
   font: inherit;
 }
 
+/* The one focus ring. Never restyled per component. */
 :focus-visible {
-  outline: 2px solid var(--blue);
+  outline: 2px solid var(--acme-color-focus);
   outline-offset: 2px;
 }
 
@@ -180,160 +137,231 @@ select {
 
 /* --- Type -------------------------------------------------------------- */
 
-/* Uppercase is styling only; the markup stays sentence case. */
-.label,
-.field label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+/* Small UI label: 12px/500, sentence case, muted. */
+.label {
+  color: var(--acme-color-text-muted);
+  font-size: var(--acme-text-xs);
+  font-weight: 500;
+  line-height: var(--acme-leading-snug);
 }
 
-.heading-2 {
-  font-size: 1.75rem;
-  line-height: 1.1;
-  letter-spacing: -0.01em;
+/* Section heading at 20px. */
+.heading-section {
+  font-size: var(--acme-text-xl);
+  letter-spacing: var(--acme-tracking-snug);
 }
 
-.heading-3 {
-  font-size: 1.125rem;
-  line-height: 1.25;
-}
-
-.mono {
-  font-family: var(--font-mono);
-  font-size: 0.8125rem;
-  line-height: 1.4;
-}
-
-/* Inline 24px icons: 2px stroke, square caps, always beside a word. */
+/* Inline 24px-grid icons: 2px round stroke in currentColor, always beside a word. */
 .icon {
   flex: none;
-  inline-size: 24px;
-  block-size: 24px;
+  inline-size: 20px;
+  block-size: 20px;
   fill: none;
   stroke: currentColor;
   stroke-width: 2;
-  stroke-linecap: square;
-  stroke-linejoin: miter;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
-/* --- Shared controls --------------------------------------------------- */
+/* --- Button ------------------------------------------------------------ */
 
 .button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  min-block-size: 44px;
-  padding-inline: 16px;
-  border: 2px solid var(--ink);
-  border-radius: 0;
-  background: var(--paper);
-  color: var(--ink);
-  font-size: 0.875rem;
-  font-weight: 600;
+  gap: var(--acme-space-2);
+  min-block-size: 2.5rem;
+  padding-inline: var(--acme-space-4);
+  border: 1px solid transparent;
+  border-radius: var(--acme-radius-md);
+  background: transparent;
+  color: var(--acme-color-text);
+  font-size: var(--acme-text-sm);
+  font-weight: 500;
   line-height: 1;
+  letter-spacing: var(--acme-tracking-snug);
   white-space: nowrap;
   cursor: pointer;
+  transition:
+    background-color var(--acme-duration-base) var(--acme-ease-out),
+    border-color var(--acme-duration-base) var(--acme-ease-out),
+    color var(--acme-duration-base) var(--acme-ease-out),
+    box-shadow var(--acme-duration-base) var(--acme-ease-out);
 }
 
-.button:hover {
-  background: var(--ink);
-  color: var(--paper);
+.button .icon {
+  inline-size: 18px;
+  block-size: 18px;
 }
 
-/* At most one per view. */
+/* Ink fill. At most one per view. */
 .button--primary {
-  border-color: var(--blue);
-  background: var(--blue);
-  color: var(--on-blue);
+  background: var(--acme-color-primary);
+  color: var(--acme-color-on-primary);
+  box-shadow: var(--acme-shadow-sm);
 }
 
 .button--primary:hover {
-  border-color: var(--blue-hover);
-  background: var(--blue-hover);
-  color: var(--on-blue);
+  background: var(--acme-color-primary-hover);
 }
 
+.button--primary:active {
+  background: var(--acme-color-primary-active);
+}
+
+.button--secondary {
+  border-color: var(--acme-color-border-control);
+  background: var(--acme-color-surface-raised);
+  box-shadow: var(--acme-shadow-sm);
+}
+
+.button--secondary:hover {
+  border-color: var(--acme-color-border-strong);
+  background: var(--acme-color-surface);
+}
+
+.button--secondary:active {
+  background: var(--acme-color-surface-hover);
+}
+
+/* Disabled is a flat recessed fill, never opacity. */
+.button:disabled,
+.button:disabled:hover {
+  border-color: var(--acme-color-border);
+  background: var(--acme-color-surface);
+  box-shadow: none;
+  color: var(--acme-color-text-subtle);
+  cursor: not-allowed;
+}
+
+/* A button that reads as a text link: Blue, underlined. */
 .link-button {
   padding: 0;
   border: 0;
   background: none;
-  color: var(--blue);
+  color: var(--acme-color-link);
   font: inherit;
-  font-weight: 600;
+  font-weight: 500;
   text-align: start;
   text-decoration: underline;
-  text-decoration-thickness: 2px;
+  text-decoration-thickness: 1px;
   text-underline-offset: 3px;
   cursor: pointer;
+  transition: color var(--acme-duration-fast) var(--acme-ease-out);
 }
 
 .link-button:hover {
-  color: var(--blue-hover);
+  color: var(--acme-color-link-hover);
 }
+
+/* --- Field + Select ---------------------------------------------------- */
 
 .field {
   display: grid;
-  gap: 6px;
+  gap: var(--acme-space-2);
+}
+
+.field label {
+  color: var(--acme-color-text);
+  font-size: var(--acme-text-sm);
+  font-weight: 500;
+  line-height: var(--acme-leading-snug);
 }
 
 .field select {
-  min-block-size: 44px;
-  min-inline-size: 200px;
-  padding-inline: 12px;
-  border: 2px solid var(--ink);
-  border-radius: 0;
-  background: var(--paper);
-  color: var(--ink);
-  font-size: 0.9375rem;
-  font-weight: 500;
-  line-height: 1.2;
+  min-block-size: 2.5rem;
+  min-inline-size: 180px;
+  padding-inline: var(--acme-space-3);
+  border: 1px solid var(--acme-color-border-strong);
+  border-radius: var(--acme-radius-md);
+  background-color: var(--acme-color-surface-raised);
+  box-shadow: var(--acme-shadow-sm);
+  color: var(--acme-color-text);
+  font-size: var(--acme-text-sm);
+  line-height: var(--acme-leading-normal);
+  cursor: pointer;
+  transition: border-color var(--acme-duration-base) var(--acme-ease-out);
 }
 
-/* A rule, a bold title, then the body in ink-2. Tones other than danger
-   (success, info, warning) look the same on purpose. */
+.field select:hover {
+  border-color: var(--acme-color-text-subtle);
+}
+
+/* --- Alert ------------------------------------------------------------- */
+
+/* Soft tint with a matching hairline; the icon takes the status ink, the
+   title stays ink, the body is muted. role="alert" is for danger only. */
 .alert {
+  --alert-icon: var(--acme-color-info);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--acme-space-3);
+  padding: var(--acme-space-4);
+  border: 1px solid var(--acme-color-info-border);
+  border-radius: var(--acme-radius-lg);
+  background: var(--acme-color-info-soft);
+  font-size: var(--acme-text-sm);
+}
+
+.alert__icon {
+  margin-block-start: 1px;
+  color: var(--alert-icon);
+}
+
+.alert__content {
   display: grid;
-  gap: 4px;
-  padding-block-start: 12px;
-  border-block-start: 4px solid var(--ink);
+  gap: var(--acme-space-1);
+  min-inline-size: 0;
 }
 
 .alert__title {
-  font-weight: 700;
+  color: var(--acme-color-text);
+  font-weight: 600;
 }
 
 .alert__body {
-  color: var(--ink-2);
-}
-
-.alert[data-tone='danger'] {
-  border-block-start-color: var(--red);
-}
-
-.alert[data-tone='danger'] .alert__title {
-  color: var(--red);
+  color: var(--acme-color-text-muted);
 }
 
 .alert__actions {
-  margin-block-start: 8px;
+  margin-block-start: var(--acme-space-2);
+}
+
+.alert[data-tone='success'] {
+  --alert-icon: var(--acme-color-success);
+  border-color: var(--acme-color-success-border);
+  background: var(--acme-color-success-soft);
+}
+
+.alert[data-tone='warning'] {
+  --alert-icon: var(--acme-color-warning);
+  border-color: var(--acme-color-warning-border);
+  background: var(--acme-color-warning-soft);
+}
+
+.alert[data-tone='danger'] {
+  --alert-icon: var(--acme-color-danger);
+  border-color: var(--acme-color-danger-border);
+  background: var(--acme-color-danger-soft);
+}
+
+/* --- Card -------------------------------------------------------------- */
+
+/* Bordered, barely raised. Never nest one card in another. */
+.card {
+  min-inline-size: 0;
+  border: 1px solid var(--acme-color-border);
+  border-radius: var(--acme-radius-lg);
+  background: var(--acme-color-surface-raised);
+  box-shadow: var(--acme-shadow-sm);
 }
 
 /* --- Loading ----------------------------------------------------------- */
 
+/* Static recessed blocks; only the refresh icon animates while loading. */
 .skeleton {
-  border-radius: 0;
-  background: var(--paper-2);
-  animation: pulse 1.4s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  50% {
-    opacity: 0.55;
-  }
+  border-radius: var(--acme-radius-md);
+  background: var(--acme-color-surface);
 }
 
 /* --- Utilities --------------------------------------------------------- */
@@ -358,15 +386,18 @@ select {
   inset-inline-start: calc(var(--safe-left) + 8px);
   z-index: 2000;
   padding: 8px 16px;
-  border: 2px solid var(--ink);
-  background: var(--paper);
-  color: var(--ink);
-  font-weight: 600;
+  border: 1px solid var(--acme-color-border-control);
+  border-radius: var(--acme-radius-md);
+  background: var(--acme-color-surface-raised);
+  box-shadow: var(--acme-shadow-md);
+  color: var(--acme-color-text);
+  font-weight: 500;
 }
 
 @media (forced-colors: active) {
   .alert,
   .button,
+  .card,
   .field select {
     border-color: CanvasText;
   }
@@ -374,28 +405,22 @@ select {
 
 /* --- Other scripts ------------------------------------------------------ */
 
-/* Archivo has no Chinese or Thai glyphs. Name system faces that do, so
-   each Chinese script gets its own forms (not Japanese ones) and Thai a face
+/* Inter has no Chinese or Thai glyphs. Name system faces that do, so each
+   Chinese script gets its own forms (not Japanese ones) and Thai a face
    drawn for it. :lang(zh) also matches zh-Hant, so that rule comes after. */
 :root:lang(zh) {
-  --font-sans: "Archivo", "PingFang SC", "Noto Sans SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+  --acme-font-sans: "Inter", "PingFang SC", "Noto Sans SC", "Microsoft YaHei", "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
 }
 
 :root:lang(zh-Hant) {
-  --font-sans: "Archivo", "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", "Helvetica Neue", Arial, sans-serif;
+  --acme-font-sans: "Inter", "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
 }
 
 :root:lang(th) {
-  --font-sans: "Archivo", "Noto Sans Thai", Thonburi, "Leelawadee UI", Tahoma, "Helvetica Neue", Arial, sans-serif;
+  --acme-font-sans: "Inter", "Noto Sans Thai", Thonburi, "Leelawadee UI", Tahoma, "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
 }
 
 /* Thai stacks vowels and tone marks above and below the line. */
 :root:lang(th) body {
   line-height: 1.65;
-}
-
-/* Tracking pulls Chinese and Thai apart, and neither script has case. */
-:lang(zh) :is(.label, .field label),
-:lang(th) :is(.label, .field label) {
-  letter-spacing: normal;
 }
