@@ -7,6 +7,7 @@
 
 @import './acme/fonts.css';
 @import './acme/tokens.css';
+@import './acme/aqi.css';
 
 :root {
   /* Page side padding; cqi resolves against the dashboard's container. */
