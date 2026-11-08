@@ -17,7 +17,7 @@ export interface AqiCategory {
 }
 
 /**
- * US EPA AQI bands. Colours live in acme/tokens.css as --acme-color-aqi-<id>,
+ * US EPA AQI bands. Colours live in acme/aqi.css as --acme-color-aqi-<id>,
  * mapped to --cat in styles.css, so that chips, map markers and chart bands
  * all key off the same `data-cat` attribute.
  */

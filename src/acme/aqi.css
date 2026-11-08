@@ -1,0 +1,35 @@
+/*
+ * Haze Watch AQI data colours: an extension to the ACME design system v5,
+ * which has no data-colour ramp for categorical bands. Kept apart from
+ * tokens.css so that file stays a straight copy of the design-system tokens.
+ *
+ * Aliased to the design-system primitives; load after tokens.css. These are
+ * data, not status or action: they fill chips, markers, tiles and chart bands.
+ */
+
+:root {
+  /*
+   * US AQI bands as a lightness ramp. Good is nearly white, so every AQI
+   * fill carries a 1px --acme-color-border-strong edge.
+   *
+   *   band             fill        ink        L*   contrast
+   *   good             green-50    gray-900   96   16.2:1
+   *   moderate         amber-200   gray-900   88   12.9:1
+   *   sensitive        red-300     gray-900   70    7.8:1
+   *   unhealthy        red-600     gray-0     43    5.7:1
+   *   very-unhealthy   red-800     gray-0     29    9.7:1
+   *   hazardous        gray-950    gray-0      4   19.5:1
+   */
+  --acme-color-aqi-good: var(--acme-green-50);
+  --acme-color-aqi-good-ink: var(--acme-gray-900);
+  --acme-color-aqi-moderate: var(--acme-amber-200);
+  --acme-color-aqi-moderate-ink: var(--acme-gray-900);
+  --acme-color-aqi-sensitive: var(--acme-red-300);
+  --acme-color-aqi-sensitive-ink: var(--acme-gray-900);
+  --acme-color-aqi-unhealthy: var(--acme-red-600);
+  --acme-color-aqi-unhealthy-ink: var(--acme-gray-0);
+  --acme-color-aqi-very-unhealthy: var(--acme-red-800);
+  --acme-color-aqi-very-unhealthy-ink: var(--acme-gray-0);
+  --acme-color-aqi-hazardous: var(--acme-gray-950);
+  --acme-color-aqi-hazardous-ink: var(--acme-gray-0);
+}

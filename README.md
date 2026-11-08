@@ -75,7 +75,7 @@ Every colour has one job. Ink (`--acme-color-primary`) fills the one primary but
 alerts; Signal Red signs the ACME wordmark. Everything else is Graphite. Cards are bordered with a soft shadow and
 never nested; recessed bands (table headers, card footers, metric tiles) use `--acme-color-surface`.
 
-US AQI bands use a data-colour extension, `--acme-color-aqi-<band>` with `-ink` pairs: a lightness ramp from Good
+US AQI bands use a data-colour extension in `src/acme/aqi.css`, `--acme-color-aqi-<band>` with `-ink` pairs: a lightness ramp from Good
 (green-50) through amber and red to Hazardous (graphite-950). Every AQI fill has a 1px `--acme-color-border-strong`
 edge, because Good is nearly white, and every fill also prints its number and label. Map markers and city tiles are
 clickable and can be red: that red is data, not a control style. Selection is always the Blue ring or tint.

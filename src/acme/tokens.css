@@ -1,7 +1,7 @@
 /*
- * ACME design system v5.0.0 tokens: the app's single token source.
+ * ACME design system v5.0.0 tokens (the AQI data colours are in aqi.css).
  * Source: github.com/robertncl/DLS @ d1665db, design-system/tokens/acme.css
- * (section 1), plus the AQI data-colour extension at the end.
+ * (section 1).
  *
  * Graphite base, ink primary, Blue interaction. Every colour has one job:
  * ink fills the one primary button per view; Blue means interactive (links,
@@ -157,31 +157,4 @@
 
   /* Checked controls take the interaction blue. */
   accent-color: var(--acme-color-selected);
-
-  /*
-   * AQI data colour (proposed v5 extension). US AQI bands as a lightness
-   * ramp, aliased to the primitives above. These are data, not status or
-   * action: they fill chips, markers, tiles and chart bands. Good is nearly
-   * white, so every AQI fill carries a 1px --acme-color-border-strong edge.
-   *
-   *   band             fill        ink        L*   contrast
-   *   good             green-50    gray-900   96   16.2:1
-   *   moderate         amber-200   gray-900   88   12.9:1
-   *   sensitive        red-300     gray-900   70    7.8:1
-   *   unhealthy        red-600     gray-0     43    5.7:1
-   *   very-unhealthy   red-800     gray-0     29    9.7:1
-   *   hazardous        gray-950    gray-0      4   19.5:1
-   */
-  --acme-color-aqi-good: var(--acme-green-50);
-  --acme-color-aqi-good-ink: var(--acme-gray-900);
-  --acme-color-aqi-moderate: var(--acme-amber-200);
-  --acme-color-aqi-moderate-ink: var(--acme-gray-900);
-  --acme-color-aqi-sensitive: var(--acme-red-300);
-  --acme-color-aqi-sensitive-ink: var(--acme-gray-900);
-  --acme-color-aqi-unhealthy: var(--acme-red-600);
-  --acme-color-aqi-unhealthy-ink: var(--acme-gray-0);
-  --acme-color-aqi-very-unhealthy: var(--acme-red-800);
-  --acme-color-aqi-very-unhealthy-ink: var(--acme-gray-0);
-  --acme-color-aqi-hazardous: var(--acme-gray-950);
-  --acme-color-aqi-hazardous-ink: var(--acme-gray-0);
 }
