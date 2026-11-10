@@ -64,8 +64,8 @@ relying on it.
 
 ## Design
 
-The UI follows **ACME design system v5** (Graphite base, ink primary, Blue interaction), from
-[robertncl/DLS](https://github.com/robertncl/DLS) at `d1665db`. The tokens are custom properties in
+The UI follows **ACME design system v5.1** (Graphite base, ink primary, Blue interaction), from
+[robertncl/DLS](https://github.com/robertncl/DLS) at `b56be90`. The tokens are custom properties in
 `src/acme/tokens.css`, the app's single token source; `src/styles.css` holds the base styles and shared controls
 (`.button`, `.field`, `.alert`, `.card`, `.link-button`, `.label`). Components use semantic tokens
 (`--acme-color-*`), never raw hex. The page is light-only.
