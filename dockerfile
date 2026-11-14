@@ -2,7 +2,7 @@
 # node:26-alpine, pinned as tag@digest: a bare `node@sha256:` gives Dependabot no
 # tag to track, so it proposed node:latest (Debian) in #113. CI and the devcontainer
 # run Node 24; Angular supports both (engines: ^24.15 || >=26).
-FROM node:26-alpine@sha256:c6ad9e9c1d80f6eb607c26b4b0a132ff7a2344fad1c78ea3baa2a7d4c8de6d94 AS build
+FROM node:26-alpine@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5 AS build
 
 WORKDIR /app
 
@@ -24,7 +24,7 @@ RUN npm run build \
 # — serves the compiled bundle. The previous image ran
 # `ng serve` (the Angular dev server) on 0.0.0.0, which is unhardened, serves
 # source maps, and exposes an unauthenticated HMR websocket.
-FROM nginx:alpine@sha256:785835ea65db4bba6f021acc0f3be91b0fef76a53fe41f8588c6698d2aed0606
+FROM nginx:alpine@sha256:713fc2ebfd92e8217db451477182ee91944b123d2b1ee9fd5a8c6e91ca6c3a11
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY security-headers.conf /etc/nginx/snippets/security-headers.conf
